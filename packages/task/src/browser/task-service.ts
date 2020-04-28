@@ -325,7 +325,7 @@ export class TaskService implements TaskConfigurationClient {
         });
     }
 
-    private getTaskIdentifier(taskConfig: TaskConfiguration): string {
+    protected getTaskIdentifier(taskConfig: TaskConfiguration): string {
         const taskName = this.taskNameResolver.resolve(taskConfig);
         const sourceStrUri = this.taskSourceResolver.resolve(taskConfig);
         return `${taskName} (${this.labelProvider.getName(new URI(sourceStrUri))})`;
@@ -465,6 +465,9 @@ export class TaskService implements TaskConfigurationClient {
      * It looks for configured and detected tasks.
      */
     async run(source: string, taskLabel: string, scope?: string): Promise<TaskInfo | undefined> {
+        const startRun = new Date().valueOf();
+        console.error('+++++++++++++++++++++++++++++++++  TASK service !!! RUN 1 ', startRun);
+        ////////
         let task: TaskConfiguration | undefined;
         task = await this.getProvidedTask(source, taskLabel, scope);
         if (!task) { // if a detected task cannot be found, search from tasks.json
@@ -477,6 +480,10 @@ export class TaskService implements TaskConfigurationClient {
                 return;
             }
         }
+        const finishConfig = new Date().valueOf();
+        console.info('!!!!!  TASK service !!! after get config 2 ', finishConfig);
+        console.error('!!!!!  TASK service !!! config 1-2 ', (finishConfig - startRun) / 1000);
+
         const customizationObject = await this.getTaskCustomization(task);
 
         if (!customizationObject.problemMatcher) {
@@ -505,9 +512,28 @@ export class TaskService implements TaskConfigurationClient {
                 return;
             }
         }
+        const resolvedMatchers = await this.resolveProblemMatchers(task, customizationObject);
+        const options = {
+            customization: { ...customizationObject, ...{ problemMatcher: resolvedMatchers } }
+        };
+
+        if (task.dependsOn) {
+            return this.runCompoundTask(task, options);
+        } else {
+            return this.runTask(task, options);
+        }
+    }
+
+    async runCompoundTask(task: TaskConfiguration, options: RunTaskOption): Promise<TaskInfo | undefined> {
+        const startWrksTasks = new Date().valueOf();
+        console.info('!!!!!  TASK service !!! run 3 ', startWrksTasks);
 
         const tasks = await this.getWorkspaceTasks(task._scope);
-        const resolvedMatchers = await this.resolveProblemMatchers(task, customizationObject);
+
+        const finishWrksTasks = new Date().valueOf();
+        console.info('!!!!!  TASK service !!! run 4 ', finishWrksTasks);
+        console.error('!!!!!  TASK service !!! get wrkspce  tasks 3-4 ', (finishWrksTasks - startWrksTasks) / 1000);
+
         try {
             const rootNode = new TaskNode(task, [], []);
             this.detectDirectedAcyclicGraph(task, rootNode, tasks);
@@ -516,9 +542,7 @@ export class TaskService implements TaskConfigurationClient {
             this.messageService.error(error.message);
             return undefined;
         }
-        return this.runTasksGraph(task, tasks, {
-            customization: { ...customizationObject, ...{ problemMatcher: resolvedMatchers } }
-        }).catch(error => {
+        return this.runTasksGraph(task, tasks, options).catch(error => {
             console.log(error.message);
             return undefined;
         });
@@ -569,7 +593,7 @@ export class TaskService implements TaskConfigurationClient {
         }
 
         const taskInfo = await this.runTask(task, option);
-        if (taskInfo) {
+        if (taskInfo) { // this use case should be handled for runCompoundTask()
             const getExitCodePromise: Promise<TaskEndedInfo> = this.getExitCode(taskInfo.taskId).then(result => ({ taskEndedType: TaskEndedTypes.TaskExited, value: result }));
             const isBackgroundTaskEndedPromise: Promise<TaskEndedInfo> = this.isBackgroundTaskEnded(taskInfo.taskId).then(result =>
                 ({ taskEndedType: TaskEndedTypes.BackgroundTaskEnded, value: result }));
@@ -694,7 +718,9 @@ export class TaskService implements TaskConfigurationClient {
     }
 
     async runTask(task: TaskConfiguration, option?: RunTaskOption): Promise<TaskInfo | undefined> {
+        console.error('!!!!!  TASK service !!! run 5 ', new Date().valueOf());
         const runningTasksInfo: TaskInfo[] = await this.getRunningTasks();
+        console.error('!!!!!  TASK service !!! run 6 ', new Date().valueOf());
 
         // check if the task is active
         const matchedRunningTaskInfo = runningTasksInfo.find(taskInfo => {
@@ -756,7 +782,15 @@ export class TaskService implements TaskConfigurationClient {
             }
         }
 
+        const startResolve = new Date().valueOf();
+        console.info('!!!!!  TASK service !!! resolve 7 ', startResolve);
+        ////////
         const resolvedTask = await this.getResolvedTask(task);
+        ///////
+        const finishResolve = new Date().valueOf();
+        console.info('!!!!!  TASK service !!! after resolve 8 ', finishResolve);
+        console.error('!!!!!  TASK service !!! resolve 7-8 ', (finishResolve - startResolve) / 1000);
+
         if (resolvedTask) {
             // remove problem markers from the same source before running the task
             await this.removeProblemMarkers(option);
@@ -874,7 +908,7 @@ export class TaskService implements TaskConfigurationClient {
         return customizationObject;
     }
 
-    private async removeProblemMarkers(option?: RunTaskOption): Promise<void> {
+    protected async removeProblemMarkers(option?: RunTaskOption): Promise<void> {
         if (option && option.customization) {
             const matchersFromOption = option.customization.problemMatcher || [];
             for (const matcher of matchersFromOption) {
@@ -888,7 +922,7 @@ export class TaskService implements TaskConfigurationClient {
         }
     }
 
-    private async getResolvedTask(task: TaskConfiguration): Promise<TaskConfiguration | undefined> {
+    protected async getResolvedTask(task: TaskConfiguration): Promise<TaskConfiguration | undefined> {
         let resolver = undefined;
         let resolvedTask: TaskConfiguration;
         try {
@@ -908,11 +942,20 @@ export class TaskService implements TaskConfigurationClient {
      * @param resolvedTask the resolved task
      * @param option options to run the resolved task
      */
-    private async runResolvedTask(resolvedTask: TaskConfiguration, option?: RunTaskOption): Promise<TaskInfo | undefined> {
+    protected async runResolvedTask(resolvedTask: TaskConfiguration, option?: RunTaskOption): Promise<TaskInfo | undefined> {
         const source = resolvedTask._source;
         const taskLabel = resolvedTask.label;
         try {
+
+            const startResolve = new Date().valueOf();
+            console.info('!!!!!  TASK service !!! run 9 ', startResolve);
+            ////////
             const taskInfo = await this.taskServer.run(resolvedTask, this.getContext(), option);
+            ///////
+            const finishResolve = new Date().valueOf();
+            console.info('!!!!!  TASK service !!! after run 10 ', finishResolve);
+            console.error('!!!!!  TASK service !!! run 9-10 ', (finishResolve - startResolve) / 1000);
+
             this.lastTask = { source, taskLabel, scope: resolvedTask._scope };
             this.logger.debug(`Task created. Task id: ${taskInfo.taskId}`);
 
@@ -933,7 +976,7 @@ export class TaskService implements TaskConfigurationClient {
         }
     }
 
-    private getCustomizeProblemMatcherItems(): QuickPickItem<QuickPickProblemMatcherItem>[] {
+    protected getCustomizeProblemMatcherItems(): QuickPickItem<QuickPickProblemMatcherItem>[] {
         const items: QuickPickItem<QuickPickProblemMatcherItem>[] = [];
         items.push({
             label: 'Continue without scanning the task output',
@@ -985,13 +1028,19 @@ export class TaskService implements TaskConfigurationClient {
     }
 
     async attach(terminalId: number, taskId: number): Promise<void> {
+        console.info('************************** TASK service *** ATTACH ', terminalId, ' /// ', taskId);
         // Get the list of all available running tasks.
+        console.info('!!!!!  TASK service !!! run 11 ', new Date().valueOf());
         const runningTasks: TaskInfo[] = await this.getRunningTasks();
+        console.info('!!!!!  TASK service !!! run 12 ', new Date().valueOf());
         // Get the corresponding task information based on task id if available.
         const taskInfo: TaskInfo | undefined = runningTasks.find((t: TaskInfo) => t.taskId === taskId);
         let widgetOpenMode: WidgetOpenMode = 'open';
         if (taskInfo) {
+            console.error('*** TASK service *** ATTACH *** task info found', taskInfo);
+            console.error('!!!!!  TASK service !!! run 13 ', new Date().valueOf());
             const terminalWidget = this.terminalService.getByTerminalId(terminalId);
+            console.error('!!!!!  TASK service !!! run 14 ', new Date().valueOf());
             if (terminalWidget) {
                 this.messageService.error('Task is already running in terminal');
                 return this.terminalService.open(terminalWidget, { mode: 'activate' });
@@ -1003,6 +1052,8 @@ export class TaskService implements TaskConfigurationClient {
                     widgetOpenMode = 'reveal';
                 }
             }
+        } else {
+            console.error('*** TASK service *** ATTACH *** task info NOT found');
         }
         // Create / find a terminal widget to display an execution output of a task that was launched as a command inside a shell.
         const widget = await this.taskTerminalWidgetManager.open({

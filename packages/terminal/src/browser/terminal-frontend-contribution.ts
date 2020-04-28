@@ -163,12 +163,17 @@ export class TerminalFrontendContribution implements TerminalService, CommandCon
 
     @postConstruct()
     protected init(): void {
+        console.log('!!!!!!!!!!!!!!! terminal service !!! INIT ');
         this.shell.currentChanged.connect(() => this.updateCurrentTerminal());
         this.widgetManager.onDidCreateWidget(({ widget }) => {
             if (widget instanceof TerminalWidget) {
+                console.log('!!! terminal service !!! onDidCreateWidget === instanceof TerminalWidget ');
                 this.updateCurrentTerminal();
+                console.info('!!!!!!!!!!!!!!! terminal service !!! onDidCreateWidget ' + new Date().valueOf());
                 this.onDidCreateTerminalEmitter.fire(widget);
                 this.setLastUsedTerminal(widget);
+            } else {
+                console.log('!!! terminal service !!! onDidCreateWidget === NOT instanceof TerminalWidget ');
             }
         });
 

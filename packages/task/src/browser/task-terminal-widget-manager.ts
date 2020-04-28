@@ -86,6 +86,7 @@ export class TaskTerminalWidgetManager {
 
     @postConstruct()
     protected init(): void {
+        console.log('************************** TASK terminal manager *** INIT ');
         this.taskWatcher.onTaskExit((event: TaskExitedEvent) => {
             const finishedTaskId = event.taskId;
             // find the terminal where the task ran, and mark it as "idle"
@@ -99,31 +100,45 @@ export class TaskTerminalWidgetManager {
         });
 
         this.terminalService.onDidCreateTerminal(async (widget: TerminalWidget) => {
-            const terminal = TaskTerminalWidget.is(widget) && widget;
+            console.error('************************** TASK terminal manager *** onDidCreateTerminal ', new Date().valueOf());
+            const terminal = widget;
             if (terminal) {
+                console.log('*** TASK terminal manager *** onDidCreateTerminal *** terminal found ');
                 const didConnectListener = terminal.onDidOpen(async () => {
+                    console.error('+++++++++++++++++++++++++++++++++ TASK terminal manager === OPEN  ', new Date().valueOf());
+                    console.log('*** TASK terminal manager *** onDidCreateTerminal *** terminal.onDidOpen ');
                     const context = this.workspaceService.workspace && this.workspaceService.workspace.uri;
                     const tasksInfo = await this.taskServer.getTasks(context);
                     const taskInfo = tasksInfo.find(info => info.terminalId === widget.terminalId);
                     if (taskInfo) {
-                        const taskConfig = taskInfo.config;
-                        terminal.dedicated = !!taskConfig.presentation && !!taskConfig.presentation.panel && taskConfig.presentation.panel === PanelKind.Dedicated;
-                        terminal.taskId = taskInfo.taskId;
-                        terminal.taskConfig = taskConfig;
-                        terminal.busy = true;
+                        console.log('*** TASK terminal manager *** onDidCreateTerminal *** terminal.onDidOpen *** taskInfo found');
+                        // const taskConfig = taskInfo.config;
+                        // terminal.dedicated = !!taskConfig.presentation && !!taskConfig.presentation.panel && taskConfig.presentation.panel === PanelKind.Dedicated;
+                        // terminal.taskId = taskInfo.taskId;
+                        // terminal.taskConfig = taskConfig;
+                        // terminal.busy = true;
                     } else {
-                        this.notifyTaskFinished(terminal, true);
+                        console.log('*** TASK terminal manager *** onDidCreateTerminal *** terminal.onDidOpen *** taskInfo NOT found');
+                        // this.notifyTaskFinished(terminal, true);
                     }
                 });
                 const didConnectFailureListener = terminal.onDidOpenFailure(async () => {
-                    this.notifyTaskFinished(terminal, true);
+                    // this.notifyTaskFinished(terminal, true);
                 });
                 terminal.onDidDispose(() => {
                     didConnectListener.dispose();
                     didConnectFailureListener.dispose();
                 });
+            } else {
+                console.log('*** TASK terminal manager *** onDidCreateTerminal *** terminal NOT found ');
             }
         });
+    }
+
+    async newTaskTerminal(factoryOptions: TerminalWidgetFactoryOptions, taskConfig?: TaskConfiguration): Promise<TerminalWidget> {
+        console.log('*** TASK terminal manager /// create NEW Task terminal /// factory ', factoryOptions);
+        console.error('!!!!!  TASK service !!! run BEFORE new terminal ', new Date().valueOf());
+        return this.terminalService.newTerminal({ ...factoryOptions, kind: 'task' });
     }
 
     async open(factoryOptions: TerminalWidgetFactoryOptions, openerOptions: TaskTerminalWidgetOpenerOptions): Promise<TerminalWidget> {
@@ -190,17 +205,18 @@ export class TaskTerminalWidgetManager {
 
         // we are unable to find a terminal widget to run the task, or `taskPresentation === 'new'`
         if (!reusableTerminalWidget) {
-            const widget = await this.terminalService.newTerminal({ ...factoryOptions, kind: 'task' });
+            const widget = await this.newTaskTerminal(factoryOptions);
+            console.error('!!!!!  TASK service !!! run AFTER new terminal ', new Date().valueOf());
             return { isNew: true, widget };
         }
         return { isNew: false, widget: reusableTerminalWidget };
     }
 
-    private getTaskTerminalWidgets(): TaskTerminalWidget[] {
+    protected getTaskTerminalWidgets(): TaskTerminalWidget[] {
         return this.terminalService.all.filter(TaskTerminalWidget.is);
     }
 
-    private notifyTaskFinished(terminal: TaskTerminalWidget, showReuseMessage: boolean): void {
+    protected notifyTaskFinished(terminal: TaskTerminalWidget, showReuseMessage: boolean): void {
         terminal.busy = false;
         terminal.scrollToBottom();
         if (showReuseMessage) {
