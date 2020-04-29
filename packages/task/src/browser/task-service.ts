@@ -465,40 +465,32 @@ export class TaskService implements TaskConfigurationClient {
      * It looks for configured and detected tasks.
      */
     async run(source: string, taskLabel: string, scope?: string): Promise<TaskInfo | undefined> {
+        let task: TaskConfiguration | undefined;
         const startRun = new Date().valueOf();
         console.error('+++++++++++++++++++++++++++++++++  TASK service !!! RUN 1 ', startRun);
-        ////////
-        let task: TaskConfiguration | undefined;
 
-        task = await this.getProvidedTask(source, taskLabel, scope);
+        task = this.taskConfigurations.getTask(source, taskLabel);
+        if (task) {
+            console.log('!!!!!!!!!! found as configured ');
+        } else {
+            console.log('!!!!!!!!!! NOT found as configured ');
+        }
 
-        const finishProvided = new Date().valueOf();
-        console.info('!!!!!  TASK service !!! after get provided 1-1 ', finishProvided);
-        console.error('!!!!!  TASK service !!! get provided 1-1 ', (finishProvided - startRun) / 1000);
-
-        if (!task) { // if a detected task cannot be found, search from tasks.json
-            const startConfiged = new Date().valueOf();
-
-            task = this.taskConfigurations.getTask(source, taskLabel);
-
-            const finishConfiged = new Date().valueOf();
-            console.info('!!!!!  TASK service !!! after get configed 1-2 ', finishConfiged);
-            console.error('!!!!!  TASK service !!! get configed 1-2 ', (finishConfiged - startConfiged) / 1000);
+        if (!task) { // if a configured task cannot be found, search from detected tasks
+            task = await this.getProvidedTask(source, taskLabel, scope);
+            if (task) {
+                console.log('!!!!!!!!!! found as provided ');
+            }
 
             if (!task && scope) { // find from the customized detected tasks
-                const startCustomized = new Date().valueOf();
-
                 task = await this.taskConfigurations.getCustomizedTask(scope, taskLabel);
-
-                const finishCustomized = new Date().valueOf();
-                console.info('!!!!!  TASK service !!! after get customized 1-3 ', finishCustomized);
-                console.error('!!!!!  TASK service !!! get customized 1-3 ', (finishCustomized - startCustomized) / 1000);
             }
             if (!task) {
                 this.logger.error(`Can't get task launch configuration for label: ${taskLabel}`);
                 return;
             }
         }
+
         const finishConfig = new Date().valueOf();
         console.info('!!!!!  TASK service !!! after get config 2 ', finishConfig);
         console.error('!!!!!  TASK service !!! config 1-2 ', (finishConfig - startRun) / 1000);
@@ -531,28 +523,21 @@ export class TaskService implements TaskConfigurationClient {
                 return;
             }
         }
+
         const resolvedMatchers = await this.resolveProblemMatchers(task, customizationObject);
-        const options = {
+        const runTaskOption: RunTaskOption = {
             customization: { ...customizationObject, ...{ problemMatcher: resolvedMatchers } }
         };
 
         if (task.dependsOn) {
-            return this.runCompoundTask(task, options);
+            return this.runCompoundTask(task, runTaskOption);
         } else {
-            return this.runTask(task, options);
+            return this.runTask(task, runTaskOption);
         }
     }
 
-    async runCompoundTask(task: TaskConfiguration, options: RunTaskOption): Promise<TaskInfo | undefined> {
-        const startWrksTasks = new Date().valueOf();
-        console.info('!!!!!  TASK service !!! run 3 ', startWrksTasks);
-
+    async runCompoundTask(task: TaskConfiguration, option?: RunTaskOption): Promise<TaskInfo | undefined> {
         const tasks = await this.getWorkspaceTasks(task._scope);
-
-        const finishWrksTasks = new Date().valueOf();
-        console.info('!!!!!  TASK service !!! run 4 ', finishWrksTasks);
-        console.error('!!!!!  TASK service !!! get wrkspce  tasks 3-4 ', (finishWrksTasks - startWrksTasks) / 1000);
-
         try {
             const rootNode = new TaskNode(task, [], []);
             this.detectDirectedAcyclicGraph(task, rootNode, tasks);
@@ -561,7 +546,7 @@ export class TaskService implements TaskConfigurationClient {
             this.messageService.error(error.message);
             return undefined;
         }
-        return this.runTasksGraph(task, tasks, options).catch(error => {
+        return this.runTasksGraph(task, tasks, option).catch(error => {
             console.log(error.message);
             return undefined;
         });
@@ -612,7 +597,7 @@ export class TaskService implements TaskConfigurationClient {
         }
 
         const taskInfo = await this.runTask(task, option);
-        if (taskInfo) { // this use case should be handled for runCompoundTask()
+        if (taskInfo) {
             const getExitCodePromise: Promise<TaskEndedInfo> = this.getExitCode(taskInfo.taskId).then(result => ({ taskEndedType: TaskEndedTypes.TaskExited, value: result }));
             const isBackgroundTaskEndedPromise: Promise<TaskEndedInfo> = this.isBackgroundTaskEnded(taskInfo.taskId).then(result =>
                 ({ taskEndedType: TaskEndedTypes.BackgroundTaskEnded, value: result }));
