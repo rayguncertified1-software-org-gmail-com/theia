@@ -469,11 +469,30 @@ export class TaskService implements TaskConfigurationClient {
         console.error('+++++++++++++++++++++++++++++++++  TASK service !!! RUN 1 ', startRun);
         ////////
         let task: TaskConfiguration | undefined;
+
         task = await this.getProvidedTask(source, taskLabel, scope);
+
+        const finishProvided = new Date().valueOf();
+        console.info('!!!!!  TASK service !!! after get provided 1-1 ', finishProvided);
+        console.error('!!!!!  TASK service !!! get provided 1-1 ', (finishProvided - startRun) / 1000);
+
         if (!task) { // if a detected task cannot be found, search from tasks.json
+            const startConfiged = new Date().valueOf();
+
             task = this.taskConfigurations.getTask(source, taskLabel);
+
+            const finishConfiged = new Date().valueOf();
+            console.info('!!!!!  TASK service !!! after get configed 1-2 ', finishConfiged);
+            console.error('!!!!!  TASK service !!! get configed 1-2 ', (finishConfiged - startConfiged) / 1000);
+
             if (!task && scope) { // find from the customized detected tasks
+                const startCustomized = new Date().valueOf();
+
                 task = await this.taskConfigurations.getCustomizedTask(scope, taskLabel);
+
+                const finishCustomized = new Date().valueOf();
+                console.info('!!!!!  TASK service !!! after get customized 1-3 ', finishCustomized);
+                console.error('!!!!!  TASK service !!! get customized 1-3 ', (finishCustomized - startCustomized) / 1000);
             }
             if (!task) {
                 this.logger.error(`Can't get task launch configuration for label: ${taskLabel}`);
