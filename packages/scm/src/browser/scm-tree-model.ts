@@ -298,4 +298,16 @@ export class ScmTreeModel extends TreeModelImpl {
         }
     }
 
+    storeState(): any {
+        return {
+            ...super.storeState(),
+            mode: this.viewMode,
+        };
+    }
+
+    restoreState(oldState: any): void {
+        super.restoreState(oldState);
+        this.viewMode = oldState.mode === 'tree' ? 'tree' : 'flat';
+    }
+
 }

@@ -399,20 +399,6 @@ export class ScmTreeWidget extends TreeWidget {
         return super.needsExpansionTogglePadding(node);
     }
 
-    storeState(): any {
-        const state: object = {
-            mode: this.model.viewMode,
-            tree: super.storeState(),
-        };
-        return state;
-    }
-
-    restoreState(oldState: any): void {
-        const { mode, tree } = oldState;
-        this.model.viewMode = mode === 'tree' ? 'tree' : 'flat';
-        super.restoreState(tree);
-    }
-
 }
 
 export namespace ScmTreeWidget {
