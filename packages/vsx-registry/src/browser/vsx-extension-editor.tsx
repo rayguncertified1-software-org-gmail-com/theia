@@ -16,7 +16,7 @@
 
 import * as React from 'react';
 import { inject, injectable, postConstruct } from 'inversify';
-import { ReactWidget, Message } from '@theia/core/lib/browser';
+import { ReactWidget, Message, Widget } from '@theia/core/lib/browser';
 import { VSXExtension } from './vsx-extension';
 import { VSXExtensionsModel } from './vsx-extensions-model';
 
@@ -39,9 +39,12 @@ export class VSXExtensionEditor extends ReactWidget {
         this.updateTitle();
         this.title.iconClass = 'fa fa-puzzle-piece';
         this.node.tabIndex = -1;
-
         this.update();
         this.toDispose.push(this.model.onDidChange(() => this.update()));
+    }
+
+    async getScrollContainer(): Promise<HTMLElement> {
+        return this.extension.deferredScrollContainer.promise;
     }
 
     protected onActivateRequest(msg: Message): void {
@@ -59,6 +62,14 @@ export class VSXExtensionEditor extends ReactWidget {
         this.title.label = label;
         this.title.caption = label;
     }
+
+    protected onResize = async (msg: Widget.ResizeMessage): Promise<void> => {
+        super.onResize(msg);
+        if (this.extension) {
+            this.extension.width = msg.width;
+            this.update();
+        }
+    };
 
     protected render(): React.ReactNode {
         return this.extension.renderEditor();

@@ -27,6 +27,9 @@ import { Endpoint } from '@theia/core/lib/browser/endpoint';
 import { VSXEnvironment } from '../common/vsx-environment';
 import { VSXExtensionsSearchModel } from './vsx-extensions-search-model';
 import { VSXExtensionNamespaceAccess, VSXUser } from '../common/vsx-registry-types';
+import { Deferred } from '@theia/core/lib/common/promise-util';
+
+const BODY_CONTENT_MAX_WIDTH = 1000;
 
 @injectable()
 export class VSXExtensionData {
@@ -99,6 +102,25 @@ export class VSXExtension implements VSXExtensionData, TreeElement {
     readonly search: VSXExtensionsSearchModel;
 
     protected readonly data: Partial<VSXExtensionData> = {};
+
+    protected _width: number;
+    get width(): number {
+        return this._width;
+    }
+    set width(width: number) {
+        this._width = width;
+    }
+
+    protected _deferredScrollContainer = new Deferred<HTMLElement>();
+    get deferredScrollContainer(): Deferred<HTMLElement> {
+        return this._deferredScrollContainer;
+    }
+    resetDeferredScrollContainer(): void {
+        this._deferredScrollContainer = new Deferred<HTMLElement>();
+    }
+    resolveDeferredScrollContainer(element: HTMLElement): void {
+        this._deferredScrollContainer.resolve(element);
+    }
 
     get uri(): URI {
         return VSXExtensionUri.toUri(this.id);
@@ -268,7 +290,6 @@ export class VSXExtension implements VSXExtensionData, TreeElement {
     renderEditor(): React.ReactNode {
         return <VSXExtensionEditorComponent extension={this} />;
     }
-
 }
 
 export abstract class AbstractVSXExtensionComponent extends React.Component<AbstractVSXExtensionComponent.Props> {
@@ -351,13 +372,37 @@ export class VSXExtensionComponent extends AbstractVSXExtensionComponent {
 }
 
 export class VSXExtensionEditorComponent extends AbstractVSXExtensionComponent {
+    protected header: HTMLElement | undefined;
+    protected body: HTMLElement | undefined;
+    protected scrollContainer: HTMLElement | undefined;
+
+    // hide elements from view until proper sizes are calculated
+    protected bodyStyle: React.CSSProperties = { visibility: 'hidden' };
+    protected scrollStyle: React.CSSProperties = { visibility: 'hidden' };
+    protected headerStyle: React.CSSProperties = { visibility: 'hidden' };
+
+    componentDidMount(): void {
+        if (this.scrollContainer) {
+            this.props.extension.resolveDeferredScrollContainer(this.scrollContainer);
+        }
+    }
+
+    componentWillUnmount(): void {
+        this.props.extension.resetDeferredScrollContainer();
+    }
+
     render(): React.ReactNode {
         const {
-            builtin, preview, id, iconUrl, publisher, displayName, description,
-            averageRating, downloadCount, repository, license, readme, version
+            builtin, preview, id, iconUrl, publisher, displayName, description, version,
+            averageRating, downloadCount, repository, license, readme, width
         } = this.props.extension;
+
+        if (width !== undefined) {
+            this.initScrollContainerHeight();
+            this.calculateWidthsOnResize(width);
+        }
         return <React.Fragment>
-            <div className='header'>
+            <div className='header' style={this.headerStyle} ref={ref => this.header = (ref || undefined)}>
                 {iconUrl ?
                     <img className='icon-container' src={iconUrl} /> :
                     <div className='icon-container placeholder' />}
@@ -384,11 +429,20 @@ export class VSXExtensionEditorComponent extends AbstractVSXExtensionComponent {
                     {this.renderAction()}
                 </div>
             </div>
-            {readme && <div className='body'
-                ref={body => this.body = (body || undefined)}
-                onClick={this.openLink}
-                dangerouslySetInnerHTML={{ __html: readme }} />}
-        </React.Fragment>;
+            {
+                readme &&
+                < div className='scroll-container'
+                    style={this.scrollStyle}
+                    ref={ref => this.scrollContainer = (ref || undefined)}>
+                    <div className='body'
+                        ref={ref => this.body = (ref || undefined)}
+                        onClick={this.openLink}
+                        style={this.bodyStyle}
+                        dangerouslySetInnerHTML={{ __html: readme }}
+                    />
+                </div>
+            }
+        </React.Fragment >;
     }
 
     protected renderNamespaceAccess(): React.ReactNode {
@@ -421,7 +475,26 @@ export class VSXExtensionEditorComponent extends AbstractVSXExtensionComponent {
         </React.Fragment>;
     }
 
-    protected body: HTMLElement | undefined;
+    protected initScrollContainerHeight(): void {
+        if (this.scrollContainer && this.header && this.headerStyle.visibility === 'hidden') {
+            const headerHeight = this.header.clientHeight;
+            this.bodyStyle = { ...this.bodyStyle, visibility: 'unset' };
+            this.scrollStyle = { ...this.scrollStyle, visibility: 'unset', height: `calc(100% - (${headerHeight}px + 1px))` };
+            this.headerStyle = { ...this.headerStyle, visibility: 'unset' };
+        }
+    }
+
+    protected calculateWidthsOnResize(messageWidth: number): void {
+        if (this.body && this.scrollContainer) {
+            this.scrollStyle = { ...this.scrollStyle, width: `${messageWidth}px` };
+            if (messageWidth > BODY_CONTENT_MAX_WIDTH) {
+                const sideMargin = `${(messageWidth - BODY_CONTENT_MAX_WIDTH) / 2}px`;
+                this.bodyStyle = { ...this.bodyStyle, marginLeft: sideMargin, marginRight: sideMargin };
+            } else if (messageWidth <= BODY_CONTENT_MAX_WIDTH) {
+                this.bodyStyle = { ...this.bodyStyle, marginLeft: '0px', marginRight: '0px' };
+            }
+        }
+    }
 
     // TODO replace with webview
     readonly openLink = (event: React.MouseEvent) => {
