@@ -90,7 +90,7 @@ export class VSXExtensionEditor extends ReactWidget {
 
     protected render(): React.ReactNode {
         return <VSXExtensionEditorComponent
-            ref={(extensionComponent) => { this.deferredScrollContainer.resolve(extensionComponent?.scrollContainer); }}
+            ref={extensionComponent => { this.deferredScrollContainer.resolve(extensionComponent?.scrollContainer); }}
             extension={this.extension}
         />;
     }
