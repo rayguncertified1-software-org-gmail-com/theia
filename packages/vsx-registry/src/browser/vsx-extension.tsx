@@ -268,7 +268,7 @@ export class VSXExtension implements VSXExtensionData, TreeElement {
     }
 }
 
-export abstract class AbstractVSXExtensionComponent<T extends AbstractVSXExtensionComponent.Props = AbstractVSXExtensionComponent.Props> extends React.Component<T> {
+export abstract class AbstractVSXExtensionComponent extends React.Component<AbstractVSXExtensionComponent.Props> {
 
     readonly install = async () => {
         this.forceUpdate();
@@ -347,28 +347,23 @@ export class VSXExtensionComponent extends AbstractVSXExtensionComponent {
     }
 }
 
-export namespace VSXExtensionEditorComponent {
-    export interface Props extends AbstractVSXExtensionComponent.Props {
-        setScrollContainer: (element: HTMLElement) => void;
-        resetScrollContainer: () => void;
-        width: number;
-    }
-}
-
-export class VSXExtensionEditorComponent extends AbstractVSXExtensionComponent<VSXExtensionEditorComponent.Props> {
+export class VSXExtensionEditorComponent extends AbstractVSXExtensionComponent {
     protected header: HTMLElement | undefined;
     protected body: HTMLElement | undefined;
-    protected scrollContainer: HTMLElement | undefined;
-
-    componentDidMount(): void {
-        if (this.scrollContainer) {
-            this.props.setScrollContainer(this.scrollContainer);
-        }
+    protected _scrollContainer: HTMLElement | undefined;
+    get scrollContainer(): HTMLElement | undefined {
+        return this._scrollContainer;
     }
 
-    componentWillUnmount(): void {
-        this.props.resetScrollContainer();
-    }
+    // componentDidMount(): void {
+    //     if (this.scrollContainer) {
+    //         this.props.setScrollContainer(this.scrollContainer);
+    //     }
+    // }
+
+    // componentWillUnmount(): void {
+    //     this.props.resetScrollContainer();
+    // }
 
     render(): React.ReactNode {
         const {
@@ -407,15 +402,15 @@ export class VSXExtensionEditorComponent extends AbstractVSXExtensionComponent<V
                 </div>
             </div>
             {
-                readme &&
+                // readme &&
                 < div className='scroll-container'
                     style={scrollStyle}
-                    ref={ref => this.scrollContainer = (ref || undefined)}>
+                    ref={ref => this._scrollContainer = (ref || undefined)}>
                     <div className='body'
                         ref={ref => this.body = (ref || undefined)}
                         onClick={this.openLink}
                         style={bodyStyle}
-                        dangerouslySetInnerHTML={{ __html: readme }}
+                        dangerouslySetInnerHTML={{ __html: readme ?? '<div/>' }}
                     />
                 </div>
             }
@@ -453,13 +448,15 @@ export class VSXExtensionEditorComponent extends AbstractVSXExtensionComponent<V
     }
 
     protected getSubcomponentStyles(): { bodyStyle: React.CSSProperties, scrollStyle: React.CSSProperties, headerStyle: React.CSSProperties; } {
-        const visibility: 'unset' | 'hidden' = this.props.width > 0 ? 'unset' : 'hidden';
-        const bodySideMargin = this.props.width > BODY_CONTENT_MAX_WIDTH
-            ? `${(this.props.width - BODY_CONTENT_MAX_WIDTH) / 2}px`
+        console.log('SENTINEL FOR RENDERING STUFF', this.header, this.header?.parentElement?.clientWidth);
+        const width = this.header?.parentElement?.clientWidth ?? 0;
+        const visibility: 'unset' | 'hidden' = width > 0 ? 'unset' : 'hidden';
+        const bodySideMargin = width > BODY_CONTENT_MAX_WIDTH
+            ? `${(width - BODY_CONTENT_MAX_WIDTH) / 2}px`
             : '0px';
 
         const bodyStyle: React.CSSProperties = { visibility, marginLeft: bodySideMargin, marginRight: bodySideMargin };
-        const scrollStyle: React.CSSProperties = { visibility, width: `${this.props.width}px` };
+        const scrollStyle: React.CSSProperties = { visibility, width: `${width}px` };
         const headerStyle: React.CSSProperties = { visibility };
         if (this.header?.clientHeight) {
             scrollStyle.height = `calc(100% - (${this.header.clientHeight}px + 1px))`;
