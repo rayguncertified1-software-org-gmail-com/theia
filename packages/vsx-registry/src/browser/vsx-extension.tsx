@@ -28,7 +28,7 @@ import { VSXEnvironment } from '../common/vsx-environment';
 import { VSXExtensionsSearchModel } from './vsx-extensions-search-model';
 import { VSXExtensionNamespaceAccess, VSXUser } from '../common/vsx-registry-types';
 
-const BODY_CONTENT_MAX_WIDTH = 1000;
+// const BODY_CONTENT_MAX_WIDTH = 1000;
 
 @injectable()
 export class VSXExtensionData {
@@ -371,10 +371,10 @@ export class VSXExtensionEditorComponent extends AbstractVSXExtensionComponent {
             averageRating, downloadCount, repository, license, readme
         } = this.props.extension;
 
-        const { bodyStyle, scrollStyle, headerStyle } = this.getSubcomponentStyles();
+        const { baseStyle, scrollStyle } = this.getSubcomponentStyles();
 
         return <React.Fragment>
-            <div className='header' style={headerStyle} ref={ref => this.header = (ref || undefined)}>
+            <div className='header' style={baseStyle} ref={ref => this.header = (ref || undefined)}>
                 {iconUrl ?
                     <img className='icon-container' src={iconUrl} /> :
                     <div className='icon-container placeholder' />}
@@ -409,7 +409,7 @@ export class VSXExtensionEditorComponent extends AbstractVSXExtensionComponent {
                     <div className='body'
                         ref={ref => this.body = (ref || undefined)}
                         onClick={this.openLink}
-                        style={bodyStyle}
+                        style={baseStyle}
                         dangerouslySetInnerHTML={{ __html: readme ?? '<div/>' }}
                     />
                 </div>
@@ -447,22 +447,13 @@ export class VSXExtensionEditorComponent extends AbstractVSXExtensionComponent {
         </React.Fragment>;
     }
 
-    protected getSubcomponentStyles(): { bodyStyle: React.CSSProperties, scrollStyle: React.CSSProperties, headerStyle: React.CSSProperties; } {
-        console.log('SENTINEL FOR RENDERING STUFF', this.header, this.header?.parentElement?.clientWidth);
+    protected getSubcomponentStyles(): { baseStyle: React.CSSProperties, scrollStyle: React.CSSProperties; } {
         const width = this.header?.parentElement?.clientWidth ?? 0;
         const visibility: 'unset' | 'hidden' = width > 0 ? 'unset' : 'hidden';
-        const bodySideMargin = width > BODY_CONTENT_MAX_WIDTH
-            ? `${(width - BODY_CONTENT_MAX_WIDTH) / 2}px`
-            : '0px';
+        const baseStyle = { visibility };
+        const scrollStyle = this.header?.clientHeight ? { ...baseStyle, height: `calc(100% - (${this.header.clientHeight}px + 1px))` } : baseStyle;
 
-        const bodyStyle: React.CSSProperties = { visibility, marginLeft: bodySideMargin, marginRight: bodySideMargin };
-        const scrollStyle: React.CSSProperties = { visibility, width: `${width}px` };
-        const headerStyle: React.CSSProperties = { visibility };
-        if (this.header?.clientHeight) {
-            scrollStyle.height = `calc(100% - (${this.header.clientHeight}px + 1px))`;
-        }
-
-        return { bodyStyle, scrollStyle, headerStyle };
+        return { baseStyle, scrollStyle };
     }
 
     // TODO replace with webview
