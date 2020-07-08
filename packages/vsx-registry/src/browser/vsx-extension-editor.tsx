@@ -17,8 +17,9 @@
 import * as React from 'react';
 import { inject, injectable, postConstruct } from 'inversify';
 import { ReactWidget, Message, Widget } from '@theia/core/lib/browser';
-import { VSXExtension } from './vsx-extension';
+import { VSXExtension, VSXExtensionEditorComponent } from './vsx-extension';
 import { VSXExtensionsModel } from './vsx-extensions-model';
+import { Deferred } from '@theia/core/lib/common/promise-util';
 
 @injectable()
 export class VSXExtensionEditor extends ReactWidget {
@@ -30,6 +31,9 @@ export class VSXExtensionEditor extends ReactWidget {
 
     @inject(VSXExtensionsModel)
     protected readonly model: VSXExtensionsModel;
+
+    protected currentWidth: number = 0;
+    protected deferredScrollContainer = new Deferred<HTMLElement>();
 
     @postConstruct()
     protected init(): void {
@@ -43,8 +47,8 @@ export class VSXExtensionEditor extends ReactWidget {
         this.toDispose.push(this.model.onDidChange(() => this.update()));
     }
 
-    async getScrollContainer(): Promise<HTMLElement> {
-        return this.extension.deferredScrollContainer.promise;
+    getScrollContainer(): Promise<HTMLElement> {
+        return this.deferredScrollContainer.promise;
     }
 
     protected onActivateRequest(msg: Message): void {
@@ -57,6 +61,11 @@ export class VSXExtensionEditor extends ReactWidget {
         this.updateTitle();
     }
 
+    protected onAfterShow(msg: Message): void {
+        super.onAfterShow(msg);
+        this.update();
+    }
+
     protected updateTitle(): void {
         const label = 'Extension: ' + (this.extension.displayName || this.extension.name);
         this.title.label = label;
@@ -66,13 +75,25 @@ export class VSXExtensionEditor extends ReactWidget {
     protected onResize = async (msg: Widget.ResizeMessage): Promise<void> => {
         super.onResize(msg);
         if (this.extension) {
-            this.extension.width = msg.width;
+            this.currentWidth = msg.width;
             this.update();
         }
     };
 
-    protected render(): React.ReactNode {
-        return this.extension.renderEditor();
-    }
+    resetDeferredScrollContainer = (): void => {
+        this.deferredScrollContainer = new Deferred<HTMLElement>();
+    };
 
+    resolveDeferredScrollContainer = (element: HTMLElement): void => {
+        this.deferredScrollContainer.resolve(element);
+    };
+
+    protected render(): React.ReactNode {
+        return <VSXExtensionEditorComponent
+            extension={this.extension}
+            setScrollContainer={this.resolveDeferredScrollContainer}
+            resetScrollContainer={this.resetDeferredScrollContainer}
+            width={this.currentWidth}
+        />;
+    }
 }
