@@ -32,7 +32,6 @@ export class VSXExtensionEditor extends ReactWidget {
     @inject(VSXExtensionsModel)
     protected readonly model: VSXExtensionsModel;
 
-    protected currentWidth: number = 0;
     protected deferredScrollContainer = new Deferred<HTMLElement>();
 
     @postConstruct()
@@ -75,17 +74,8 @@ export class VSXExtensionEditor extends ReactWidget {
     protected onResize = async (msg: Widget.ResizeMessage): Promise<void> => {
         super.onResize(msg);
         if (this.extension) {
-            this.currentWidth = msg.width;
             this.update();
         }
-    };
-
-    resetDeferredScrollContainer = (): void => {
-        this.deferredScrollContainer = new Deferred<HTMLElement>();
-    };
-
-    resolveDeferredScrollContainer = (element: HTMLElement): void => {
-        this.deferredScrollContainer.resolve(element);
     };
 
     protected render(): React.ReactNode {

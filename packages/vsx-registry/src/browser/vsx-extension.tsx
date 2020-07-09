@@ -351,19 +351,10 @@ export class VSXExtensionEditorComponent extends AbstractVSXExtensionComponent {
     protected header: HTMLElement | undefined;
     protected body: HTMLElement | undefined;
     protected _scrollContainer: HTMLElement | undefined;
+
     get scrollContainer(): HTMLElement | undefined {
         return this._scrollContainer;
     }
-
-    // componentDidMount(): void {
-    //     if (this.scrollContainer) {
-    //         this.props.setScrollContainer(this.scrollContainer);
-    //     }
-    // }
-
-    // componentWillUnmount(): void {
-    //     this.props.resetScrollContainer();
-    // }
 
     render(): React.ReactNode {
         const {
