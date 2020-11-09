@@ -5,11 +5,12 @@
 - [plugin] added `createDeployQuickOpenItem` method to create `DeployQuickOpenItem` in order to make extension deploy command extensible [#8919] (https://github.com/eclipse-theia/theia/pull/8919)
 - [dependencies] updated to use fixed versions when publishing, `"x.y.z"` instead of `"^x.y.z"` in dependencies [#8880](https://github.com/eclipse-theia/theia/pull/8880)
 - [scm] update code required to highlight nodes on search in the `ScmTreeWidget` [#8929](https://github.com/eclipse-theia/theia/pull/8929)
+- [filesystem] add text input and navigate up icon to file dialog [#8748](https://github.com/eclipse-theia/theia/pull/8748)
 
 <a name="breaking_changes_1.10.0">[Breaking Changes:](#breaking_changes_1.10.0)</a>
 
 - [scm] add `caption` field to `ScmTreeWidget.Props` interface. Remove `name` from `ScmResourceComponent.Props`, `groupLabel` from `ScmResourceGroupComponent.Props`, and `path` from `ScmResourceFolderElement.Props` interfaces. [#8929](https://github.com/eclipse-theia/theia/pull/8929)
-
+- [filesystem] `FileDialog` and `LocationListRenderer` now require `FileService` to be passed into constructor for text-based file dialog navigation in browser [#8748](https://github.com/eclipse-theia/theia/pull/8748)
 
 ## v1.9.0 - 16/12/2020
 
