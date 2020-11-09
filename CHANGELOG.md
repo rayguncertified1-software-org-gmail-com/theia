@@ -74,6 +74,7 @@
 - [filesystem] refactored file watchers: [#8546](https://github.com/eclipse-theia/theia/pull/8546)
   - Added `FileSystemWatcherService` component that should be a singleton centralizing watch requests for all clients.
   - Added `FileSystemWatcherServiceDispatcher` to register yourself and listen to file change events.
+- [filesystem] add text input and nagivate up icon to file dialog [#8748](https://github.com/eclipse-theia/theia/pull/8748)
 - [git] updated `commit details` and `diff view` rendering to respect `list` and `tree` modes [#8084] (https://github.com/eclipse-theia/theia/pull/8084)
 - [markers] updated and enhanced the 'problem-manager' tests [#8604](https://github.com/eclipse-theia/theia/pull/8604)
 - [mini-browser] updated deprecated `scrElement` usage to `target` [#8663](https://github.com/eclipse-theia/theia/pull/8663)

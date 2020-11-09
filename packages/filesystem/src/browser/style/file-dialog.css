@@ -59,7 +59,10 @@
 
 .dialogContent .theia-NavigationBack,
 .dialogContent .theia-NavigationForward,
-.dialogContent .theia-NavigationHome {
+.dialogContent .theia-NavigationHome,
+.dialogContent .theia-NavigationUp,
+.dialogContent .theia-LocationInputToggle
+ {
     position: absolute;
     top: 0px;
     line-height: 23px;
@@ -69,10 +72,22 @@
 
 .dialogContent .theia-NavigationBack:focus,
 .dialogContent .theia-NavigationForward:focus,
-.dialogContent .theia-NavigationHome:focus {
+.dialogContent .theia-NavigationHome:focus,
+.dialogContent .theia-NavigationUp:focus,
+.dialogContent .theia-LocationInputToggle:focus
+{
     outline: none;
     border: none;
     box-shadow: none;
+}
+
+.dialogContent .theia-NavigationBack.theia-mod-disabled:focus,
+.dialogContent .theia-NavigationForward.theia-mod-disabled:focus,
+.dialogContent .theia-NavigationHome.theia-mod-disabled:focus,
+.dialogContent .theia-NavigationUp.theia-mod-disabled:focus,
+.dialogContent .theia-LocationInputToggle.theia-mod-disabled:focus
+{
+    opacity: var(--theia-mod-disabled-opacity) !important;
 }
 
 .dialogContent .theia-NavigationBack {
@@ -87,16 +102,55 @@
     left: 41px;
 }
 
-.dialogContent .theia-LocationListPanel {
-    position: absolute;
-    left: 72px;
-    top: 1px;
+.dialogContent .theia-NavigationUp {
+    left: 61px;
 }
 
-.dialogContent .theia-LocationList {
-    width: 427px;
+.dialogContent .theia-LocationListPanel {
+    position: absolute;
+    display: flex;
+    left: 82px;
+    top: 1px;
+    width: 417px;
     height: 21px;
 }
+
+.dialogContent .theia-LocationInputToggle {
+    text-align: center;
+    left: 0;
+    width: 21px;
+    height: 21px;
+    z-index: 1;
+}
+
+.dialogContent .theia-LocationInputToggle > i {
+    width: 12px; 
+}
+
+.dialogContent .theia-LocationList,
+.dialogContent .theia-LocationTextInput
+{
+    box-sizing: content-box;
+    padding: unset;
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 21px;
+    border: var(--theia-border-width) solid var(--theia-input-border);
+}
+
+.dialogContent .theia-LocationList
+{
+    padding-left: 21px;
+    width: calc(100% - 21px);
+}
+
+.dialogContent .theia-LocationTextInput
+{
+    width: calc(100% - var(--theia-ui-padding));
+    padding-left: var(--theia-ui-padding);
+}
+
 
 /*
  * Filters panel items
