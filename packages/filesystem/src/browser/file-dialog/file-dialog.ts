@@ -43,6 +43,7 @@ export const NAVIGATION_PANEL_CLASS = 'theia-NavigationPanel';
 export const NAVIGATION_BACK_CLASS = 'theia-NavigationBack';
 export const NAVIGATION_FORWARD_CLASS = 'theia-NavigationForward';
 export const NAVIGATION_HOME_CLASS = 'theia-NavigationHome';
+export const NAVIGATION_UP_CLASS = 'theia-NavigationUp';
 export const NAVIGATION_LOCATION_LIST_PANEL_CLASS = 'theia-LocationListPanel';
 
 export const FILTERS_PANEL_CLASS = 'theia-FiltersPanel';
@@ -116,6 +117,7 @@ export abstract class FileDialog<T> extends AbstractDialog<T> {
     protected readonly back: HTMLSpanElement;
     protected readonly forward: HTMLSpanElement;
     protected readonly home: HTMLSpanElement;
+    protected readonly up: HTMLSpanElement;
     protected readonly locationListRenderer: LocationListRenderer;
     protected readonly treeFiltersRenderer: FileDialogTreeFiltersRenderer | undefined;
     protected readonly treePanel: Panel;
@@ -145,6 +147,9 @@ export abstract class FileDialog<T> extends AbstractDialog<T> {
         navigationPanel.appendChild(this.home = createIconButton('fa', 'fa-home'));
         this.home.classList.add(NAVIGATION_HOME_CLASS);
         this.home.title = 'Go To Initial Location';
+        navigationPanel.appendChild(this.up = createIconButton('fa', 'fa-chevron-up'));
+        this.up.classList.add(NAVIGATION_UP_CLASS);
+        this.up.title = 'Navigate Up One Directory';
 
         this.locationListRenderer = this.createLocationListRenderer();
         this.locationListRenderer.host.classList.add(NAVIGATION_LOCATION_LIST_PANEL_CLASS);
@@ -176,6 +181,7 @@ export abstract class FileDialog<T> extends AbstractDialog<T> {
         setEnabled(this.home, !!this.model.initialLocation
             && !!this.model.location
             && this.model.initialLocation.toString() !== this.model.location.toString());
+        setEnabled(this.up, this.model.canNavigateUpward());
         this.locationListRenderer.render();
 
         if (this.treeFiltersRenderer) {
@@ -222,6 +228,9 @@ export abstract class FileDialog<T> extends AbstractDialog<T> {
             if (this.model.initialLocation) {
                 this.model.location = this.model.initialLocation;
             }
+        }, 'click');
+        this.addKeyListener(this.up, Key.ENTER, () => {
+            console.log('SENTINEL TODO');
         }, 'click');
         super.onAfterAttach(msg);
     }

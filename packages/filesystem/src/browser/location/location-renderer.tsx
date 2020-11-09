@@ -22,7 +22,7 @@ import * as React from 'react';
 export class LocationListRenderer extends ReactRenderer {
 
     protected _drives: URI[] | undefined;
-
+    protected doShowTextInput: boolean = false;
     constructor(
         protected readonly service: LocationService,
         host?: HTMLElement
@@ -33,7 +33,7 @@ export class LocationListRenderer extends ReactRenderer {
 
     render(): void {
         super.render();
-        const locationList = this.locationList;
+        const locationList = this.locationListSelect;
         if (locationList) {
             const currentLocation = this.service.location;
             locationList.value = currentLocation ? currentLocation.toString() : '';
@@ -43,8 +43,30 @@ export class LocationListRenderer extends ReactRenderer {
     protected readonly handleLocationChanged = (e: React.ChangeEvent<HTMLSelectElement>) => this.onLocationChanged(e);
     protected doRender(): React.ReactNode {
         const options = this.collectLocations().map(value => this.renderLocation(value));
-        return <select className={'theia-select ' + LocationListRenderer.Styles.LOCATION_LIST_CLASS} onChange={this.handleLocationChanged}>{...options}</select>;
+        return (
+            <>
+                <span onClick={this.handleToggleClick}
+                    className={LocationListRenderer.Styles.LOCATION_LIST_TOGGLE_CLASS}
+                    tabIndex={0}
+                >
+                    <i className='fa fa-home' />
+                </span>
+                { this.doShowTextInput ?
+                    <input className={'theia-input ' + LocationListRenderer.Styles.LOCATION_LIST_INPUT_CLASS} type='text' />
+                    : <select className={'theia-select ' + LocationListRenderer.Styles.LOCATION_LIST_SELECT_CLASS}
+                        onChange={this.handleLocationChanged}>
+                        {...options}
+                    </select>
+                }
+            </>
+        );
     }
+
+    protected handleToggleClick = (e: React.MouseEvent<HTMLSpanElement>): void => {
+        console.log('SENTINEL TOGGLING');
+        this.doShowTextInput = !this.doShowTextInput;
+        this.render();
+    };
 
     /**
      * Collects the available locations based on the currently selected, and appends the available drives to it.
@@ -100,9 +122,10 @@ export class LocationListRenderer extends ReactRenderer {
     }
 
     protected onLocationChanged(e: React.ChangeEvent<HTMLSelectElement>): void {
-        const locationList = this.locationList;
-        if (locationList) {
-            const value = locationList.value;
+        const locationListSelect = this.locationListSelect;
+        const locationListInput = this.locationListInput;
+        if (locationListSelect && locationListInput) {
+            const value = locationListSelect.value;
             const uri = new URI(value);
             this.service.location = uri;
         }
@@ -110,10 +133,18 @@ export class LocationListRenderer extends ReactRenderer {
         e.stopPropagation();
     }
 
-    get locationList(): HTMLSelectElement | undefined {
-        const locationList = this.host.getElementsByClassName(LocationListRenderer.Styles.LOCATION_LIST_CLASS)[0];
-        if (locationList instanceof HTMLSelectElement) {
-            return locationList;
+    get locationListSelect(): HTMLSelectElement | undefined {
+        const locationListSelect = this.host.getElementsByClassName(LocationListRenderer.Styles.LOCATION_LIST_SELECT_CLASS)[0];
+        if (locationListSelect instanceof HTMLSelectElement) {
+            return locationListSelect;
+        }
+        return undefined;
+    }
+
+    get locationListInput(): HTMLInputElement | undefined {
+        const locationListInput = this.host.getElementsByClassName(LocationListRenderer.Styles.LOCATION_LIST_INPUT_CLASS)[0];
+        if (locationListInput instanceof HTMLInputElement) {
+            return locationListInput;
         }
         return undefined;
     }
@@ -124,6 +155,9 @@ export namespace LocationListRenderer {
 
     export namespace Styles {
         export const LOCATION_LIST_CLASS = 'theia-LocationList';
+        export const LOCATION_LIST_TOGGLE_CLASS = 'theia-LocationListToggle';
+        export const LOCATION_LIST_SELECT_CLASS = 'theia-LocationListSelect';
+        export const LOCATION_LIST_INPUT_CLASS = 'theia-LocationListInput';
     }
 
     export interface Location {

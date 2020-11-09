@@ -374,73 +374,77 @@ export class TreeModelImpl implements TreeModel, SelectionProvider<ReadonlyArray
         return undefined;
     }
 
-    canNavigateForward(): boolean {
-        return !!this.navigationService.next;
+canNavigateForward(): boolean {
+    return !!this.navigationService.next;
+}
+
+canNavigateBackward(): boolean {
+    return !!this.navigationService.prev;
+}
+
+canNavigateUpward(): boolean {
+    return true;
+}
+
+async navigateForward(): Promise < void> {
+    const node = this.navigationService.advance();
+    if(node) {
+        await this.doNavigate(node);
+    }
+}
+
+async navigateBackward(): Promise < void> {
+    const node = this.navigationService.retreat();
+    if(node) {
+        await this.doNavigate(node);
+    }
+}
+
+    protected async doNavigate(node: TreeNode): Promise < void> {
+    this.tree.root = node;
+    if(ExpandableTreeNode.is(node)) {
+    await this.expandNode(node);
+}
+if (SelectableTreeNode.is(node)) {
+    this.selectNode(node);
+}
     }
 
-    canNavigateBackward(): boolean {
-        return !!this.navigationService.prev;
-    }
-
-    async navigateForward(): Promise<void> {
-        const node = this.navigationService.advance();
-        if (node) {
-            await this.doNavigate(node);
-        }
-    }
-
-    async navigateBackward(): Promise<void> {
-        const node = this.navigationService.retreat();
-        if (node) {
-            await this.doNavigate(node);
-        }
-    }
-
-    protected async doNavigate(node: TreeNode): Promise<void> {
-        this.tree.root = node;
-        if (ExpandableTreeNode.is(node)) {
-            await this.expandNode(node);
-        }
-        if (SelectableTreeNode.is(node)) {
-            this.selectNode(node);
-        }
-    }
-
-    addSelection(selectionOrTreeNode: TreeSelection | Readonly<SelectableTreeNode>): void {
-        this.selectionService.addSelection(selectionOrTreeNode);
-    }
+addSelection(selectionOrTreeNode: TreeSelection | Readonly<SelectableTreeNode>): void {
+    this.selectionService.addSelection(selectionOrTreeNode);
+}
 
     selectNode(node: Readonly<SelectableTreeNode>): void {
-        this.addSelection(node);
-    }
+    this.addSelection(node);
+}
 
     toggleNode(node: Readonly<SelectableTreeNode>): void {
-        this.addSelection({ node, type: TreeSelection.SelectionType.TOGGLE });
-    }
+    this.addSelection({ node, type: TreeSelection.SelectionType.TOGGLE });
+}
 
     selectRange(node: Readonly<SelectableTreeNode>): void {
-        this.addSelection({ node, type: TreeSelection.SelectionType.RANGE });
-    }
+    this.addSelection({ node, type: TreeSelection.SelectionType.RANGE });
+}
 
     storeState(): TreeModelImpl.State {
-        return {
-            selection: this.selectionService.storeState()
-        };
-    }
+    return {
+        selection: this.selectionService.storeState()
+    };
+}
 
     restoreState(state: TreeModelImpl.State): void {
-        if (state.selection) {
-            this.selectionService.restoreState(state.selection);
-        }
+    if(state.selection) {
+    this.selectionService.restoreState(state.selection);
+}
     }
 
-    get onDidChangeBusy(): Event<TreeNode> {
+    get onDidChangeBusy(): Event < TreeNode > {
         return this.tree.onDidChangeBusy;
     }
 
-    markAsBusy(node: Readonly<TreeNode>, ms: number, token: CancellationToken): Promise<void> {
-        return this.tree.markAsBusy(node, ms, token);
-    }
+    markAsBusy(node: Readonly < TreeNode >, ms: number, token: CancellationToken): Promise < void> {
+    return this.tree.markAsBusy(node, ms, token);
+}
 
 }
 export namespace TreeModelImpl {

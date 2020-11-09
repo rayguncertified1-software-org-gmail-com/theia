@@ -59,7 +59,9 @@
 
 .dialogContent .theia-NavigationBack,
 .dialogContent .theia-NavigationForward,
-.dialogContent .theia-NavigationHome {
+.dialogContent .theia-NavigationHome,
+.dialogContent .theia-NavigationUp
+ {
     position: absolute;
     top: 0px;
     line-height: 23px;
@@ -69,7 +71,9 @@
 
 .dialogContent .theia-NavigationBack:focus,
 .dialogContent .theia-NavigationForward:focus,
-.dialogContent .theia-NavigationHome:focus {
+.dialogContent .theia-NavigationHome:focus,
+.dialogContent .theia-NavigationUp:focus 
+{
     outline: none;
     border: none;
     box-shadow: none;
@@ -87,16 +91,48 @@
     left: 41px;
 }
 
-.dialogContent .theia-LocationListPanel {
-    position: absolute;
-    left: 72px;
-    top: 1px;
+.dialogContent .theia-NavigationUp {
+    left: 61px;
 }
 
-.dialogContent .theia-LocationList {
-    width: 427px;
+.dialogContent .theia-LocationListPanel {
+    position: absolute;
+    display: flex;
+    left: 92px;
+    top: 1px;
+    width: 407px;
     height: 21px;
 }
+
+.dialogContent .theia-LocationListToggle {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 21px;
+}
+
+.dialogContent .theia-LocationListSelect,
+.dialogContent .theia-LocationListInput
+{
+    box-sizing: content-box;
+    padding: unset;
+    position: absolute;
+    top: 0;
+    left: 21px;
+    height: 21px;
+    border: var(--theia-border-width) solid var(--theia-input-border);
+}
+
+.dialogContent .theia-LocationListSelect
+{
+    width: calc(100% - 21px);
+}
+
+.dialogContent .theia-LocationListInput 
+{
+    width: calc(100% - 21px);
+}
+
 
 /*
  * Filters panel items
