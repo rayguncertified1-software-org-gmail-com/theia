@@ -88,4 +88,12 @@ export class FileDialogModel extends FileTreeModel {
     private isFileStatNodeSelectable(node: FileStatNode): boolean {
         return !(!node.fileStat.isDirectory && this._disableFileSelection);
     }
+
+    canNavigateUpward(): boolean {
+        const treeRoot = this.tree.root;
+        if (FileStatNode.is(treeRoot)) {
+            return !treeRoot.uri.path.isRoot;
+        }
+        return false;
+    }
 }
