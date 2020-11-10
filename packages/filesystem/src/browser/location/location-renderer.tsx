@@ -18,6 +18,7 @@ import URI from '@theia/core/lib/common/uri';
 import { LocationService } from './location-service';
 import { ReactRenderer } from '@theia/core/lib/browser/widgets/react-renderer';
 import * as React from 'react';
+import ReactDOM = require('react-dom');
 
 export class LocationListRenderer extends ReactRenderer {
 
@@ -31,18 +32,26 @@ export class LocationListRenderer extends ReactRenderer {
         this.doLoadDrives();
     }
 
-    render(): void {
-        super.render();
-        const locationList = this.locationListSelect;
-        if (locationList) {
+    protected doAfterRender = (): void => {
+        const locationListSelect = this.locationListSelect;
+        const locationListInput = this.locationListInput;
+        if (locationListSelect) {
             const currentLocation = this.service.location;
-            locationList.value = currentLocation ? currentLocation.toString() : '';
+            locationListSelect.value = currentLocation ? currentLocation.toString() : '';
         }
+        if (locationListInput) {
+            locationListInput.focus();
+        }
+    };
+
+    render(): void {
+        ReactDOM.render(<React.Fragment>{this.doRender()}</React.Fragment>, this.host, this.doAfterRender);
     }
 
     protected readonly handleLocationChanged = (e: React.ChangeEvent<HTMLSelectElement>) => this.onLocationChanged(e);
     protected doRender(): React.ReactNode {
         const options = this.collectLocations().map(value => this.renderLocation(value));
+        const locationUri = this.service.location;
         return (
             <>
                 <span onClick={this.handleToggleClick}
@@ -52,7 +61,8 @@ export class LocationListRenderer extends ReactRenderer {
                     <i className='fa fa-folder' />
                 </span>
                 { this.doShowTextInput ?
-                    <input className={'theia-input ' + LocationListRenderer.Styles.LOCATION_LIST_INPUT_CLASS} type='text' />
+                    <input className={'theia-select ' + LocationListRenderer.Styles.LOCATION_LIST_INPUT_CLASS} type='text'
+                        defaultValue={locationUri?.path.toString()} />
                     : <select className={'theia-select ' + LocationListRenderer.Styles.LOCATION_LIST_SELECT_CLASS}
                         onChange={this.handleLocationChanged}>
                         {...options}
@@ -63,8 +73,9 @@ export class LocationListRenderer extends ReactRenderer {
     }
 
     protected handleToggleClick = (e: React.MouseEvent<HTMLSpanElement>): void => {
-        console.log('SENTINEL TOGGLING');
         this.doShowTextInput = !this.doShowTextInput;
+        if (this.doShowTextInput) {
+        }
         this.render();
     };
 
@@ -124,7 +135,7 @@ export class LocationListRenderer extends ReactRenderer {
     protected onLocationChanged(e: React.ChangeEvent<HTMLSelectElement>): void {
         const locationListSelect = this.locationListSelect;
         const locationListInput = this.locationListInput;
-        if (locationListSelect && locationListInput) {
+        if (locationListSelect) {
             const value = locationListSelect.value;
             const uri = new URI(value);
             this.service.location = uri;
