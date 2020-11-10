@@ -60,7 +60,8 @@
 .dialogContent .theia-NavigationBack,
 .dialogContent .theia-NavigationForward,
 .dialogContent .theia-NavigationHome,
-.dialogContent .theia-NavigationUp
+.dialogContent .theia-NavigationUp,
+.dialogContent .theia-LocationListToggle
  {
     position: absolute;
     top: 0px;
@@ -105,10 +106,10 @@
 }
 
 .dialogContent .theia-LocationListToggle {
-    position: absolute;
-    top: 0;
-    left: 0;
+    text-align: center;
     width: 21px;
+    height: 21px;
+    background: var(--theia-dropdown-background);
 }
 
 .dialogContent .theia-LocationListSelect,

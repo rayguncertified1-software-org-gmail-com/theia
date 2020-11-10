@@ -147,7 +147,7 @@ export abstract class FileDialog<T> extends AbstractDialog<T> {
         navigationPanel.appendChild(this.home = createIconButton('fa', 'fa-home'));
         this.home.classList.add(NAVIGATION_HOME_CLASS);
         this.home.title = 'Go To Initial Location';
-        navigationPanel.appendChild(this.up = createIconButton('fa', 'fa-chevron-up'));
+        navigationPanel.appendChild(this.up = createIconButton('fa', 'fa-level-up'));
         this.up.classList.add(NAVIGATION_UP_CLASS);
         this.up.title = 'Navigate Up One Directory';
 

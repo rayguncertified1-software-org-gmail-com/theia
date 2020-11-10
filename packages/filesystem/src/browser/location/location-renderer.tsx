@@ -49,7 +49,7 @@ export class LocationListRenderer extends ReactRenderer {
                     className={LocationListRenderer.Styles.LOCATION_LIST_TOGGLE_CLASS}
                     tabIndex={0}
                 >
-                    <i className='fa fa-home' />
+                    <i className='fa fa-folder' />
                 </span>
                 { this.doShowTextInput ?
                     <input className={'theia-input ' + LocationListRenderer.Styles.LOCATION_LIST_INPUT_CLASS} type='text' />
