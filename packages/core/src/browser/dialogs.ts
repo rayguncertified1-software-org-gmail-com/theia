@@ -231,7 +231,7 @@ export abstract class AbstractDialog<T> extends BaseWidget {
     }
 
     protected handleEnter(event: KeyboardEvent): boolean | void {
-        if (event.target instanceof HTMLTextAreaElement) {
+        if (event.target instanceof HTMLTextAreaElement || event.target instanceof HTMLInputElement) {
             return false;
         }
         this.accept();

@@ -48,7 +48,8 @@ export class LocationListRenderer extends ReactRenderer {
         ReactDOM.render(<React.Fragment>{this.doRender()}</React.Fragment>, this.host, this.doAfterRender);
     }
 
-    protected readonly handleLocationChanged = (e: React.ChangeEvent<HTMLSelectElement>) => this.onLocationChanged(e);
+    protected readonly handleLocationChangedSelect = (e: React.ChangeEvent<HTMLSelectElement>) => this.onLocationChangedSelect(e);
+    protected readonly handleLocationChangedText = (e: React.KeyboardEvent<HTMLInputElement>) => this.onLocationChangedText(e);
     protected doRender(): React.ReactNode {
         const options = this.collectLocations().map(value => this.renderLocation(value));
         const locationUri = this.service.location;
@@ -58,13 +59,15 @@ export class LocationListRenderer extends ReactRenderer {
                     className={LocationListRenderer.Styles.LOCATION_LIST_TOGGLE_CLASS}
                     tabIndex={0}
                 >
-                    <i className='fa fa-folder' />
+                    <i className='fa fa-edit' />
                 </span>
                 { this.doShowTextInput ?
                     <input className={'theia-select ' + LocationListRenderer.Styles.LOCATION_LIST_INPUT_CLASS} type='text'
-                        defaultValue={locationUri?.path.toString()} />
+                        defaultValue={locationUri?.path.toString()}
+                        onKeyPress={this.handleLocationChangedText}
+                    />
                     : <select className={'theia-select ' + LocationListRenderer.Styles.LOCATION_LIST_SELECT_CLASS}
-                        onChange={this.handleLocationChanged}>
+                        onChange={this.handleLocationChangedSelect}>
                         {...options}
                     </select>
                 }
@@ -132,16 +135,28 @@ export class LocationListRenderer extends ReactRenderer {
         return <option value={value} key={uri.toString()}>{isDrive ? uri.path.toString() : uri.displayName}</option>;
     }
 
-    protected onLocationChanged(e: React.ChangeEvent<HTMLSelectElement>): void {
+    protected onLocationChangedSelect(e: React.ChangeEvent<HTMLSelectElement>): void {
         const locationListSelect = this.locationListSelect;
-        const locationListInput = this.locationListInput;
         if (locationListSelect) {
             const value = locationListSelect.value;
             const uri = new URI(value);
             this.service.location = uri;
+            e.preventDefault();
+            e.stopPropagation();
         }
-        e.preventDefault();
-        e.stopPropagation();
+    }
+
+    protected onLocationChangedText(e: React.KeyboardEvent<HTMLInputElement>): void {
+        const locationListInput = this.locationListInput;
+        if (locationListInput && (e as React.KeyboardEvent).key === 'Enter') {
+            // move all trailing forward/back slashes directories ending with '/' will not render root tree node name
+            const value = locationListInput.value.trim().replace(/[\/\\]*$/, '');
+            const uri = new URI(value);
+            this.service.location = uri;
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
     }
 
     get locationListSelect(): HTMLSelectElement | undefined {

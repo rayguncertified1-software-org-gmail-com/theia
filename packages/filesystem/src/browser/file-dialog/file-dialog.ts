@@ -191,6 +191,13 @@ export abstract class FileDialog<T> extends AbstractDialog<T> {
         this.widget.update();
     }
 
+    protected handleEnter(event: KeyboardEvent): boolean | void {
+        if (event.target instanceof HTMLTextAreaElement || event.target instanceof HTMLInputElement) {
+            return false;
+        }
+        this.accept();
+    }
+
     protected appendFiltersPanel(): void {
         if (this.treeFiltersRenderer) {
             const filtersPanel = document.createElement('div');
