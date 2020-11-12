@@ -34,7 +34,7 @@ export class LocationListRenderer extends ReactRenderer {
 
     protected doAfterRender = (): void => {
         const locationListSelectInput = this.locationList;
-        const locationListTextInput = this.locationListTextInput;
+        const locationListTextInput = this.locationTextInput;
         if (locationListSelectInput) {
             const currentLocation = this.service.location;
             locationListSelectInput.value = currentLocation ? currentLocation.toString() : '';
@@ -57,7 +57,7 @@ export class LocationListRenderer extends ReactRenderer {
         return (
             <>
                 { this.doShowTextInput ?
-                    <input className={'theia-select ' + LocationListRenderer.Styles.LOCATION_LIST_INPUT_CLASS} type='text'
+                    <input className={'theia-select ' + LocationListRenderer.Styles.LOCATION_TEXT_INPUT_CLASS} type='text'
                         defaultValue={this.service.location?.path.toString()}
                         onChange={this.handleTextInputOnChange}
                         onKeyDown={this.handleTextInputKeyDown}
@@ -141,9 +141,9 @@ export class LocationListRenderer extends ReactRenderer {
     }
 
     protected onLocationChanged(e: React.ChangeEvent<HTMLSelectElement>): void {
-        const locationListSelect = this.locationList;
-        if (locationListSelect) {
-            const value = locationListSelect.value;
+        const locationList = this.locationList;
+        if (locationList) {
+            const value = locationList.value;
             this.lastUniqueTextInputLocation = value;
             const uri = new URI(value);
             this.service.location = uri;
@@ -153,11 +153,11 @@ export class LocationListRenderer extends ReactRenderer {
     }
 
     protected onTextInputChanged(e: React.ChangeEvent<HTMLInputElement>): void {
-        const locationListInput = this.locationListTextInput;
-        if (locationListInput) {
+        const locationTextInput = this.locationTextInput;
+        if (locationTextInput) {
             // discount all paths that end in trailing slashes or periods to prevent duplicate paths from
             // being added to location history, and to prevent tree root to be rendered as '' or '.'
-            const sanitizedInput = locationListInput.value.trim().replace(/[\/\\.]*$/, '');
+            const sanitizedInput = locationTextInput.value.trim().replace(/[\/\\.]*$/, '');
             if (sanitizedInput !== this.lastUniqueTextInputLocation) {
                 this.lastUniqueTextInputLocation = sanitizedInput;
                 const uri = new URI(sanitizedInput);
@@ -174,17 +174,17 @@ export class LocationListRenderer extends ReactRenderer {
     }
 
     get locationList(): HTMLSelectElement | undefined {
-        const locationListSelect = this.host.getElementsByClassName(LocationListRenderer.Styles.LOCATION_LIST_SELECT_CLASS)[0];
-        if (locationListSelect instanceof HTMLSelectElement) {
-            return locationListSelect;
+        const locationList = this.host.getElementsByClassName(LocationListRenderer.Styles.LOCATION_LIST_SELECT_CLASS)[0];
+        if (locationList instanceof HTMLSelectElement) {
+            return locationList;
         }
         return undefined;
     }
 
-    get locationListTextInput(): HTMLInputElement | undefined {
-        const locationListInput = this.host.getElementsByClassName(LocationListRenderer.Styles.LOCATION_LIST_INPUT_CLASS)[0];
-        if (locationListInput instanceof HTMLInputElement) {
-            return locationListInput;
+    get locationTextInput(): HTMLInputElement | undefined {
+        const locationTextInput = this.host.getElementsByClassName(LocationListRenderer.Styles.LOCATION_TEXT_INPUT_CLASS)[0];
+        if (locationTextInput instanceof HTMLInputElement) {
+            return locationTextInput;
         }
         return undefined;
     }
@@ -197,7 +197,7 @@ export namespace LocationListRenderer {
         export const LOCATION_LIST_CLASS = 'theia-LocationList';
         export const LOCATION_LIST_TOGGLE_CLASS = 'theia-LocationListToggle';
         export const LOCATION_LIST_SELECT_CLASS = 'theia-LocationListSelect';
-        export const LOCATION_LIST_INPUT_CLASS = 'theia-LocationListInput';
+        export const LOCATION_TEXT_INPUT_CLASS = 'theia-LocationListInput';
     }
 
     export interface Location {
