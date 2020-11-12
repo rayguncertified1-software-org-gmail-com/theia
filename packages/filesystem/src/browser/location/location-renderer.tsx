@@ -19,13 +19,15 @@ import { LocationService } from './location-service';
 import { ReactRenderer } from '@theia/core/lib/browser/widgets/react-renderer';
 import * as React from 'react';
 import ReactDOM = require('react-dom');
-
+import { LabelProvider } from '@theia/core/lib/browser/label-provider';
+import { debounce } from 'lodash';
 export class LocationListRenderer extends ReactRenderer {
 
     protected _drives: URI[] | undefined;
     protected doShowTextInput: boolean = false;
     constructor(
         protected readonly service: LocationService,
+        protected readonly labelProvider: LabelProvider,
         host?: HTMLElement
     ) {
         super(host);
@@ -49,10 +51,10 @@ export class LocationListRenderer extends ReactRenderer {
     }
 
     protected readonly handleLocationChangedSelect = (e: React.ChangeEvent<HTMLSelectElement>) => this.onLocationChangedSelect(e);
-    protected readonly handleLocationChangedText = (e: React.KeyboardEvent<HTMLInputElement>) => this.onLocationChangedText(e);
+    protected readonly handleLocationChangedText = (e: React.ChangeEvent<HTMLInputElement>) => this.onLocationChangedText(e);
     protected doRender(): React.ReactNode {
         const options = this.collectLocations().map(value => this.renderLocation(value));
-        const locationUri = this.service.location;
+        const rootNodeName = this.service.location ? this.labelProvider.getName(this.service.location) : '';
         return (
             <>
                 <span onClick={this.handleToggleClick}
@@ -63,8 +65,8 @@ export class LocationListRenderer extends ReactRenderer {
                 </span>
                 { this.doShowTextInput ?
                     <input className={'theia-select ' + LocationListRenderer.Styles.LOCATION_LIST_INPUT_CLASS} type='text'
-                        defaultValue={locationUri?.path.toString()}
-                        onKeyPress={this.handleLocationChangedText}
+                        defaultValue={this.service.location?.path.toString()}
+                        onChange={this.handleLocationChangedText}
                         spellCheck={false}
                     />
                     : <select className={'theia-select ' + LocationListRenderer.Styles.LOCATION_LIST_SELECT_CLASS}
@@ -147,17 +149,13 @@ export class LocationListRenderer extends ReactRenderer {
         }
     }
 
-    protected onLocationChangedText(e: React.KeyboardEvent<HTMLInputElement>): void {
+    protected onLocationChangedText(e: React.ChangeEvent<HTMLInputElement>): void {
         const locationListInput = this.locationListInput;
-        // if (locationListInput) {
-        if (locationListInput && (e as React.KeyboardEvent).key === 'Enter') {
+        if (locationListInput) {
             // move all trailing forward/back slashes directories ending with '/' will not render root tree node name
-            // const value = locationListInput.value.trim().replace(/[\/\\]*$/, '');
-            const value = locationListInput.value.trim();
-            const uri = new URI(value);
+            const valueToResolve = locationListInput.value.trim().replace(/[\/\\]*$/, '');
+            const uri = new URI(valueToResolve);
             this.service.location = uri;
-            e.preventDefault();
-            e.stopPropagation();
         }
 
     }

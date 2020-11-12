@@ -124,7 +124,8 @@ export abstract class FileDialog<T> extends AbstractDialog<T> {
 
     constructor(
         @inject(FileDialogProps) readonly props: FileDialogProps,
-        @inject(FileDialogWidget) readonly widget: FileDialogWidget
+        @inject(FileDialogWidget) readonly widget: FileDialogWidget,
+        @inject(LabelProvider) readonly labelProvider: LabelProvider,
     ) {
         super(props);
         this.treePanel = new Panel();
@@ -163,7 +164,7 @@ export abstract class FileDialog<T> extends AbstractDialog<T> {
     }
 
     protected createLocationListRenderer(): LocationListRenderer {
-        return new LocationListRenderer(this.model);
+        return new LocationListRenderer(this.model, this.labelProvider);
     }
 
     protected createFileTreeFiltersRenderer(): FileDialogTreeFiltersRenderer | undefined {
@@ -255,9 +256,10 @@ export class OpenFileDialog extends FileDialog<MaybeArray<FileStatNode>> {
 
     constructor(
         @inject(OpenFileDialogProps) readonly props: OpenFileDialogProps,
-        @inject(FileDialogWidget) readonly widget: FileDialogWidget
+        @inject(FileDialogWidget) readonly widget: FileDialogWidget,
+        @inject(LabelProvider) readonly labelProvider: LabelProvider
     ) {
-        super(props, widget);
+        super(props, widget, labelProvider);
         if (props.canSelectFiles !== undefined) {
             this.widget.disableFileSelection = !props.canSelectFiles;
         }
