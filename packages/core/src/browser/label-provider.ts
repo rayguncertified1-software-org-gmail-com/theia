@@ -360,6 +360,9 @@ export class LabelProvider implements FrontendApplicationContribution {
             if (value === undefined) {
                 continue;
             }
+            if (value === '') {
+                console.log("SENTINEL CONTRIBUTION", contribution);
+            }
             return value;
         }
         return '<unknown>';

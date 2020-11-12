@@ -39,7 +39,11 @@ export class FileTreeLabelProvider implements LabelProviderContribution {
     }
 
     getName(node: FileStatNode): string {
-        return this.labelProvider.getName(node.fileStat);
+        let name = this.labelProvider.getName(node.fileStat);
+        if (name === '') {
+            name = this.labelProvider.getName(node.fileStat);
+        }
+        return name;
     }
 
     getDescription(node: FileStatNode): string {

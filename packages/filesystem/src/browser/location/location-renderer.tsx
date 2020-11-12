@@ -65,6 +65,7 @@ export class LocationListRenderer extends ReactRenderer {
                     <input className={'theia-select ' + LocationListRenderer.Styles.LOCATION_LIST_INPUT_CLASS} type='text'
                         defaultValue={locationUri?.path.toString()}
                         onKeyPress={this.handleLocationChangedText}
+                        spellCheck={false}
                     />
                     : <select className={'theia-select ' + LocationListRenderer.Styles.LOCATION_LIST_SELECT_CLASS}
                         onChange={this.handleLocationChangedSelect}>
@@ -148,9 +149,11 @@ export class LocationListRenderer extends ReactRenderer {
 
     protected onLocationChangedText(e: React.KeyboardEvent<HTMLInputElement>): void {
         const locationListInput = this.locationListInput;
+        // if (locationListInput) {
         if (locationListInput && (e as React.KeyboardEvent).key === 'Enter') {
             // move all trailing forward/back slashes directories ending with '/' will not render root tree node name
-            const value = locationListInput.value.trim().replace(/[\/\\]*$/, '');
+            // const value = locationListInput.value.trim().replace(/[\/\\]*$/, '');
+            const value = locationListInput.value.trim();
             const uri = new URI(value);
             this.service.location = uri;
             e.preventDefault();
