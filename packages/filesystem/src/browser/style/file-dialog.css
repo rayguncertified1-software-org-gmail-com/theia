@@ -81,6 +81,15 @@
     box-shadow: none;
 }
 
+.dialogContent .theia-NavigationBack.theia-mod-disabled:focus,
+.dialogContent .theia-NavigationForward.theia-mod-disabled:focus,
+.dialogContent .theia-NavigationHome.theia-mod-disabled:focus,
+.dialogContent .theia-NavigationUp.theia-mod-disabled:focus,
+.dialogContent .theia-LocationListToggle.theia-mod-disabled:focus
+{
+    opacity: var(--theia-mod-disabled-opacity) !important;
+}
+
 .dialogContent .theia-NavigationBack {
     left: auto;
 }
@@ -130,11 +139,16 @@
     border: var(--theia-border-width) solid var(--theia-input-border);
 }
 
-.dialogContent .theia-LocationListSelect,
-.dialogContent .theia-LocationListInput 
+.dialogContent .theia-LocationListSelect
 {
     padding-left: 21px;
     width: calc(100% - 21px);
+}
+
+.dialogContent .theia-LocationListInput
+{
+    width: calc(100% - var(--theia-ui-padding));
+    padding-left: var(--theia-ui-padding);
 }
 
 

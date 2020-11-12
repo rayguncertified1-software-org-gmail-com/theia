@@ -57,12 +57,6 @@ export class LocationListRenderer extends ReactRenderer {
         const options = this.collectLocations().map(value => this.renderLocation(value));
         return (
             <>
-                <span onClick={this.handleTextInputToggleClick}
-                    className={LocationListRenderer.Styles.LOCATION_LIST_TOGGLE_CLASS}
-                    tabIndex={0}
-                >
-                    <i className='fa fa-edit' />
-                </span>
                 { this.doShowTextInput ?
                     <input className={'theia-select ' + LocationListRenderer.Styles.LOCATION_LIST_INPUT_CLASS} type='text'
                         defaultValue={this.service.location?.path.toString()}
@@ -71,10 +65,19 @@ export class LocationListRenderer extends ReactRenderer {
                         spellCheck={false}
                         onBlur={this.handleTextInputOnBlur}
                     />
-                    : <select className={'theia-select ' + LocationListRenderer.Styles.LOCATION_LIST_SELECT_CLASS}
-                        onChange={this.handleLocationChangedSelect}>
-                        {...options}
-                    </select>
+                    : <>
+                        <span onClick={this.handleTextInputToggleClick}
+                            className={LocationListRenderer.Styles.LOCATION_LIST_TOGGLE_CLASS}
+                            tabIndex={0}
+                            id={LocationListRenderer.Styles.LOCATION_LIST_TOGGLE_CLASS}
+                        >
+                            <i className='fa fa-edit' />
+                        </span>
+                        <select className={'theia-select ' + LocationListRenderer.Styles.LOCATION_LIST_SELECT_CLASS}
+                            onChange={this.handleLocationChangedSelect}>
+                            {...options}
+                        </select>
+                    </>
                 }
             </>
         );

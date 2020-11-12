@@ -244,7 +244,7 @@ export abstract class FileDialog<T> extends AbstractDialog<T> {
             }
         }, 'click');
         this.addKeyListener(this.up, Key.ENTER, () => {
-            console.log('SENTINEL TODO');
+            this.model.location = this.model.location?.parent;
         }, 'click');
         super.onAfterAttach(msg);
     }
