@@ -23,7 +23,7 @@ export class LocationListRenderer extends ReactRenderer {
 
     protected _drives: URI[] | undefined;
     protected doShowTextInput: boolean = false;
-    protected lastUniqueLocation = '';
+    protected lastUniqueTextInputLocation = '';
     constructor(
         protected readonly service: LocationService,
         host?: HTMLElement
@@ -33,14 +33,13 @@ export class LocationListRenderer extends ReactRenderer {
     }
 
     protected doAfterRender = (): void => {
-        const locationListSelect = this.locationListSelect;
-        const locationListInput = this.locationListInput;
-        if (locationListSelect) {
+        const locationListSelectInput = this.locationList;
+        const locationListTextInput = this.locationListTextInput;
+        if (locationListSelectInput) {
             const currentLocation = this.service.location;
-            locationListSelect.value = currentLocation ? currentLocation.toString() : '';
-            this.lastUniqueLocation = currentLocation ? currentLocation.path.toString() : '';
-        } else if (locationListInput) {
-            locationListInput.focus();
+            locationListSelectInput.value = currentLocation ? currentLocation.toString() : '';
+        } else if (locationListTextInput) {
+            locationListTextInput.focus();
         }
     };
 
@@ -48,7 +47,7 @@ export class LocationListRenderer extends ReactRenderer {
         ReactDOM.render(<React.Fragment>{this.doRender()}</React.Fragment>, this.host, this.doAfterRender);
     }
 
-    protected readonly handleLocationChangedSelect = (e: React.ChangeEvent<HTMLSelectElement>) => this.onLocationChangedSelect(e);
+    protected readonly handleLocationChanged = (e: React.ChangeEvent<HTMLSelectElement>) => this.onLocationChanged(e);
     protected readonly handleTextInputOnChange = (e: React.ChangeEvent<HTMLInputElement>) => this.onTextInputChanged(e);
     protected readonly handleTextInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => this.onTextInputKeyDown(e);
     protected readonly handleTextInputToggleClick = (e: React.MouseEvent<HTMLSpanElement>) => this.onTextInputToggle();
@@ -74,7 +73,7 @@ export class LocationListRenderer extends ReactRenderer {
                             <i className='fa fa-edit' />
                         </span>
                         <select className={'theia-select ' + LocationListRenderer.Styles.LOCATION_LIST_SELECT_CLASS}
-                            onChange={this.handleLocationChangedSelect}>
+                            onChange={this.handleLocationChanged}>
                             {...options}
                         </select>
                     </>
@@ -141,11 +140,11 @@ export class LocationListRenderer extends ReactRenderer {
         return <option value={value} key={uri.toString()}>{isDrive ? uri.path.toString() : uri.displayName}</option>;
     }
 
-    protected onLocationChangedSelect(e: React.ChangeEvent<HTMLSelectElement>): void {
-        const locationListSelect = this.locationListSelect;
+    protected onLocationChanged(e: React.ChangeEvent<HTMLSelectElement>): void {
+        const locationListSelect = this.locationList;
         if (locationListSelect) {
             const value = locationListSelect.value;
-            this.lastUniqueLocation = value;
+            this.lastUniqueTextInputLocation = value;
             const uri = new URI(value);
             this.service.location = uri;
             e.preventDefault();
@@ -154,13 +153,13 @@ export class LocationListRenderer extends ReactRenderer {
     }
 
     protected onTextInputChanged(e: React.ChangeEvent<HTMLInputElement>): void {
-        const locationListInput = this.locationListInput;
+        const locationListInput = this.locationListTextInput;
         if (locationListInput) {
             // discount all paths that end in trailing slashes or periods to prevent duplicate paths from
             // being added to location history, and to prevent tree root to be rendered as '' or '.'
             const sanitizedInput = locationListInput.value.trim().replace(/[\/\\.]*$/, '');
-            if (sanitizedInput !== this.lastUniqueLocation) {
-                this.lastUniqueLocation = sanitizedInput;
+            if (sanitizedInput !== this.lastUniqueTextInputLocation) {
+                this.lastUniqueTextInputLocation = sanitizedInput;
                 const uri = new URI(sanitizedInput);
                 this.service.location = uri;
             }
@@ -174,7 +173,7 @@ export class LocationListRenderer extends ReactRenderer {
         }
     }
 
-    get locationListSelect(): HTMLSelectElement | undefined {
+    get locationList(): HTMLSelectElement | undefined {
         const locationListSelect = this.host.getElementsByClassName(LocationListRenderer.Styles.LOCATION_LIST_SELECT_CLASS)[0];
         if (locationListSelect instanceof HTMLSelectElement) {
             return locationListSelect;
@@ -182,7 +181,7 @@ export class LocationListRenderer extends ReactRenderer {
         return undefined;
     }
 
-    get locationListInput(): HTMLInputElement | undefined {
+    get locationListTextInput(): HTMLInputElement | undefined {
         const locationListInput = this.host.getElementsByClassName(LocationListRenderer.Styles.LOCATION_LIST_INPUT_CLASS)[0];
         if (locationListInput instanceof HTMLInputElement) {
             return locationListInput;

@@ -124,7 +124,7 @@ export abstract class FileDialog<T> extends AbstractDialog<T> {
 
     constructor(
         @inject(FileDialogProps) readonly props: FileDialogProps,
-        @inject(FileDialogWidget) readonly widget: FileDialogWidget,
+        @inject(FileDialogWidget) readonly widget: FileDialogWidget
     ) {
         super(props);
         this.treePanel = new Panel();
@@ -244,7 +244,9 @@ export abstract class FileDialog<T> extends AbstractDialog<T> {
             }
         }, 'click');
         this.addKeyListener(this.up, Key.ENTER, () => {
-            this.model.location = this.model.location?.parent;
+            if (this.model.location) {
+                this.model.location = this.model.location.parent;
+            }
         }, 'click');
         super.onAfterAttach(msg);
     }
@@ -262,7 +264,7 @@ export class OpenFileDialog extends FileDialog<MaybeArray<FileStatNode>> {
 
     constructor(
         @inject(OpenFileDialogProps) readonly props: OpenFileDialogProps,
-        @inject(FileDialogWidget) readonly widget: FileDialogWidget,
+        @inject(FileDialogWidget) readonly widget: FileDialogWidget
     ) {
         super(props, widget);
         if (props.canSelectFiles !== undefined) {
