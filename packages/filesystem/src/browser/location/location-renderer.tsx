@@ -19,15 +19,13 @@ import { LocationService } from './location-service';
 import { ReactRenderer } from '@theia/core/lib/browser/widgets/react-renderer';
 import * as React from 'react';
 import ReactDOM = require('react-dom');
-import { LabelProvider } from '@theia/core/lib/browser/label-provider';
-import { debounce } from 'lodash';
 export class LocationListRenderer extends ReactRenderer {
 
     protected _drives: URI[] | undefined;
     protected doShowTextInput: boolean = false;
+    protected lastUniqueLocation = '';
     constructor(
         protected readonly service: LocationService,
-        protected readonly labelProvider: LabelProvider,
         host?: HTMLElement
     ) {
         super(host);
@@ -40,8 +38,8 @@ export class LocationListRenderer extends ReactRenderer {
         if (locationListSelect) {
             const currentLocation = this.service.location;
             locationListSelect.value = currentLocation ? currentLocation.toString() : '';
-        }
-        if (locationListInput) {
+            this.lastUniqueLocation = currentLocation ? currentLocation.path.toString() : '';
+        } else if (locationListInput) {
             locationListInput.focus();
         }
     };
@@ -51,13 +49,15 @@ export class LocationListRenderer extends ReactRenderer {
     }
 
     protected readonly handleLocationChangedSelect = (e: React.ChangeEvent<HTMLSelectElement>) => this.onLocationChangedSelect(e);
-    protected readonly handleLocationChangedText = (e: React.ChangeEvent<HTMLInputElement>) => this.onLocationChangedText(e);
+    protected readonly handleTextInputOnChange = (e: React.ChangeEvent<HTMLInputElement>) => this.onTextInputChanged(e);
+    protected readonly handleTextInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => this.onTextInputKeyDown(e);
+    protected readonly handleTextInputToggleClick = (e: React.MouseEvent<HTMLSpanElement>) => this.onTextInputToggle();
+    protected readonly handleTextInputOnBlur = (e: React.FocusEvent<HTMLInputElement>) => this.onTextInputToggle();
     protected doRender(): React.ReactNode {
         const options = this.collectLocations().map(value => this.renderLocation(value));
-        const rootNodeName = this.service.location ? this.labelProvider.getName(this.service.location) : '';
         return (
             <>
-                <span onClick={this.handleToggleClick}
+                <span onClick={this.handleTextInputToggleClick}
                     className={LocationListRenderer.Styles.LOCATION_LIST_TOGGLE_CLASS}
                     tabIndex={0}
                 >
@@ -66,8 +66,10 @@ export class LocationListRenderer extends ReactRenderer {
                 { this.doShowTextInput ?
                     <input className={'theia-select ' + LocationListRenderer.Styles.LOCATION_LIST_INPUT_CLASS} type='text'
                         defaultValue={this.service.location?.path.toString()}
-                        onChange={this.handleLocationChangedText}
+                        onChange={this.handleTextInputOnChange}
+                        onKeyDown={this.handleTextInputKeyDown}
                         spellCheck={false}
+                        onBlur={this.handleTextInputOnBlur}
                     />
                     : <select className={'theia-select ' + LocationListRenderer.Styles.LOCATION_LIST_SELECT_CLASS}
                         onChange={this.handleLocationChangedSelect}>
@@ -78,10 +80,8 @@ export class LocationListRenderer extends ReactRenderer {
         );
     }
 
-    protected handleToggleClick = (e: React.MouseEvent<HTMLSpanElement>): void => {
+    protected onTextInputToggle(): void {
         this.doShowTextInput = !this.doShowTextInput;
-        if (this.doShowTextInput) {
-        }
         this.render();
     };
 
@@ -142,6 +142,7 @@ export class LocationListRenderer extends ReactRenderer {
         const locationListSelect = this.locationListSelect;
         if (locationListSelect) {
             const value = locationListSelect.value;
+            this.lastUniqueLocation = value;
             const uri = new URI(value);
             this.service.location = uri;
             e.preventDefault();
@@ -149,15 +150,25 @@ export class LocationListRenderer extends ReactRenderer {
         }
     }
 
-    protected onLocationChangedText(e: React.ChangeEvent<HTMLInputElement>): void {
+    protected onTextInputChanged(e: React.ChangeEvent<HTMLInputElement>): void {
         const locationListInput = this.locationListInput;
         if (locationListInput) {
-            // move all trailing forward/back slashes directories ending with '/' will not render root tree node name
-            const valueToResolve = locationListInput.value.trim().replace(/[\/\\]*$/, '');
-            const uri = new URI(valueToResolve);
-            this.service.location = uri;
+            // discount all paths that end in trailing slashes or periods to prevent duplicate paths from
+            // being added to location history, and to prevent tree root to be rendered as '' or '.'
+            const sanitizedInput = locationListInput.value.trim().replace(/[\/\\.]*$/, '');
+            if (sanitizedInput !== this.lastUniqueLocation) {
+                this.lastUniqueLocation = sanitizedInput;
+                const uri = new URI(sanitizedInput);
+                this.service.location = uri;
+            }
+            e.stopPropagation();
         }
+    }
 
+    protected onTextInputKeyDown(e: React.KeyboardEvent<HTMLInputElement>): void {
+        if (e.key === 'Enter' || e.key === 'Escape') {
+            this.onTextInputToggle();
+        }
     }
 
     get locationListSelect(): HTMLSelectElement | undefined {

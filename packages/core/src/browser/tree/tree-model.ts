@@ -382,10 +382,6 @@ export class TreeModelImpl implements TreeModel, SelectionProvider<ReadonlyArray
         return !!this.navigationService.prev;
     }
 
-    canNavigateUpward(): boolean {
-        return true;
-    }
-
     async navigateForward(): Promise<void> {
         const node = this.navigationService.advance();
         if (node) {

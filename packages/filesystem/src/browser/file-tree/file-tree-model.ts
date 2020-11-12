@@ -62,7 +62,7 @@ export class FileTreeModel extends TreeModelImpl implements LocationService {
                     this.navigateTo(node);
                 }
             }).catch(() => {
-                // no-op
+                // no-op, allow failures for file dialog text input
             });
         } else {
             this.navigateTo(undefined);

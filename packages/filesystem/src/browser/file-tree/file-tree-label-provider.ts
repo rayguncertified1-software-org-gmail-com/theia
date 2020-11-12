@@ -39,12 +39,7 @@ export class FileTreeLabelProvider implements LabelProviderContribution {
     }
 
     getName(node: FileStatNode): string {
-        let name = this.labelProvider.getName(node.fileStat);
-        if (name === '') {
-            // prevent filepaths that end in a trailing slash from returning an empty string as their name
-            name = this.labelProvider.getName(node.uri.parent);
-        }
-        return name;
+        return this.labelProvider.getName(node.fileStat);
     }
 
     getDescription(node: FileStatNode): string {
