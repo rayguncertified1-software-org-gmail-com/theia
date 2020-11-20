@@ -19,6 +19,7 @@ import { LocationService } from './location-service';
 import { ReactRenderer } from '@theia/core/lib/browser/widgets/react-renderer';
 import * as React from 'react';
 import ReactDOM = require('react-dom');
+import { FileService } from '../file-service';
 export class LocationListRenderer extends ReactRenderer {
 
     protected _drives: URI[] | undefined;
@@ -26,6 +27,7 @@ export class LocationListRenderer extends ReactRenderer {
     protected lastUniqueTextInputLocation = '';
     constructor(
         protected readonly service: LocationService,
+        protected readonly fileService: FileService,
         host?: HTMLElement
     ) {
         super(host);
@@ -56,6 +58,13 @@ export class LocationListRenderer extends ReactRenderer {
         const options = this.collectLocations().map(value => this.renderLocation(value));
         return (
             <>
+                <span onClick={this.handleTextInputToggleClick}
+                    className={LocationListRenderer.Styles.LOCATION_INPUT_TOGGLE_CLASS}
+                    tabIndex={0}
+                    id={LocationListRenderer.Styles.LOCATION_INPUT_TOGGLE_CLASS}
+                >
+                    <i className='fa fa-edit' />
+                </span>
                 { this.doShowTextInput ?
                     <input className={'theia-select ' + LocationListRenderer.Styles.LOCATION_TEXT_INPUT_CLASS} type='text'
                         defaultValue={this.service.location?.path.toString()}
@@ -64,19 +73,11 @@ export class LocationListRenderer extends ReactRenderer {
                         spellCheck={false}
                         onBlur={this.handleTextInputOnBlur}
                     />
-                    : <>
-                        <span onClick={this.handleTextInputToggleClick}
-                            className={LocationListRenderer.Styles.LOCATION_INPUT_TOGGLE_CLASS}
-                            tabIndex={0}
-                            id={LocationListRenderer.Styles.LOCATION_INPUT_TOGGLE_CLASS}
-                        >
-                            <i className='fa fa-edit' />
-                        </span>
-                        <select className={'theia-select ' + LocationListRenderer.Styles.LOCATION_LIST_CLASS}
-                            onChange={this.handleLocationChanged}>
-                            {...options}
-                        </select>
-                    </>
+                    :
+                    <select className={'theia-select ' + LocationListRenderer.Styles.LOCATION_LIST_CLASS}
+                        onChange={this.handleLocationChanged}>
+                        {...options}
+                    </select>
                 }
             </>
         );
@@ -152,25 +153,35 @@ export class LocationListRenderer extends ReactRenderer {
         }
     }
 
-    protected onTextInputChanged(e: React.ChangeEvent<HTMLInputElement>): void {
+    protected async onTextInputChanged(e: React.ChangeEvent<HTMLInputElement>): Promise<void> {
         const locationTextInput = this.locationTextInput;
         if (locationTextInput) {
-            // discount all paths that end in trailing slashes or periods to prevent duplicate paths from
-            // being added to location history, and to prevent tree root to be rendered as '' or '.'
-            const sanitizedInput = locationTextInput.value.trim().replace(/[\/\\.]*$/, '');
-            if (sanitizedInput !== this.lastUniqueTextInputLocation) {
-                this.lastUniqueTextInputLocation = sanitizedInput;
-                const uri = new URI(sanitizedInput);
-                this.service.location = uri;
-            }
-            e.stopPropagation();
+            // // discount all paths that end in trailing slashes or periods to prevent duplicate paths from
+            // // being added to location history, and to prevent tree root to be rendered as '' or '.'
+            // const sanitizedInput = locationTextInput.value.trim().replace(/[\/\\.]*$/, '');
+            // if (sanitizedInput !== this.lastUniqueTextInputLocation) {
+            //     this.lastUniqueTextInputLocation = sanitizedInput;
+            //     const uri = new URI(sanitizedInput);
+            //     this.service.location = uri;
+            // }
+            // e.stopPropagation();
+            const valueAsURI = new URI(e.currentTarget.value);
+            const autoCompleteValue = await this.findClosestMatch(valueAsURI);
+            console.log('SENTINEL AUTOCOMPLETEL', autoCompleteValue);
         }
     }
 
-    protected onTextInputKeyDown(e: React.KeyboardEvent<HTMLInputElement>): void {
+    protected async onTextInputKeyDown(e: React.KeyboardEvent<HTMLInputElement>): Promise<void> {
         if (e.key === 'Enter' || e.key === 'Escape') {
             this.onTextInputToggle();
         }
+    }
+
+    protected async findClosestMatch(currentValue: URI): Promise<URI | undefined> {
+        const truncatedLocation = currentValue.path.dir.toString();
+        const { children } = await this.fileService.resolve(new URI(truncatedLocation));
+        const match = children?.find(child => child.resource.path.toString().includes(currentValue.path.toString()));
+        return match ? match.resource : undefined;
     }
 
     get locationList(): HTMLSelectElement | undefined {

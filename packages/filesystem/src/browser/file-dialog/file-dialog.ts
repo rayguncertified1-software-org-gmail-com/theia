@@ -26,6 +26,7 @@ import { FileDialogWidget } from './file-dialog-widget';
 import { FileDialogTreeFiltersRenderer, FileDialogTreeFilters } from './file-dialog-tree-filters-renderer';
 import URI from '@theia/core/lib/common/uri';
 import { Panel } from '@phosphor/widgets';
+import { FileService } from '../file-service';
 
 export const OpenFileDialogFactory = Symbol('OpenFileDialogFactory');
 export interface OpenFileDialogFactory {
@@ -124,7 +125,8 @@ export abstract class FileDialog<T> extends AbstractDialog<T> {
 
     constructor(
         @inject(FileDialogProps) readonly props: FileDialogProps,
-        @inject(FileDialogWidget) readonly widget: FileDialogWidget
+        @inject(FileDialogWidget) readonly widget: FileDialogWidget,
+        @inject(FileService) protected readonly fileService: FileService
     ) {
         super(props);
         this.treePanel = new Panel();
@@ -163,7 +165,7 @@ export abstract class FileDialog<T> extends AbstractDialog<T> {
     }
 
     protected createLocationListRenderer(): LocationListRenderer {
-        return new LocationListRenderer(this.model);
+        return new LocationListRenderer(this.model, this.fileService);
     }
 
     protected createFileTreeFiltersRenderer(): FileDialogTreeFiltersRenderer | undefined {
@@ -264,9 +266,10 @@ export class OpenFileDialog extends FileDialog<MaybeArray<FileStatNode>> {
 
     constructor(
         @inject(OpenFileDialogProps) readonly props: OpenFileDialogProps,
-        @inject(FileDialogWidget) readonly widget: FileDialogWidget
+        @inject(FileDialogWidget) readonly widget: FileDialogWidget,
+        @inject(FileService) readonly fileService: FileService
     ) {
-        super(props, widget);
+        super(props, widget, fileService);
         if (props.canSelectFiles !== undefined) {
             this.widget.disableFileSelection = !props.canSelectFiles;
         }
@@ -313,9 +316,10 @@ export class SaveFileDialog extends FileDialog<URI | undefined> {
 
     constructor(
         @inject(SaveFileDialogProps) readonly props: SaveFileDialogProps,
-        @inject(FileDialogWidget) readonly widget: FileDialogWidget
+        @inject(FileDialogWidget) readonly widget: FileDialogWidget,
+        @inject(FileService) readonly fileService: FileService
     ) {
-        super(props, widget);
+        super(props, widget, fileService);
         widget.addClass(SAVE_DIALOG_CLASS);
     }
 
