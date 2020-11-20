@@ -25,6 +25,7 @@ export class LocationListRenderer extends ReactRenderer {
     protected _drives: URI[] | undefined;
     protected doShowTextInput: boolean = false;
     protected lastUniqueTextInputLocation = '';
+    protected autocompleteDirectories: URI[] | undefined;
     constructor(
         protected readonly service: LocationService,
         protected readonly fileService: FileService,
@@ -54,6 +55,7 @@ export class LocationListRenderer extends ReactRenderer {
     protected readonly handleTextInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => this.onTextInputKeyDown(e);
     protected readonly handleTextInputToggleClick = (e: React.MouseEvent<HTMLSpanElement>) => this.onTextInputToggle();
     protected readonly handleTextInputOnBlur = (e: React.FocusEvent<HTMLInputElement>) => this.onTextInputToggle();
+    protected readonly handleDataListSubmit = (e: React.)
     protected doRender(): React.ReactNode {
         const options = this.collectLocations().map(value => this.renderLocation(value));
         return (
@@ -66,13 +68,23 @@ export class LocationListRenderer extends ReactRenderer {
                     <i className='fa fa-edit' />
                 </span>
                 { this.doShowTextInput ?
-                    <input className={'theia-select ' + LocationListRenderer.Styles.LOCATION_TEXT_INPUT_CLASS} type='text'
-                        defaultValue={this.service.location?.path.toString()}
-                        onChange={this.handleTextInputOnChange}
-                        onKeyDown={this.handleTextInputKeyDown}
-                        spellCheck={false}
-                        onBlur={this.handleTextInputOnBlur}
-                    />
+                    <>
+                        <input className={'theia-select ' + LocationListRenderer.Styles.LOCATION_TEXT_INPUT_CLASS}
+                            list='matching-directories'
+                            defaultValue={this.service.location?.path.toString()}
+                            onChange={this.handleTextInputOnChange}
+                            onKeyDown={this.handleTextInputKeyDown}
+                            spellCheck={false}
+                            onBlur={this.handleTextInputOnBlur}
+                            onSubmit={this.handleDataListSubmit}
+                        />
+                        <datalist id='matching-directories'>
+                            {this.autocompleteDirectories?.map(directory => {
+                                const dirString = directory.path.toString();
+                                return (<option key={dirString} value={dirString} />);
+                            })}
+                        </datalist>
+                    </>
                     :
                     <select className={'theia-select ' + LocationListRenderer.Styles.LOCATION_LIST_CLASS}
                         onChange={this.handleLocationChanged}>
@@ -164,24 +176,24 @@ export class LocationListRenderer extends ReactRenderer {
             //     const uri = new URI(sanitizedInput);
             //     this.service.location = uri;
             // }
-            // e.stopPropagation();
+            e.stopPropagation();
             const valueAsURI = new URI(e.currentTarget.value);
-            const autoCompleteValue = await this.findClosestMatch(valueAsURI);
-            console.log('SENTINEL AUTOCOMPLETEL', autoCompleteValue);
+            this.autocompleteDirectories = await this.gatherChildren(valueAsURI);
+            this.render();
         }
     }
 
     protected async onTextInputKeyDown(e: React.KeyboardEvent<HTMLInputElement>): Promise<void> {
-        if (e.key === 'Enter' || e.key === 'Escape') {
-            this.onTextInputToggle();
-        }
+        // if (e.key === 'Enter' || e.key === 'Escape') {
+        //     this.onTextInputToggle();
+        // }
     }
 
-    protected async findClosestMatch(currentValue: URI): Promise<URI | undefined> {
+    protected async gatherChildren(currentValue: URI): Promise<URI[] | undefined> {
         const truncatedLocation = currentValue.path.dir.toString();
         const { children } = await this.fileService.resolve(new URI(truncatedLocation));
-        const match = children?.find(child => child.resource.path.toString().includes(currentValue.path.toString()));
-        return match ? match.resource : undefined;
+        // const match = children?.find(child => child.resource.path.toString().includes(currentValue.path.toString()));
+        return children?.map(child => child.resource);
     }
 
     get locationList(): HTMLSelectElement | undefined {
