@@ -55,7 +55,7 @@ export class LocationListRenderer extends ReactRenderer {
     protected readonly handleTextInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => this.onTextInputKeyDown(e);
     protected readonly handleTextInputToggleClick = (e: React.MouseEvent<HTMLSpanElement>) => this.onTextInputToggle();
     protected readonly handleTextInputOnBlur = (e: React.FocusEvent<HTMLInputElement>) => this.onTextInputToggle();
-    protected readonly handleDataListSubmit = (e: React.)
+    // protected readonly handleDataListSubmit = (e: React.)
     protected doRender(): React.ReactNode {
         const options = this.collectLocations().map(value => this.renderLocation(value));
         return (
@@ -76,7 +76,7 @@ export class LocationListRenderer extends ReactRenderer {
                             onKeyDown={this.handleTextInputKeyDown}
                             spellCheck={false}
                             onBlur={this.handleTextInputOnBlur}
-                            onSubmit={this.handleDataListSubmit}
+                        // onSubmit={this.handleDataListSubmit}
                         />
                         <datalist id='matching-directories'>
                             {this.autocompleteDirectories?.map(directory => {
@@ -187,6 +187,7 @@ export class LocationListRenderer extends ReactRenderer {
         // if (e.key === 'Enter' || e.key === 'Escape') {
         //     this.onTextInputToggle();
         // }
+        e.stopPropagation();
     }
 
     protected async gatherChildren(currentValue: URI): Promise<URI[] | undefined> {
