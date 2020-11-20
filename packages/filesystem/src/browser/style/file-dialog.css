@@ -139,18 +139,12 @@
     border: var(--theia-border-width) solid var(--theia-input-border);
 }
 
-.dialogContent .theia-LocationList
+.dialogContent .theia-LocationList,
+.dialogContent .theia-LocationTextInput
 {
     padding-left: 21px;
     width: calc(100% - 21px);
 }
-
-.dialogContent .theia-LocationTextInput
-{
-    width: calc(100% - var(--theia-ui-padding));
-    padding-left: var(--theia-ui-padding);
-}
-
 
 /*
  * Filters panel items
