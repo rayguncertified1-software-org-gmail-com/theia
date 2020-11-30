@@ -20,6 +20,7 @@ import { ReactRenderer } from '@theia/core/lib/browser/widgets/react-renderer';
 import * as React from 'react';
 import ReactDOM = require('react-dom');
 import { FileService } from '../file-service';
+import { debounce } from 'lodash';
 export class LocationListRenderer extends ReactRenderer {
 
     protected _drives: URI[] | undefined;
@@ -44,6 +45,7 @@ export class LocationListRenderer extends ReactRenderer {
         } else if (locationListTextInput) {
             locationListTextInput.focus();
         }
+        console.log('SENTINEL DID RENDER', this.autocompleteDirectories);
     };
 
     render(): void {
@@ -78,7 +80,7 @@ export class LocationListRenderer extends ReactRenderer {
                             onBlur={this.handleTextInputOnBlur}
                         // onSubmit={this.handleDataListSubmit}
                         />
-                        <datalist id='matching-directories'>
+                        <datalist id='matching-directories' className={LocationListRenderer.Styles.DATALIST_CLASS}>
                             {this.autocompleteDirectories?.map(directory => {
                                 const dirString = directory.path.toString();
                                 return (<option key={dirString} value={dirString} />);
@@ -167,6 +169,7 @@ export class LocationListRenderer extends ReactRenderer {
 
     protected async onTextInputChanged(e: React.ChangeEvent<HTMLInputElement>): Promise<void> {
         const locationTextInput = this.locationTextInput;
+        console.log('SENTINEL CHANGED', e.currentTarget.value);
         if (locationTextInput) {
             // // discount all paths that end in trailing slashes or periods to prevent duplicate paths from
             // // being added to location history, and to prevent tree root to be rendered as '' or '.'
@@ -179,22 +182,45 @@ export class LocationListRenderer extends ReactRenderer {
             e.stopPropagation();
             const valueAsURI = new URI(e.currentTarget.value);
             this.autocompleteDirectories = await this.gatherChildren(valueAsURI);
-            this.render();
+            console.log('SENTINEL AUTOCOMPLETE DIRS', this.autocompleteDirectories);
+            // this.render();
+            this.debouncedRender();
         }
     }
 
+    protected debouncedRender = debounce(this.render, 200);
+
     protected async onTextInputKeyDown(e: React.KeyboardEvent<HTMLInputElement>): Promise<void> {
-        // if (e.key === 'Enter' || e.key === 'Escape') {
-        //     this.onTextInputToggle();
-        // }
+        if (e.key === 'Enter' || e.key === 'Escape') {
+            const locationTextInput = this.locationTextInput;
+            if (locationTextInput) {
+                const sanitizedInput = locationTextInput.value.trim().replace(/[\/\\.]*$/, '');
+                if (sanitizedInput !== this.lastUniqueTextInputLocation) {
+                    // this.lastUniqueTextInputLocation = sanitizedInput;
+                    const uri = new URI(sanitizedInput);
+                    this.service.location = uri;
+                }
+                this.onTextInputToggle();
+            }
+        }
+        if (e.key === 'Tab') {
+            e.preventDefault();
+        }
         e.stopPropagation();
     }
 
     protected async gatherChildren(currentValue: URI): Promise<URI[] | undefined> {
         const truncatedLocation = currentValue.path.dir.toString();
         const { children } = await this.fileService.resolve(new URI(truncatedLocation));
+        console.log('SENTIneL CHILDREN', children);
         // const match = children?.find(child => child.resource.path.toString().includes(currentValue.path.toString()));
-        return children?.map(child => child.resource);
+        return children?.map(child => {
+            if (child.isDirectory) {
+                // append trailing slash to children that are directories
+                return new URI(`${child.resource.path}/`);
+            }
+            return child.resource;
+        });
     }
 
     get locationList(): HTMLSelectElement | undefined {
@@ -213,6 +239,14 @@ export class LocationListRenderer extends ReactRenderer {
         return undefined;
     }
 
+    get dataList(): HTMLDataListElement | undefined {
+        const dataList = this.host.getElementsByClassName(LocationListRenderer.Styles.DATALIST_CLASS)[0];
+        if (dataList instanceof HTMLDataListElement) {
+            return dataList;
+        }
+        return undefined;
+    }
+
 }
 
 export namespace LocationListRenderer {
@@ -221,6 +255,7 @@ export namespace LocationListRenderer {
         export const LOCATION_LIST_CLASS = 'theia-LocationList';
         export const LOCATION_INPUT_TOGGLE_CLASS = 'theia-LocationInputToggle';
         export const LOCATION_TEXT_INPUT_CLASS = 'theia-LocationTextInput';
+        export const DATALIST_CLASS = 'theia-Locationdatalist';
     }
 
     export interface Location {
