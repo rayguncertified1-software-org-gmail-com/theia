@@ -20,16 +20,17 @@ import { ReactRenderer } from '@theia/core/lib/browser/widgets/react-renderer';
 import * as React from 'react';
 import ReactDOM = require('react-dom');
 import { FileService } from '../file-service';
-import { debounce } from 'lodash';
 export class LocationListRenderer extends ReactRenderer {
 
     protected _drives: URI[] | undefined;
     protected doShowTextInput: boolean = false;
     protected lastUniqueTextInputLocation: URI | undefined;
     protected autocompleteDirectories: URI[] | undefined;
+    protected prevResolvedDirectory: string;
+
     constructor(
         protected readonly service: LocationService,
-        protected readonly fileService: FileService,
+        protected readonly fileService?: FileService,
         host?: HTMLElement
     ) {
         super(host);
@@ -79,7 +80,7 @@ export class LocationListRenderer extends ReactRenderer {
                             autoComplete={'off'}
                             onBlur={this.handleTextInputOnBlur}
                         />
-                        <datalist id='matching-directories'>
+                        <datalist id='matching-directories' className={'theia-select'}>
                             {this.autocompleteDirectories?.map(directory => {
                                 const dirString = directory.path.toString();
                                 return (<option key={dirString} value={dirString} />);
@@ -180,15 +181,17 @@ export class LocationListRenderer extends ReactRenderer {
     protected async onTextInputChanged(e: React.ChangeEvent<HTMLInputElement>): Promise<void> {
         const locationTextInput = this.locationTextInput;
         const { value } = e.currentTarget;
+        e.stopPropagation();
         if (locationTextInput) {
-            e.stopPropagation();
             const valueAsURI = new URI(value);
-            this.autocompleteDirectories = await this.gatherChildren(valueAsURI);
-            this.debouncedRender();
+            const truncatedLocation = valueAsURI.path.dir.toString();
+            if (truncatedLocation !== this.prevResolvedDirectory) {
+                this.prevResolvedDirectory = truncatedLocation;
+                this.autocompleteDirectories = await this.gatherChildren(valueAsURI);
+                this.render();
+            }
         }
     }
-
-    protected debouncedRender = debounce(this.render, 200);
 
     protected async onTextInputKeyDown(e: React.KeyboardEvent<HTMLInputElement>): Promise<void> {
         if (e.key === 'Enter' || e.key === 'Escape') {
@@ -207,16 +210,13 @@ export class LocationListRenderer extends ReactRenderer {
     }
 
     protected async gatherChildren(currentValue: URI): Promise<URI[] | undefined> {
-        const truncatedLocation = currentValue.path.dir.toString();
-        const { children } = await this.fileService.resolve(new URI(truncatedLocation));
-        // const match = children?.find(child => child.resource.path.toString().includes(currentValue.path.toString()));
-        return children?.map(child => {
-            if (child.isDirectory) {
-                // append trailing slash to children that are directories
-                return new URI(`${child.resource.path}/`);
+        if (this.fileService) {
+            const truncatedLocation = currentValue.path.dir.toString();
+            const { children } = await this.fileService.resolve(new URI(truncatedLocation));
+            if (children) {
+                return children.filter(child => child.isDirectory).map(directory => new URI(`${directory.resource.path}/`));
             }
-            return child.resource;
-        });
+        }
     }
 
     get locationList(): HTMLSelectElement | undefined {
