@@ -123,10 +123,11 @@ export abstract class FileDialog<T> extends AbstractDialog<T> {
     protected readonly treeFiltersRenderer: FileDialogTreeFiltersRenderer | undefined;
     protected readonly treePanel: Panel;
 
+    @inject(FileService) protected readonly fileService: FileService;
+
     constructor(
         @inject(FileDialogProps) readonly props: FileDialogProps,
-        @inject(FileDialogWidget) readonly widget: FileDialogWidget,
-        @inject(FileService) protected readonly fileService: FileService
+        @inject(FileDialogWidget) readonly widget: FileDialogWidget
     ) {
         super(props);
         this.treePanel = new Panel();
@@ -267,9 +268,8 @@ export class OpenFileDialog extends FileDialog<MaybeArray<FileStatNode>> {
     constructor(
         @inject(OpenFileDialogProps) readonly props: OpenFileDialogProps,
         @inject(FileDialogWidget) readonly widget: FileDialogWidget,
-        @inject(FileService) readonly fileService: FileService
     ) {
-        super(props, widget, fileService);
+        super(props, widget);
         if (props.canSelectFiles !== undefined) {
             this.widget.disableFileSelection = !props.canSelectFiles;
         }
@@ -317,9 +317,8 @@ export class SaveFileDialog extends FileDialog<URI | undefined> {
     constructor(
         @inject(SaveFileDialogProps) readonly props: SaveFileDialogProps,
         @inject(FileDialogWidget) readonly widget: FileDialogWidget,
-        @inject(FileService) readonly fileService: FileService
     ) {
-        super(props, widget, fileService);
+        super(props, widget);
         widget.addClass(SAVE_DIALOG_CLASS);
     }
 
