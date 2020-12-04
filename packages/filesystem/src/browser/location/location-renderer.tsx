@@ -40,9 +40,15 @@ export class LocationListRenderer extends ReactRenderer {
 
     render(): void {
         ReactDOM.render(<React.Fragment>{this.doRender()}</React.Fragment>, this.host, this.doAfterRender);
+        this.testCallback();
+    }
+
+    protected testCallback(): void {
+        console.log('SENTINEL RENDER SYNC', this.locationList ? 'location list active' : 'text input active');
     }
 
     protected doAfterRender = (): void => {
+        console.log('SENTINEL RENDER CALLBACK', this.locationList ? 'location list active' : 'text input active');
         const locationList = this.locationList;
         const locationListTextInput = this.locationTextInput;
         if (locationList) {
@@ -56,17 +62,22 @@ export class LocationListRenderer extends ReactRenderer {
     protected readonly handleLocationChanged = (e: React.ChangeEvent<HTMLSelectElement>) => this.onLocationChanged(e);
     protected readonly handleTextInputOnChange = (e: React.ChangeEvent<HTMLInputElement>) => this.onTextInputChanged(e);
     protected readonly handleTextInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => this.onTextInputKeyDown(e);
-    protected readonly handleTextInputToggleClick = (e: React.MouseEvent<HTMLSpanElement>) => this.onTextInputToggle();
-    protected readonly handleTextInputOnBlur = (e: React.FocusEvent<HTMLInputElement>) => this.onTextInputToggle();
+    protected readonly handleTextInputToggleClick = (e: React.MouseEvent<HTMLSpanElement>) => {
+        const shouldShowText = e.currentTarget.id !== 'text-input';
+        setTimeout(() => this.onTextInputToggle(shouldShowText));
+    };
+    protected readonly handleTextInputOnBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+        this.onTextInputToggle(false);
+    };
 
     protected doRender(): React.ReactNode {
         const options = this.collectLocations().map(value => this.renderLocation(value));
         return (
             <>
-                <span onClick={this.handleTextInputToggleClick}
+                <span onMouseDown={this.handleTextInputToggleClick}
                     className={LocationListRenderer.Styles.LOCATION_INPUT_TOGGLE_CLASS}
                     tabIndex={0}
-                    id={LocationListRenderer.Styles.LOCATION_INPUT_TOGGLE_CLASS}
+                    id={`${this.doShowTextInput ? 'text-input' : 'select-input'}`}
                 >
                     <i className='fa fa-edit' />
                 </span>
@@ -88,9 +99,11 @@ export class LocationListRenderer extends ReactRenderer {
         );
     }
 
-    protected onTextInputToggle(): void {
-        this.doShowTextInput = !this.doShowTextInput;
-        this.render();
+    protected onTextInputToggle(shouldShowTextInput: boolean): void {
+        if (shouldShowTextInput !== this.doShowTextInput) {
+            this.doShowTextInput = shouldShowTextInput;
+            this.render();
+        }
     };
 
     /**
@@ -195,7 +208,7 @@ export class LocationListRenderer extends ReactRenderer {
                 const sanitizedInput = locationTextInput.value.trim().replace(/[\/\\.]*$/, '');
                 const uri = new URI(sanitizedInput);
                 this.trySetNewLocation(uri);
-                this.onTextInputToggle();
+                this.onTextInputToggle(false);
             }
         }
         if (e.key === 'Tab') {
