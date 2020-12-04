@@ -192,7 +192,7 @@ export class LocationListRenderer extends ReactRenderer {
 
     protected async onTextInputKeyDown(e: React.KeyboardEvent<HTMLInputElement>): Promise<void> {
         // prevent autocomplete when backspace is pressed
-        this.doAttemptAutocomplete = (e.key === 'Backspace') ? false : true;
+        this.doAttemptAutocomplete = e.key !== 'Backspace';
         if (e.key === 'Enter' || e.key === 'Escape') {
             const locationTextInput = this.locationTextInput;
             if (locationTextInput) {
