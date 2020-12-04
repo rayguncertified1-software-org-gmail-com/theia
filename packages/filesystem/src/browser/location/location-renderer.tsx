@@ -63,7 +63,7 @@ export class LocationListRenderer extends ReactRenderer {
         const options = this.collectLocations().map(value => this.renderLocation(value));
         return (
             <>
-                <span onMouseDown={this.handleTextInputMouseDown}
+                {!!this.fileService && <span onMouseDown={this.handleTextInputMouseDown}
                     className={LocationListRenderer.Styles.LOCATION_INPUT_TOGGLE_CLASS}
                     tabIndex={0}
                     id={`${this.doShowTextInput ? 'text-input' : 'select-input'}`}
@@ -72,7 +72,7 @@ export class LocationListRenderer extends ReactRenderer {
                         : LocationListRenderer.Tooltips.TOGGLE_TEXT_INPUT}
                 >
                     <i className={this.doShowTextInput ? 'fa fa-folder-open' : 'fa fa-edit'} />
-                </span>
+                </span>}
                 { this.doShowTextInput ?
                     <input className={'theia-select ' + LocationListRenderer.Styles.LOCATION_TEXT_INPUT_CLASS}
                         defaultValue={this.service.location?.path.toString()}
@@ -82,8 +82,8 @@ export class LocationListRenderer extends ReactRenderer {
                         spellCheck={false}
                     />
                     :
-                    <select className={'theia-select ' + LocationListRenderer.Styles.LOCATION_LIST_CLASS}
-                        onChange={this.handleLocationChanged}>
+                    <select className={`theia-select ${LocationListRenderer.Styles.LOCATION_LIST_CLASS} ${!!this.fileService ? 'with-icon' : ''}`}
+                        onChange={this.handleLocationChanged}>F
                         {...options}
                     </select>
                 }

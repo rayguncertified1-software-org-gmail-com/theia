@@ -139,7 +139,11 @@
     border: var(--theia-border-width) solid var(--theia-input-border);
 }
 
-.dialogContent .theia-LocationList,
+.dialogContent .theia-LocationList {
+    width: 100%;
+}
+
+.dialogContent .theia-LocationList.with-icon,
 .dialogContent .theia-LocationTextInput
 {
     padding-left: 21px;
