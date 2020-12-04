@@ -23,11 +23,11 @@ import { FileService } from '../file-service';
 export class LocationListRenderer extends ReactRenderer {
 
     protected _drives: URI[] | undefined;
-    protected doShowTextInput: boolean = false;
+    protected doShowTextInput = false;
     protected lastUniqueTextInputLocation: URI | undefined;
     protected autocompleteDirectories: string[] | undefined;
     protected previousAutocompleteMatch: string;
-    protected doBlockInputChange = false;
+    protected doAllowInputChangeEvent = true;
 
     constructor(
         protected readonly service: LocationService,
@@ -40,46 +40,38 @@ export class LocationListRenderer extends ReactRenderer {
 
     render(): void {
         ReactDOM.render(<React.Fragment>{this.doRender()}</React.Fragment>, this.host, this.doAfterRender);
-        this.testCallback();
-    }
-
-    protected testCallback(): void {
-        console.log('SENTINEL RENDER SYNC', this.locationList ? 'location list active' : 'text input active');
     }
 
     protected doAfterRender = (): void => {
-        console.log('SENTINEL RENDER CALLBACK', this.locationList ? 'location list active' : 'text input active');
         const locationList = this.locationList;
         const locationListTextInput = this.locationTextInput;
         if (locationList) {
             const currentLocation = this.service.location;
             locationList.value = currentLocation ? currentLocation.toString() : '';
         } else if (locationListTextInput) {
-            locationListTextInput.focus();
+            setTimeout(() => locationListTextInput.focus());
         }
     };
 
     protected readonly handleLocationChanged = (e: React.ChangeEvent<HTMLSelectElement>) => this.onLocationChanged(e);
     protected readonly handleTextInputOnChange = (e: React.ChangeEvent<HTMLInputElement>) => this.onTextInputChanged(e);
     protected readonly handleTextInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => this.onTextInputKeyDown(e);
-    protected readonly handleTextInputToggleClick = (e: React.MouseEvent<HTMLSpanElement>) => {
-        const shouldShowText = e.currentTarget.id !== 'text-input';
-        setTimeout(() => this.onTextInputToggle(shouldShowText));
-    };
-    protected readonly handleTextInputOnBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-        this.onTextInputToggle(false);
-    };
+    protected readonly handleTextInputOnBlur = () => this.onTextInputToggle(false);
+    protected readonly handleTextInputMouseDown = (e: React.MouseEvent<HTMLSpanElement>) => this.onTextInputToggle(e.currentTarget.id === 'select-input');
 
     protected doRender(): React.ReactNode {
         const options = this.collectLocations().map(value => this.renderLocation(value));
         return (
             <>
-                <span onMouseDown={this.handleTextInputToggleClick}
+                <span onMouseDown={this.handleTextInputMouseDown}
                     className={LocationListRenderer.Styles.LOCATION_INPUT_TOGGLE_CLASS}
                     tabIndex={0}
                     id={`${this.doShowTextInput ? 'text-input' : 'select-input'}`}
+                    title={this.doShowTextInput
+                        ? LocationListRenderer.Tooltips.TOGGLE_SELECT_INPUT
+                        : LocationListRenderer.Tooltips.TOGGLE_TEXT_INPUT}
                 >
-                    <i className='fa fa-edit' />
+                    <i className={this.doShowTextInput ? 'fa fa-folder-open' : 'fa fa-edit'} />
                 </span>
                 { this.doShowTextInput ?
                     <input className={'theia-select ' + LocationListRenderer.Styles.LOCATION_TEXT_INPUT_CLASS}
@@ -182,7 +174,7 @@ export class LocationListRenderer extends ReactRenderer {
     }
 
     protected async onTextInputChanged(e: React.ChangeEvent<HTMLInputElement>): Promise<void> {
-        if (!this.doBlockInputChange) {
+        if (this.doAllowInputChangeEvent) {
             const locationTextInput = this.locationTextInput;
             const { value, selectionStart } = e.currentTarget;
             if (locationTextInput && value.slice(-1) !== '/') {
@@ -200,7 +192,7 @@ export class LocationListRenderer extends ReactRenderer {
 
     protected async onTextInputKeyDown(e: React.KeyboardEvent<HTMLInputElement>): Promise<void> {
         // prevent autocomplete when backspace is pressed
-        this.doBlockInputChange = (e.key === 'Backspace') ? true : false;
+        this.doAllowInputChangeEvent = (e.key === 'Backspace') ? false : true;
         if (e.key === 'Enter' || e.key === 'Escape') {
             const locationTextInput = this.locationTextInput;
             if (locationTextInput) {
@@ -260,6 +252,11 @@ export namespace LocationListRenderer {
         export const LOCATION_LIST_CLASS = 'theia-LocationList';
         export const LOCATION_INPUT_TOGGLE_CLASS = 'theia-LocationInputToggle';
         export const LOCATION_TEXT_INPUT_CLASS = 'theia-LocationTextInput';
+    }
+
+    export namespace Tooltips {
+        export const TOGGLE_TEXT_INPUT = 'Switch to text-based input';
+        export const TOGGLE_SELECT_INPUT = 'Switch to location list';
     }
 
     export interface Location {
