@@ -18,7 +18,7 @@ import URI from '@theia/core/lib/common/uri';
 import { LocationService } from './location-service';
 import { ReactRenderer } from '@theia/core/lib/browser/widgets/react-renderer';
 import * as React from 'react';
-import ReactDOM = require('react-dom');
+import * as ReactDOM from 'react-dom';
 import { FileService } from '../file-service';
 export class LocationListRenderer extends ReactRenderer {
 
@@ -31,11 +31,15 @@ export class LocationListRenderer extends ReactRenderer {
 
     constructor(
         protected readonly service: LocationService,
-        protected readonly fileService?: FileService,
-        host?: HTMLElement
+        host?: HTMLElement,
+        protected readonly fileService?: FileService
     ) {
         super(host);
         this.doLoadDrives();
+    }
+
+    render(): void {
+        ReactDOM.render(<React.Fragment>{this.doRender()}</React.Fragment>, this.host, this.doAfterRender);
     }
 
     protected doAfterRender = (): void => {
@@ -48,10 +52,6 @@ export class LocationListRenderer extends ReactRenderer {
             locationListTextInput.focus();
         }
     };
-
-    render(): void {
-        ReactDOM.render(<React.Fragment>{this.doRender()}</React.Fragment>, this.host, this.doAfterRender);
-    }
 
     protected readonly handleLocationChanged = (e: React.ChangeEvent<HTMLSelectElement>) => this.onLocationChanged(e);
     protected readonly handleTextInputOnChange = (e: React.ChangeEvent<HTMLInputElement>) => this.onTextInputChanged(e);
@@ -72,13 +72,11 @@ export class LocationListRenderer extends ReactRenderer {
                 </span>
                 { this.doShowTextInput ?
                     <input className={'theia-select ' + LocationListRenderer.Styles.LOCATION_TEXT_INPUT_CLASS}
-                        list='matching-directories'
                         defaultValue={this.service.location?.path.toString()}
+                        onBlur={this.handleTextInputOnBlur}
                         onChange={this.handleTextInputOnChange}
                         onKeyDown={this.handleTextInputKeyDown}
                         spellCheck={false}
-                        autoComplete={'off'}
-                        onBlur={this.handleTextInputOnBlur}
                     />
                     :
                     <select className={'theia-select ' + LocationListRenderer.Styles.LOCATION_LIST_CLASS}

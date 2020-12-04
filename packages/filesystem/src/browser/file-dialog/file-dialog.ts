@@ -165,7 +165,7 @@ export abstract class FileDialog<T> extends AbstractDialog<T> {
     }
 
     protected createLocationListRenderer(): LocationListRenderer {
-        return new LocationListRenderer(this.model, this.fileService);
+        return new LocationListRenderer(this.model, undefined, this.fileService);
     }
 
     protected createFileTreeFiltersRenderer(): FileDialogTreeFiltersRenderer | undefined {
