@@ -27,7 +27,7 @@ export class LocationListRenderer extends ReactRenderer {
     protected lastUniqueTextInputLocation: URI | undefined;
     protected autocompleteDirectories: string[] | undefined;
     protected previousAutocompleteMatch: string;
-    protected doAllowInputChangeEvent = true;
+    protected doAttemptAutocomplete = true;
 
     constructor(
         protected readonly service: LocationService,
@@ -174,7 +174,7 @@ export class LocationListRenderer extends ReactRenderer {
     }
 
     protected async onTextInputChanged(e: React.ChangeEvent<HTMLInputElement>): Promise<void> {
-        if (this.doAllowInputChangeEvent) {
+        if (this.doAttemptAutocomplete) {
             const locationTextInput = this.locationTextInput;
             const { value, selectionStart } = e.currentTarget;
             if (locationTextInput && value.slice(-1) !== '/') {
@@ -192,7 +192,7 @@ export class LocationListRenderer extends ReactRenderer {
 
     protected async onTextInputKeyDown(e: React.KeyboardEvent<HTMLInputElement>): Promise<void> {
         // prevent autocomplete when backspace is pressed
-        this.doAllowInputChangeEvent = (e.key === 'Backspace') ? false : true;
+        this.doAttemptAutocomplete = (e.key === 'Backspace') ? false : true;
         if (e.key === 'Enter' || e.key === 'Escape') {
             const locationTextInput = this.locationTextInput;
             if (locationTextInput) {
