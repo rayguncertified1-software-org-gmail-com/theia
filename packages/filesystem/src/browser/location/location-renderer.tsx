@@ -179,7 +179,7 @@ export class LocationListRenderer extends ReactRenderer {
             const { value, selectionStart } = e.currentTarget;
             if (locationTextInput && value.slice(-1) !== '/') {
                 const valueAsURI = new URI(value);
-                this.autocompleteDirectories = await this.gatherSortedDirectories(valueAsURI);
+                this.autocompleteDirectories = await this.gatherAlphabetizedDirectories(valueAsURI);
                 const firstMatch = this.autocompleteDirectories?.find(child => child.includes(value));
                 if (firstMatch) {
                     locationTextInput.value = firstMatch;
@@ -213,7 +213,7 @@ export class LocationListRenderer extends ReactRenderer {
         e.stopPropagation();
     }
 
-    protected async gatherSortedDirectories(currentValue: URI): Promise<string[] | undefined> {
+    protected async gatherAlphabetizedDirectories(currentValue: URI): Promise<string[] | undefined> {
         if (this.fileService) {
             const truncatedLocation = currentValue.path.dir.toString();
             try {
