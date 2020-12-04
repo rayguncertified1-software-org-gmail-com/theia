@@ -126,7 +126,7 @@ export abstract class FileDialog<T> extends AbstractDialog<T> {
     constructor(
         @inject(FileDialogProps) readonly props: FileDialogProps,
         @inject(FileDialogWidget) readonly widget: FileDialogWidget,
-        @inject(FileService) protected readonly fileService?: FileService
+        @inject(FileService) readonly fileService?: FileService
     ) {
         super(props);
         this.treePanel = new Panel();
@@ -267,7 +267,7 @@ export class OpenFileDialog extends FileDialog<MaybeArray<FileStatNode>> {
     constructor(
         @inject(OpenFileDialogProps) readonly props: OpenFileDialogProps,
         @inject(FileDialogWidget) readonly widget: FileDialogWidget,
-        @inject(FileService) readonly fileService: FileService
+        @inject(FileService) readonly fileService?: FileService
     ) {
         super(props, widget, fileService);
         if (props.canSelectFiles !== undefined) {
@@ -317,7 +317,7 @@ export class SaveFileDialog extends FileDialog<URI | undefined> {
     constructor(
         @inject(SaveFileDialogProps) readonly props: SaveFileDialogProps,
         @inject(FileDialogWidget) readonly widget: FileDialogWidget,
-        @inject(FileService) readonly fileService: FileService
+        @inject(FileService) readonly fileService?: FileService
     ) {
         super(props, widget, fileService);
         widget.addClass(SAVE_DIALOG_CLASS);
