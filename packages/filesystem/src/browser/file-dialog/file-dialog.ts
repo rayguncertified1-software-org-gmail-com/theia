@@ -126,7 +126,7 @@ export abstract class FileDialog<T> extends AbstractDialog<T> {
     constructor(
         @inject(FileDialogProps) readonly props: FileDialogProps,
         @inject(FileDialogWidget) readonly widget: FileDialogWidget,
-        @inject(FileService) protected readonly fileService: FileService
+        @inject(FileService) protected readonly fileService?: FileService
     ) {
         super(props);
         this.treePanel = new Panel();
