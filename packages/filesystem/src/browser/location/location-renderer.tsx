@@ -164,13 +164,11 @@ export class LocationListRenderer extends ReactRenderer {
         // prevent consecutive repeated locations from being added to location history
         if (this.lastUniqueTextInputLocation?.path.toString() !== newLocation.path.toString()) {
             this.lastUniqueTextInputLocation = newLocation;
-            // an invalid location is not allowed by location service
             this.service.location = newLocation;
         }
     }
 
     protected async onTextInputChanged(e: React.ChangeEvent<HTMLInputElement>): Promise<void> {
-        // prevent autocomplete when backspace is pressed
         if (!this.doBlockInputChange) {
             const locationTextInput = this.locationTextInput;
             const { value, selectionStart } = e.currentTarget;
@@ -188,10 +186,12 @@ export class LocationListRenderer extends ReactRenderer {
     }
 
     protected async onTextInputKeyDown(e: React.KeyboardEvent<HTMLInputElement>): Promise<void> {
+        // prevent autocomplete when backspace is pressed
         this.doBlockInputChange = (e.key === 'Backspace') ? true : false;
         if (e.key === 'Enter' || e.key === 'Escape') {
             const locationTextInput = this.locationTextInput;
             if (locationTextInput) {
+                // remove extra whitespace and any trailing slashes or periods. These
                 const sanitizedInput = locationTextInput.value.trim().replace(/[\/\\.]*$/, '');
                 const uri = new URI(sanitizedInput);
                 this.trySetNewLocation(uri);
