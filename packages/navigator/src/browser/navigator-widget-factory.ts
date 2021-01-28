@@ -22,6 +22,7 @@ import {
     WidgetManager
 } from '@theia/core/lib/browser';
 import { FILE_NAVIGATOR_ID } from './navigator-widget';
+import { OpenEditorsWidget } from './navigator-open-editors-widget';
 
 export const EXPLORER_VIEW_CONTAINER_ID = 'explorer-view-container';
 export const EXPLORER_VIEW_CONTAINER_TITLE_OPTIONS: ViewContainerTitleOptions = {
@@ -42,6 +43,11 @@ export class NavigatorWidgetFactory implements WidgetFactory {
         initiallyCollapsed: false,
     };
 
+    protected openEditorsWidgetOptions: ViewContainer.Factory.WidgetOptions = {
+        canHide: true,
+        initiallyCollapsed: true,
+    }
+
     @inject(ViewContainer.Factory)
     protected readonly viewContainerFactory: ViewContainer.Factory;
     @inject(WidgetManager) protected readonly widgetManager: WidgetManager;
@@ -52,8 +58,10 @@ export class NavigatorWidgetFactory implements WidgetFactory {
             progressLocationId: 'explorer'
         });
         viewContainer.setTitleOptions(EXPLORER_VIEW_CONTAINER_TITLE_OPTIONS);
-        const widget = await this.widgetManager.getOrCreateWidget(FILE_NAVIGATOR_ID);
-        viewContainer.addWidget(widget, this.fileNavigatorWidgetOptions);
+        const openEditorsWidget = await this.widgetManager.getOrCreateWidget(OpenEditorsWidget.ID);
+        const navigatorWidget = await this.widgetManager.getOrCreateWidget(FILE_NAVIGATOR_ID);
+        viewContainer.addWidget(openEditorsWidget, this.openEditorsWidgetOptions);
+        viewContainer.addWidget(navigatorWidget, this.fileNavigatorWidgetOptions);
         return viewContainer;
     }
 }
