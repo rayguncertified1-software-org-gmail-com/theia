@@ -58,9 +58,12 @@ export default new ContainerModule(bind => {
         createWidget: () => container.get(FileNavigatorWidget)
     })).inSingletonScope();
 
+    bind(OpenEditorsWidget).toDynamicValue(ctx =>
+        OpenEditorsWidget.createWidget(ctx.container)
+    );
     bind(WidgetFactory).toDynamicValue(({ container }) => ({
         id: OpenEditorsWidget.ID,
-        createWidget: () => OpenEditorsWidget.createWidget(container)
+        createWidget: () => container.get(OpenEditorsWidget)
     })).inSingletonScope();
 
     bind(NavigatorWidgetFactory).toSelf().inSingletonScope();

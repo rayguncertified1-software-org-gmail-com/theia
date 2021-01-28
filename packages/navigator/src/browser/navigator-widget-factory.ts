@@ -46,7 +46,7 @@ export class NavigatorWidgetFactory implements WidgetFactory {
     protected openEditorsWidgetOptions: ViewContainer.Factory.WidgetOptions = {
         canHide: true,
         initiallyCollapsed: true,
-    }
+    };
 
     @inject(ViewContainer.Factory)
     protected readonly viewContainerFactory: ViewContainer.Factory;

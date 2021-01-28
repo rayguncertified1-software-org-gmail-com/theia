@@ -13,10 +13,10 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-
+import * as React from 'react';
 import { injectable, interfaces, Container } from 'inversify';
 import { createFileTreeContainer, FileTree, FileTreeModel, FileTreeWidget } from '@theia/filesystem/lib/browser';
-import { defaultTreeProps, Tree, TreeModel, TreeProps } from '@theia/core/lib/browser';
+import { defaultTreeProps, ReactWidget, Tree, TreeModel, TreeProps } from '@theia/core/lib/browser';
 import { FileNavigatorModel } from '.';
 import { OpenEditorsTree } from './navigator-open-editors-tree';
 
@@ -27,31 +27,36 @@ export const OPEN_EDITORS_PROPS: TreeProps = {
     search: true,
     globalSelection: true
 };
-
-
 @injectable()
-export class OpenEditorsWidget extends FileTreeWidget {
+export class OpenEditorsWidget extends ReactWidget {
+    // export class OpenEditorsWidget extends FileTreeWidget {
     static ID = 'open-editors';
     static LABEL = 'Open Editors';
 
     static createContainer(parent: interfaces.Container): Container {
-        const child = createFileTreeContainer(parent);
-        child.unbind(FileTree);
-        child.bind(OpenEditorsTree).toSelf();
-        child.rebind(Tree).toService(OpenEditorsTree);
-
-        child.unbind(FileTreeModel);
-        child.bind(FileNavigatorModel).toSelf();
-        child.rebind(TreeModel).toService(FileNavigatorModel);
-
-        child.unbind(FileTreeWidget);
+        // const child = createFileTreeContainer(parent);
+        const child = new Container({ defaultScope: 'Singleton' });
+        child.parent = parent;
         child.bind(OpenEditorsWidget).toSelf();
+        // child.unbind(FileTree);
+        // child.bind(OpenEditorsTree).toSelf();
+        // child.rebind(Tree).toService(OpenEditorsTree);
 
-        child.rebind(TreeProps).toConstantValue(OPEN_EDITORS_PROPS);
+        // child.unbind(FileTreeModel);
+        // child.bind(FileNavigatorModel).toSelf();
+        // child.rebind(TreeModel).toService(FileNavigatorModel);
+
+        // child.unbind(FileTreeWidget);
+        // child.bind(OpenEditorsWidget).toSelf();
+
+        // child.rebind(TreeProps).toConstantValue(OPEN_EDITORS_PROPS);
         return child;
     }
 
     static createWidget(parent: interfaces.Container): OpenEditorsWidget {
         return OpenEditorsWidget.createContainer(parent).get(OpenEditorsWidget);
+    }
+    render(): React.ReactNode {
+        return <div>WIDGET</div>
     }
 }
