@@ -15,46 +15,29 @@
  ********************************************************************************/
 import * as React from 'react';
 import { injectable, interfaces, Container, postConstruct } from 'inversify';
-import { createFileTreeContainer, FileTree, FileTreeModel, FileTreeWidget } from '@theia/filesystem/lib/browser';
-import { createTreeContainer, defaultTreeProps, ReactWidget, Tree, TreeModel, TreeProps, TreeWidget } from '@theia/core/lib/browser';
-import { FileNavigatorModel } from '.';
-import { OpenEditorsTree } from './navigator-open-editors-tree';
+import { createTreeContainer, defaultTreeProps, TreeModel, TreeProps, TreeWidget } from '@theia/core/lib/browser';
 import { OpenEditorsModel } from './navigator-open-editors-tree-model';
 
 export const OPEN_EDITORS_PROPS: TreeProps = {
     ...defaultTreeProps,
     // contextMenuPath: NAVIGATOR_CONTEXT_MENU,
-    multiSelect: true,
-    search: true,
-    globalSelection: true
+    virtualized: false,
+    // multiSelect: true,
+    // search: true,
+    // globalSelection: true
 };
 @injectable()
-// export class OpenEditorsWidget extends ReactWidget {
 export class OpenEditorsWidget extends TreeWidget {
     static ID = 'open-editors';
     static LABEL = 'Open Editors';
 
     static createContainer(parent: interfaces.Container): Container {
-        // const child = createFileTreeContainer(parent);
         const child = createTreeContainer(parent);
-
-        child.unbind(TreeWidget);
         child.bind(OpenEditorsWidget).toSelf();
-
+        child.rebind(TreeWidget).toService(OpenEditorsWidget);
         child.bind(OpenEditorsModel).toSelf();
         child.rebind(TreeModel).toService(OpenEditorsModel);
-        // child.rebind(TreeModel);
-        // child.unbind(FileTreeModel);
-        // child.rebind(TreeModel).toService(OpenEditorsModel);
         child.rebind(TreeProps).toConstantValue(OPEN_EDITORS_PROPS);
-        // keep filetree
-        // keep filetreemodel
-        // child.unbind(FileTree);
-        // child.bind(OpenEditorsTree).toSelf();
-        // child.rebind(Tree).toService(OpenEditorsTree);
-
-        // child.bind(OpenEditorsWidget).toSelf();
-
         return child;
     }
 
@@ -69,5 +52,25 @@ export class OpenEditorsWidget extends TreeWidget {
         this.title.label = OpenEditorsWidget.LABEL;
         this.addClass(OpenEditorsWidget.ID);
         this.update();
+        console.log('SENTINEL NEW CODE', 1);
     }
+
+    protected doUpdateRows(): void {
+        super.doUpdateRows();
+        console.log('SENTINEL UPDATE ROWS', this.rows);
+        this.rows.forEach(row => {
+            console.log('SENTINEL ROW NAME', this.labelProvider.getName(row.node));
+        });
+        this.update();
+    }
+
+    protected doRenderNodeRow(row: TreeWidget.NodeRow): React.ReactNode {
+        console.log('SENTINEL ROW', row);
+        return super.doRenderNodeRow(row);
+    }
+
+    protected renderTree(model: TreeModel): React.ReactNode {
+        console.log('SENTINEL RENDER TREE IS CALLED');
+        return super.renderTree(model);
+    };
 }

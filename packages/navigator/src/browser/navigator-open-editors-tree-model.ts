@@ -16,23 +16,42 @@
 
 import { injectable, inject, postConstruct } from 'inversify';
 import { EditorManager } from '@theia/editor/lib/browser';
-import { ApplicationShell, TreeModelImpl } from '@theia/core/lib/browser';
+import { ApplicationShell, CompositeTreeNode, TreeModelImpl } from '@theia/core/lib/browser';
 
 @injectable()
 export class OpenEditorsModel extends TreeModelImpl {
     @inject(ApplicationShell) protected readonly applicationShell: ApplicationShell;
     @inject(EditorManager) protected readonly editorManager: EditorManager;
 
+    counter = 0;
+
     @postConstruct()
     protected init(): void {
         super.init();
         this.toDispose.push(this.applicationShell.onDidAddWidget(widget => {
-            console.log('SENTINEL WIDGET CHANGED', widget);
-            console.log('SENTINEL ALL WIDGET', this, this.applicationShell.widgets);
+            console.log('SENTINEL ROOT NAME BEFORE ADD CHILD', this.root?.name);
+            const treeNode: CompositeTreeNode = {
+                id: `${this.counter++}`,
+                parent: undefined,
+                // label: `LABEL ${this.counter}`,
+                name: `NAME ${this.counter}`,
+                children: []
+            };
+            if (this.root) {
+                CompositeTreeNode.addChild(this.root as CompositeTreeNode, treeNode);
+            }
+            console.log('SENTINEL ROOT', this.root);
+            this.fireChanged();
         }));
         this.toDispose.push(this.applicationShell.onDidRemoveWidget(widget => {
-            console.log('SENTINEL WIDGET CHANGED', widget);
-            console.log('SENTINEL ALL WIDGET', this, this.applicationShell.widgets);
         }));
+        const treeNode: CompositeTreeNode = {
+            id: 'node 1',
+            parent: undefined,
+            name: 'Super special name',
+            children: []
+        }
+        this.root = treeNode;
+        console.log('SENTINEL ROOT IN INIT', this.root);
     }
 }
