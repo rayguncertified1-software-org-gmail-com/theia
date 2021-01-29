@@ -15,8 +15,9 @@
  ********************************************************************************/
 
 import { injectable, inject, postConstruct } from 'inversify';
-import { EditorManager } from '@theia/editor/lib/browser';
-import { ApplicationShell, CompositeTreeNode, TreeModelImpl } from '@theia/core/lib/browser';
+import { EditorManager, EditorWidget } from '@theia/editor/lib/browser';
+import { ApplicationShell, CompositeTreeNode, TreeModelImpl, Widget } from '@theia/core/lib/browser';
+import { MAIN_AREA_ID } from '@theia/core/lib/browser/shell/theia-dock-panel';
 
 @injectable()
 export class OpenEditorsModel extends TreeModelImpl {
@@ -25,33 +26,55 @@ export class OpenEditorsModel extends TreeModelImpl {
 
     counter = 0;
 
+    protected openWidgets: Widget[];
+
+
     @postConstruct()
     protected init(): void {
         super.init();
         this.toDispose.push(this.applicationShell.onDidAddWidget(widget => {
-            console.log('SENTINEL ROOT NAME BEFORE ADD CHILD', this.root?.name);
-            const treeNode: CompositeTreeNode = {
-                id: `${this.counter++}`,
-                parent: undefined,
-                // label: `LABEL ${this.counter}`,
-                name: `NAME ${this.counter}`,
-                children: []
-            };
-            if (this.root) {
-                CompositeTreeNode.addChild(this.root as CompositeTreeNode, treeNode);
+            if (widget instanceof EditorWidget) {
+                // event fires before applicationShell.widgets is updated
+                setTimeout(() => {
+                    this.updateOpenWidgets();
+                    this.root = this.buildRootFromOpenedWidgets(this.openWidgets);
+                });
             }
-            console.log('SENTINEL ROOT', this.root);
-            this.fireChanged();
         }));
         this.toDispose.push(this.applicationShell.onDidRemoveWidget(widget => {
+            if (widget instanceof EditorWidget) {
+                setTimeout(() => {
+                    this.updateOpenWidgets();
+                    this.root = this.buildRootFromOpenedWidgets(this.openWidgets);
+                });
+            }
         }));
-        const treeNode: CompositeTreeNode = {
-            id: 'node 1',
+        this.updateOpenWidgets();
+        this.root = this.buildRootFromOpenedWidgets(this.openWidgets);
+        this.fireChanged();
+    }
+
+    protected updateOpenWidgets(): void {
+        this.openWidgets = this.applicationShell.widgets.filter(widget => widget instanceof EditorWidget);
+    }
+
+    protected buildRootFromOpenedWidgets(widgets: Widget[]): CompositeTreeNode {
+        const newRoot: CompositeTreeNode = {
+            id: 'open-editors:root',
             parent: undefined,
-            name: 'Super special name',
+            visible: false,
             children: []
-        }
-        this.root = treeNode;
-        console.log('SENTINEL ROOT IN INIT', this.root);
+        };
+        this.openWidgets.forEach(widget => {
+            const openEditorNode = {
+                id: widget.id,
+                parent: undefined,
+                name: widget.title.label,
+                icon: widget.title.iconClass,
+                children: []
+            }
+            CompositeTreeNode.addChild(newRoot, openEditorNode);
+        });
+        return newRoot;
     }
 }

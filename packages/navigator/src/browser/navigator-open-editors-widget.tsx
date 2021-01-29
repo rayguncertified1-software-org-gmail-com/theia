@@ -14,8 +14,8 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 import * as React from 'react';
-import { injectable, interfaces, Container, postConstruct } from 'inversify';
-import { createTreeContainer, defaultTreeProps, TreeModel, TreeProps, TreeWidget } from '@theia/core/lib/browser';
+import { injectable, interfaces, Container, postConstruct, inject } from 'inversify';
+import { ApplicationShell, createTreeContainer, defaultTreeProps, NodeProps, TreeModel, TreeNode, TreeProps, TreeWidget, TREE_NODE_CONTENT_CLASS } from '@theia/core/lib/browser';
 import { OpenEditorsModel } from './navigator-open-editors-tree-model';
 
 export const OPEN_EDITORS_PROPS: TreeProps = {
@@ -30,6 +30,8 @@ export const OPEN_EDITORS_PROPS: TreeProps = {
 export class OpenEditorsWidget extends TreeWidget {
     static ID = 'open-editors';
     static LABEL = 'Open Editors';
+
+    @inject(ApplicationShell) protected readonly applicationShell: ApplicationShell;
 
     static createContainer(parent: interfaces.Container): Container {
         const child = createTreeContainer(parent);
@@ -52,25 +54,43 @@ export class OpenEditorsWidget extends TreeWidget {
         this.title.label = OpenEditorsWidget.LABEL;
         this.addClass(OpenEditorsWidget.ID);
         this.update();
-        console.log('SENTINEL NEW CODE', 1);
     }
 
-    protected doUpdateRows(): void {
-        super.doUpdateRows();
-        console.log('SENTINEL UPDATE ROWS', this.rows);
-        this.rows.forEach(row => {
-            console.log('SENTINEL ROW NAME', this.labelProvider.getName(row.node));
-        });
-        this.update();
+    protected renderNode(node: TreeNode, props: NodeProps): React.ReactNode {
+        if (!TreeNode.isVisible(node)) {
+            return undefined;
+        }
+        const attributes = this.createNodeAttributes(node, props);
+        const content = <div className={TREE_NODE_CONTENT_CLASS}>
+            {this.renderExpansionToggle(node, props)}
+            {this.renderCloseIcon(node)}
+            {this.renderFileIcon(node, props)}
+            {/* {this.renderCaptionAffixes(node, props, 'captionPrefixes')} */}
+            {this.renderCaption(node, props)}
+            {/* {this.renderCaptionAffixes(node, props, 'captionSuffixes')}
+            {this.renderTailDecorations(node, props)} */}
+        </div>;
+        return React.createElement('div', attributes, content);
     }
 
-    protected doRenderNodeRow(row: TreeWidget.NodeRow): React.ReactNode {
-        console.log('SENTINEL ROW', row);
-        return super.doRenderNodeRow(row);
+    protected renderCloseIcon(node: TreeNode): React.ReactNode {
+        return (<div data-id={node.id}
+            onClick={this.closeOpenEditor}
+            className={'codicon codicon-close'}
+        />);
     }
 
-    protected renderTree(model: TreeModel): React.ReactNode {
-        console.log('SENTINEL RENDER TREE IS CALLED');
-        return super.renderTree(model);
-    };
+    protected closeOpenEditor = (e: React.MouseEvent<HTMLDivElement>) => this.doCloseOpenEditor(e);
+
+    protected doCloseOpenEditor(e: React.MouseEvent<HTMLDivElement>): void {
+        const widgetId = e.currentTarget.getAttribute('data-id');
+        if (widgetId) {
+            this.applicationShell.closeWidget(widgetId);
+        }
+    }
+
+    protected renderFileIcon(node: TreeNode, props: NodeProps): React.ReactNode {
+        const icon = this.toNodeIcon(node);
+        return icon && <div className={icon + ' file-icon'}></div>;
+    }
 }
