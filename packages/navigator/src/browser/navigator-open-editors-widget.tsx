@@ -14,11 +14,12 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 import * as React from 'react';
-import { injectable, interfaces, Container } from 'inversify';
+import { injectable, interfaces, Container, postConstruct } from 'inversify';
 import { createFileTreeContainer, FileTree, FileTreeModel, FileTreeWidget } from '@theia/filesystem/lib/browser';
-import { defaultTreeProps, ReactWidget, Tree, TreeModel, TreeProps } from '@theia/core/lib/browser';
+import { createTreeContainer, defaultTreeProps, ReactWidget, Tree, TreeModel, TreeProps, TreeWidget } from '@theia/core/lib/browser';
 import { FileNavigatorModel } from '.';
 import { OpenEditorsTree } from './navigator-open-editors-tree';
+import { OpenEditorsModel } from './navigator-open-editors-tree-model';
 
 export const OPEN_EDITORS_PROPS: TreeProps = {
     ...defaultTreeProps,
@@ -28,35 +29,45 @@ export const OPEN_EDITORS_PROPS: TreeProps = {
     globalSelection: true
 };
 @injectable()
-export class OpenEditorsWidget extends ReactWidget {
-    // export class OpenEditorsWidget extends FileTreeWidget {
+// export class OpenEditorsWidget extends ReactWidget {
+export class OpenEditorsWidget extends TreeWidget {
     static ID = 'open-editors';
     static LABEL = 'Open Editors';
 
     static createContainer(parent: interfaces.Container): Container {
         // const child = createFileTreeContainer(parent);
-        const child = new Container({ defaultScope: 'Singleton' });
-        child.parent = parent;
+        const child = createTreeContainer(parent);
+
+        child.unbind(TreeWidget);
         child.bind(OpenEditorsWidget).toSelf();
+
+        child.bind(OpenEditorsModel).toSelf();
+        child.rebind(TreeModel).toService(OpenEditorsModel);
+        // child.rebind(TreeModel);
+        // child.unbind(FileTreeModel);
+        // child.rebind(TreeModel).toService(OpenEditorsModel);
+        child.rebind(TreeProps).toConstantValue(OPEN_EDITORS_PROPS);
+        // keep filetree
+        // keep filetreemodel
         // child.unbind(FileTree);
         // child.bind(OpenEditorsTree).toSelf();
         // child.rebind(Tree).toService(OpenEditorsTree);
 
-        // child.unbind(FileTreeModel);
-        // child.bind(FileNavigatorModel).toSelf();
-        // child.rebind(TreeModel).toService(FileNavigatorModel);
-
-        // child.unbind(FileTreeWidget);
         // child.bind(OpenEditorsWidget).toSelf();
 
-        // child.rebind(TreeProps).toConstantValue(OPEN_EDITORS_PROPS);
         return child;
     }
 
     static createWidget(parent: interfaces.Container): OpenEditorsWidget {
         return OpenEditorsWidget.createContainer(parent).get(OpenEditorsWidget);
     }
-    render(): React.ReactNode {
-        return <div>WIDGET</div>
+
+    @postConstruct()
+    init(): void {
+        super.init();
+        this.id = OpenEditorsWidget.ID;
+        this.title.label = OpenEditorsWidget.LABEL;
+        this.addClass(OpenEditorsWidget.ID);
+        this.update();
     }
 }
