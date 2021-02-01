@@ -15,9 +15,10 @@
  ********************************************************************************/
 import * as React from 'react';
 import { injectable, interfaces, Container, postConstruct, inject } from 'inversify';
-import { ApplicationShell, createTreeContainer, defaultTreeProps, NodeProps, TreeDecoratorService, TreeModel, TreeNode, TreeProps, TreeWidget, TREE_NODE_CONTENT_CLASS } from '@theia/core/lib/browser';
+import { ApplicationShell, createTreeContainer, defaultTreeProps, NodeProps, Tree, TreeDecoratorService, TreeImpl, TreeModel, TreeModelImpl, TreeNode, TreeProps, TreeWidget, TREE_NODE_CONTENT_CLASS } from '@theia/core/lib/browser';
 import { OpenEditorsModel } from './navigator-open-editors-tree-model';
 import { OpenEditorsTreeDecoratorService } from './navigator-open-editors-decorator-service';
+import { FileTree, FileTreeModel } from '@theia/filesystem/lib/browser';
 
 export const OPEN_EDITORS_PROPS: TreeProps = {
     ...defaultTreeProps,
@@ -38,8 +39,19 @@ export class OpenEditorsWidget extends TreeWidget {
         const child = createTreeContainer(parent);
         child.bind(OpenEditorsWidget).toSelf();
         child.rebind(TreeWidget).toService(OpenEditorsWidget);
+
+        child.unbind(TreeImpl);
+        child.bind(FileTree).toSelf();
+        child.rebind(Tree).toService(FileTree);
+        // child.bind(FileTree).toSelf();
+        // child.rebind(Tree).toService(FileTree);
+        // child.unbind(TreeModelImpl);
+        // child.bind(OpenEditorsModel).toSelf();
+        // child.rebind(TreeModel).toService(OpenEditorsModel);
+        child.unbind(TreeModelImpl);
         child.bind(OpenEditorsModel).toSelf();
         child.rebind(TreeModel).toService(OpenEditorsModel);
+
         child.rebind(TreeProps).toConstantValue(OPEN_EDITORS_PROPS);
 
         child.bind(OpenEditorsTreeDecoratorService).toSelf().inSingletonScope();
@@ -58,6 +70,7 @@ export class OpenEditorsWidget extends TreeWidget {
         this.title.label = OpenEditorsWidget.LABEL;
         this.addClass(OpenEditorsWidget.ID);
         this.update();
+        console.log('SENTINEL NEW CODE');
     }
 
     protected renderNode(node: TreeNode, props: NodeProps): React.ReactNode {

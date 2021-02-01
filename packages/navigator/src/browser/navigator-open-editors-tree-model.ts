@@ -16,10 +16,11 @@
 
 import { injectable, inject, postConstruct } from 'inversify';
 import { EditorManager } from '@theia/editor/lib/browser';
-import { ApplicationShell, CompositeTreeNode, Saveable, TreeModelImpl, Widget } from '@theia/core/lib/browser';
+import { ApplicationShell, CompositeTreeNode, Saveable, Widget } from '@theia/core/lib/browser';
+import { FileTreeModel } from '@theia/filesystem/lib/browser';
 
 @injectable()
-export class OpenEditorsModel extends TreeModelImpl {
+export class OpenEditorsModel extends FileTreeModel {
     @inject(ApplicationShell) protected readonly applicationShell: ApplicationShell;
     @inject(EditorManager) protected readonly editorManager: EditorManager;
 
