@@ -15,7 +15,7 @@
  ********************************************************************************/
 
 import { injectable, inject, postConstruct } from 'inversify';
-import { EditorManager, EditorWidget } from '@theia/editor/lib/browser';
+import { EditorManager } from '@theia/editor/lib/browser';
 import { ApplicationShell, CompositeTreeNode, Saveable, TreeModelImpl, Widget } from '@theia/core/lib/browser';
 
 @injectable()

@@ -37,6 +37,9 @@ import { NavigatorTabBarDecorator } from './navigator-tab-bar-decorator';
 import { TabBarDecorator } from '@theia/core/lib/browser/shell/tab-bar-decorator';
 import { NavigatorWidgetFactory } from './navigator-widget-factory';
 import { OpenEditorsWidget } from './navigator-open-editors-widget';
+import { bindContributionProvider } from '@theia/core/lib/common';
+import { NavigatorTreeDecorator } from '.';
+import { OpenEditorsTreeDecorator } from './navigator-open-editors-decorator-service';
 
 export default new ContainerModule(bind => {
     bindFileNavigatorPreferences(bind);
@@ -57,6 +60,8 @@ export default new ContainerModule(bind => {
         id: FILE_NAVIGATOR_ID,
         createWidget: () => container.get(FileNavigatorWidget)
     })).inSingletonScope();
+    bindContributionProvider(bind, NavigatorTreeDecorator);
+    bindContributionProvider(bind, OpenEditorsTreeDecorator);
 
     // bind(OpenEditorsWidget).toDynamicValue(ctx =>
     //     OpenEditorsWidget.createWidget(ctx.container)

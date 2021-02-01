@@ -15,8 +15,9 @@
  ********************************************************************************/
 import * as React from 'react';
 import { injectable, interfaces, Container, postConstruct, inject } from 'inversify';
-import { ApplicationShell, createTreeContainer, defaultTreeProps, NodeProps, TreeModel, TreeNode, TreeProps, TreeWidget, TREE_NODE_CONTENT_CLASS } from '@theia/core/lib/browser';
+import { ApplicationShell, createTreeContainer, defaultTreeProps, NodeProps, TreeDecoratorService, TreeModel, TreeNode, TreeProps, TreeWidget, TREE_NODE_CONTENT_CLASS } from '@theia/core/lib/browser';
 import { OpenEditorsModel } from './navigator-open-editors-tree-model';
+import { OpenEditorsTreeDecoratorService } from './navigator-open-editors-decorator-service';
 
 export const OPEN_EDITORS_PROPS: TreeProps = {
     ...defaultTreeProps,
@@ -40,6 +41,9 @@ export class OpenEditorsWidget extends TreeWidget {
         child.bind(OpenEditorsModel).toSelf();
         child.rebind(TreeModel).toService(OpenEditorsModel);
         child.rebind(TreeProps).toConstantValue(OPEN_EDITORS_PROPS);
+
+        child.bind(OpenEditorsTreeDecoratorService).toSelf().inSingletonScope();
+        child.rebind(TreeDecoratorService).toService(OpenEditorsTreeDecoratorService);
         return child;
     }
 
