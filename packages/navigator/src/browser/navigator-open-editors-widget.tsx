@@ -15,10 +15,12 @@
  ********************************************************************************/
 import * as React from 'react';
 import { injectable, interfaces, Container, postConstruct, inject } from 'inversify';
-import { ApplicationShell, createTreeContainer, defaultTreeProps, NodeProps, Tree, TreeDecoratorService, TreeImpl, TreeModel, TreeModelImpl, TreeNode, TreeProps, TreeWidget, TREE_NODE_CONTENT_CLASS } from '@theia/core/lib/browser';
+import { ApplicationShell, ContextMenuRenderer, defaultTreeProps, NodeProps, Tree, TreeDecoratorService, TreeModel, TreeNode, TreeProps, TREE_NODE_CONTENT_CLASS } from '@theia/core/lib/browser';
 import { OpenEditorsModel } from './navigator-open-editors-tree-model';
+// import { OpenEditorsTreeDecoratorService } from './navigator-open-editors-decorator-service';
+import { createFileTreeContainer, FileTree, FileTreeModel, FileTreeWidget } from '@theia/filesystem/lib/browser';
+import { OpenEditorsTree } from './navigator-open-editors-tree';
 import { OpenEditorsTreeDecoratorService } from './navigator-open-editors-decorator-service';
-import { FileTree, FileTreeModel, FileTreeWidget } from '@theia/filesystem/lib/browser';
 
 export const OPEN_EDITORS_PROPS: TreeProps = {
     ...defaultTreeProps,
@@ -36,18 +38,19 @@ export class OpenEditorsWidget extends FileTreeWidget {
     @inject(ApplicationShell) protected readonly applicationShell: ApplicationShell;
 
     static createContainer(parent: interfaces.Container): Container {
-        const child = createTreeContainer(parent);
-        child.bind(OpenEditorsWidget).toSelf();
-        child.rebind(TreeWidget).toService(OpenEditorsWidget);
+        const child = createFileTreeContainer(parent);
 
-        child.unbind(TreeImpl);
-        child.bind(FileTree).toSelf();
-        child.rebind(Tree).toService(FileTree);
+        child.unbind(FileTree);
+        child.bind(OpenEditorsTree).toSelf();
+        child.rebind(Tree).toService(OpenEditorsTree);
 
-        child.unbind(TreeModelImpl);
-        child.bind(FileTreeModel).toSelf();
+
+        child.unbind(FileTreeModel);
         child.bind(OpenEditorsModel).toSelf();
-        child.rebind(FileTreeModel).toService(OpenEditorsModel);
+        child.rebind(TreeModel).toService(OpenEditorsModel);
+
+        child.unbind(FileTreeWidget);
+        child.bind(OpenEditorsWidget).toSelf();
 
         child.rebind(TreeProps).toConstantValue(OPEN_EDITORS_PROPS);
 
@@ -60,6 +63,14 @@ export class OpenEditorsWidget extends FileTreeWidget {
         return OpenEditorsWidget.createContainer(parent).get(OpenEditorsWidget);
     }
 
+    constructor(
+        @inject(TreeProps) readonly props: TreeProps,
+        @inject(OpenEditorsModel) readonly model: OpenEditorsModel,
+        @inject(ContextMenuRenderer) protected readonly contextMenuRenderer: ContextMenuRenderer
+    ) {
+        super(props, model, contextMenuRenderer);
+    }
+
     @postConstruct()
     init(): void {
         super.init();
@@ -67,7 +78,6 @@ export class OpenEditorsWidget extends FileTreeWidget {
         this.title.label = OpenEditorsWidget.LABEL;
         this.addClass(OpenEditorsWidget.ID);
         this.update();
-        console.log('SENTINEL FILE');
     }
 
     protected renderNode(node: TreeNode, props: NodeProps): React.ReactNode {
@@ -106,5 +116,11 @@ export class OpenEditorsWidget extends FileTreeWidget {
     protected renderFileIcon(node: TreeNode, props: NodeProps): React.ReactNode {
         const icon = this.toNodeIcon(node);
         return icon && <div className={icon + ' file-icon'}></div>;
+    }
+
+    protected async doUpdateDecorations(): Promise<void> {
+        this.decorations = await this.decoratorService.getDecorations(this.model);
+        this.forceUpdate();
+        console.log('SENTINEL DECORATIONS', this.decorations);
     }
 }

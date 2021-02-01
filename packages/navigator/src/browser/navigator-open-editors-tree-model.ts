@@ -14,67 +14,70 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { injectable, inject, postConstruct } from 'inversify';
-import { EditorManager } from '@theia/editor/lib/browser';
-import { ApplicationShell, CompositeTreeNode, Saveable, Widget } from '@theia/core/lib/browser';
+import { injectable } from 'inversify';
 import { FileTreeModel } from '@theia/filesystem/lib/browser';
 
 @injectable()
 export class OpenEditorsModel extends FileTreeModel {
-    @inject(ApplicationShell) protected readonly applicationShell: ApplicationShell;
-    @inject(EditorManager) protected readonly editorManager: EditorManager;
+    // @inject(ApplicationShell) protected readonly applicationShell: ApplicationShell;
+    // @inject(EditorManager) protected readonly editorManager: EditorManager;
 
-    counter = 0;
+    // counter = 0;
 
-    protected openWidgets: Widget[];
+    // protected openWidgets: Widget[];
 
 
-    @postConstruct()
-    protected init(): void {
-        super.init();
-        this.toDispose.push(this.applicationShell.onDidAddWidget(widget => {
-            if (Saveable.get(widget)) {
-                // event fires before applicationShell.widgets is updated
-                setTimeout(() => {
-                    this.updateOpenWidgets();
-                    this.root = this.buildRootFromOpenedWidgets(this.openWidgets);
-                });
-            }
-        }));
-        this.toDispose.push(this.applicationShell.onDidRemoveWidget(widget => {
-            if (Saveable.get(widget)) {
-                setTimeout(() => {
-                    this.updateOpenWidgets();
-                    this.root = this.buildRootFromOpenedWidgets(this.openWidgets);
-                });
-            }
-        }));
-        this.updateOpenWidgets();
-        this.root = this.buildRootFromOpenedWidgets(this.openWidgets);
-        this.fireChanged();
-    }
+    // @postConstruct()
+    // protected init(): void {
+    //     super.init();
+    // }
 
-    protected updateOpenWidgets(): void {
-        this.openWidgets = this.applicationShell.widgets.filter(widget => Saveable.get(widget));
-    }
+    // protected async initializeRoot(): Promise<void> {
+    //     this.toDispose.push(this.applicationShell.onDidAddWidget(widget => {
+    //         if (Saveable.get(widget)) {
+    //             // event fires before applicationShell.widgets is updated
+    //             setTimeout(() => {
+    //                 this.updateOpenWidgets();
+    //                 this.root = this.buildRootFromOpenedWidgets(this.openWidgets);
+    //             });
+    //         }
+    //     }));
+    //     this.toDispose.push(this.applicationShell.onDidRemoveWidget(widget => {
+    //         if (Saveable.get(widget)) {
+    //             setTimeout(() => {
+    //                 this.updateOpenWidgets();
+    //                 this.root = this.buildRootFromOpenedWidgets(this.openWidgets);
+    //             });
+    //         }
+    //     }));
+    //     this.updateOpenWidgets();
+    //     this.root = this.buildRootFromOpenedWidgets(this.openWidgets);
+    //     this.fireChanged();
+    // }
 
-    protected buildRootFromOpenedWidgets(widgets: Widget[]): CompositeTreeNode {
-        const newRoot: CompositeTreeNode = {
-            id: 'open-editors:root',
-            parent: undefined,
-            visible: false,
-            children: []
-        };
-        this.openWidgets.forEach(widget => {
-            const openEditorNode = {
-                id: widget.id,
-                parent: undefined,
-                name: widget.title.label,
-                icon: widget.title.iconClass,
-                children: []
-            }
-            CompositeTreeNode.addChild(newRoot, openEditorNode);
-        });
-        return newRoot;
-    }
+    // protected updateOpenWidgets(): void {
+    //     this.openWidgets = this.applicationShell.widgets.filter(widget => Saveable.get(widget));
+    // }
+
+    // protected buildRootFromOpenedWidgets(widgets: Widget[]): CompositeTreeNode {
+    //     const newRoot: CompositeTreeNode = {
+    //         id: 'open-editors:root',
+    //         parent: undefined,
+    //         visible: false,
+    //         children: []
+    //     };
+    //     this.openWidgets.forEach(widget => {
+    //         if (Navigatable.is(widget)) {
+    //             const openEditorNode = {
+    //                 id: widget.id,
+    //                 parent: undefined,
+    //                 name: widget.title.label,
+    //                 icon: widget.title.iconClass,
+    //                 children: []
+    //             }
+    //             CompositeTreeNode.addChild(newRoot, openEditorNode);
+    //         }
+    //     });
+    //     return newRoot;
+    // }
 }
