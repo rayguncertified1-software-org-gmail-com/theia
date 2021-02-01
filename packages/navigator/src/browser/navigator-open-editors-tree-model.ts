@@ -16,8 +16,7 @@
 
 import { injectable, inject, postConstruct } from 'inversify';
 import { EditorManager, EditorWidget } from '@theia/editor/lib/browser';
-import { ApplicationShell, CompositeTreeNode, TreeModelImpl, Widget } from '@theia/core/lib/browser';
-import { MAIN_AREA_ID } from '@theia/core/lib/browser/shell/theia-dock-panel';
+import { ApplicationShell, CompositeTreeNode, Saveable, TreeModelImpl, Widget } from '@theia/core/lib/browser';
 
 @injectable()
 export class OpenEditorsModel extends TreeModelImpl {
@@ -33,7 +32,7 @@ export class OpenEditorsModel extends TreeModelImpl {
     protected init(): void {
         super.init();
         this.toDispose.push(this.applicationShell.onDidAddWidget(widget => {
-            if (widget instanceof EditorWidget) {
+            if (Saveable.get(widget)) {
                 // event fires before applicationShell.widgets is updated
                 setTimeout(() => {
                     this.updateOpenWidgets();
@@ -42,7 +41,7 @@ export class OpenEditorsModel extends TreeModelImpl {
             }
         }));
         this.toDispose.push(this.applicationShell.onDidRemoveWidget(widget => {
-            if (widget instanceof EditorWidget) {
+            if (Saveable.get(widget)) {
                 setTimeout(() => {
                     this.updateOpenWidgets();
                     this.root = this.buildRootFromOpenedWidgets(this.openWidgets);
@@ -55,7 +54,7 @@ export class OpenEditorsModel extends TreeModelImpl {
     }
 
     protected updateOpenWidgets(): void {
-        this.openWidgets = this.applicationShell.widgets.filter(widget => widget instanceof EditorWidget);
+        this.openWidgets = this.applicationShell.widgets.filter(widget => Saveable.get(widget));
     }
 
     protected buildRootFromOpenedWidgets(widgets: Widget[]): CompositeTreeNode {
