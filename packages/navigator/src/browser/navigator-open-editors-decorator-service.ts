@@ -33,7 +33,7 @@ export class OpenEditorsTreeDecoratorService extends AbstractTreeDecoratorServic
 
     constructor(@inject(ContributionProvider) @named(OpenEditorsTreeDecorator) protected readonly contributions: ContributionProvider<TreeDecorator>,
         @inject(ContributionProvider) @named(NavigatorTreeDecorator) protected readonly navigatorContributions: ContributionProvider<TreeDecorator>) {
-        super(contributions.getContributions());
+        super([...contributions.getContributions(), ...navigatorContributions.getContributions()]);
     }
 
 }
