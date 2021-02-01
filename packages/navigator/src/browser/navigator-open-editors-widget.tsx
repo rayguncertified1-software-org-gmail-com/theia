@@ -18,7 +18,7 @@ import { injectable, interfaces, Container, postConstruct, inject } from 'invers
 import { ApplicationShell, createTreeContainer, defaultTreeProps, NodeProps, Tree, TreeDecoratorService, TreeImpl, TreeModel, TreeModelImpl, TreeNode, TreeProps, TreeWidget, TREE_NODE_CONTENT_CLASS } from '@theia/core/lib/browser';
 import { OpenEditorsModel } from './navigator-open-editors-tree-model';
 import { OpenEditorsTreeDecoratorService } from './navigator-open-editors-decorator-service';
-import { FileTree, FileTreeModel } from '@theia/filesystem/lib/browser';
+import { FileTree, FileTreeModel, FileTreeWidget } from '@theia/filesystem/lib/browser';
 
 export const OPEN_EDITORS_PROPS: TreeProps = {
     ...defaultTreeProps,
@@ -29,7 +29,7 @@ export const OPEN_EDITORS_PROPS: TreeProps = {
     // globalSelection: true
 };
 @injectable()
-export class OpenEditorsWidget extends TreeWidget {
+export class OpenEditorsWidget extends FileTreeWidget {
     static ID = 'open-editors';
     static LABEL = 'Open Editors';
 
@@ -43,14 +43,11 @@ export class OpenEditorsWidget extends TreeWidget {
         child.unbind(TreeImpl);
         child.bind(FileTree).toSelf();
         child.rebind(Tree).toService(FileTree);
-        // child.bind(FileTree).toSelf();
-        // child.rebind(Tree).toService(FileTree);
-        // child.unbind(TreeModelImpl);
-        // child.bind(OpenEditorsModel).toSelf();
-        // child.rebind(TreeModel).toService(OpenEditorsModel);
+
         child.unbind(TreeModelImpl);
+        child.bind(FileTreeModel).toSelf();
         child.bind(OpenEditorsModel).toSelf();
-        child.rebind(TreeModel).toService(OpenEditorsModel);
+        child.rebind(FileTreeModel).toService(OpenEditorsModel);
 
         child.rebind(TreeProps).toConstantValue(OPEN_EDITORS_PROPS);
 
@@ -70,7 +67,7 @@ export class OpenEditorsWidget extends TreeWidget {
         this.title.label = OpenEditorsWidget.LABEL;
         this.addClass(OpenEditorsWidget.ID);
         this.update();
-        console.log('SENTINEL NEW CODE');
+        console.log('SENTINEL FILE');
     }
 
     protected renderNode(node: TreeNode, props: NodeProps): React.ReactNode {
