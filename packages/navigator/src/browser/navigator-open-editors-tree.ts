@@ -21,8 +21,8 @@ import { FileTree } from "@theia/filesystem/lib/browser";
 
 @injectable()
 export class OpenEditorsTree extends FileTree {
-    createId(root: CompositeTreeNode, uri: URI): string {
-        const id = super.toNodeId(uri, root);
-        return id === root.id ? id : `${root.id}:${id}`;
-    }
+    // createId(uri: URI): string {
+    //     const id = super.toNodeId(uri, root);
+    //     return id === root.id ? id : `${root.id}:${id}`;
+    // }
 }

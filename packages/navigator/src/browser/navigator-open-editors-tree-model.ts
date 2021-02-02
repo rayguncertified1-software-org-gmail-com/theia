@@ -15,71 +15,83 @@
  ********************************************************************************/
 
 import { injectable, inject, postConstruct } from 'inversify';
-import { FileTreeModel } from '@theia/filesystem/lib/browser';
-import { ApplicationShell, Widget, Saveable, CompositeTreeNode, Navigatable } from '@theia/core/lib/browser';
+import { FileStatNode, FileTreeModel } from '@theia/filesystem/lib/browser';
+import { ApplicationShell, CompositeTreeNode, Navigatable, Saveable, Widget } from '@theia/core/lib/browser';
 import { EditorManager } from '@theia/editor/lib/browser';
 
 @injectable()
 export class OpenEditorsModel extends FileTreeModel {
     @inject(ApplicationShell) protected readonly applicationShell: ApplicationShell;
     @inject(EditorManager) protected readonly editorManager: EditorManager;
-
     counter = 0;
 
     protected openWidgets: Widget[];
 
 
-    // @postConstruct()
-    // protected init(): void {
-    //     super.init();
-    // }
+    @postConstruct()
+    protected init(): void {
+        super.init();
+        this.initializeRoot();
+    }
 
-    // protected async initializeRoot(): Promise<void> {
-    //     this.toDispose.push(this.applicationShell.onDidAddWidget(widget => {
-    //         if (Saveable.get(widget)) {
-    //             // event fires before applicationShell.widgets is updated
-    //             setTimeout(() => {
-    //                 this.updateOpenWidgets();
-    //                 this.root = this.buildRootFromOpenedWidgets(this.openWidgets);
-    //             });
-    //         }
-    //     }));
-    //     this.toDispose.push(this.applicationShell.onDidRemoveWidget(widget => {
-    //         if (Saveable.get(widget)) {
-    //             setTimeout(() => {
-    //                 this.updateOpenWidgets();
-    //                 this.root = this.buildRootFromOpenedWidgets(this.openWidgets);
-    //             });
-    //         }
-    //     }));
-    //     this.updateOpenWidgets();
-    //     this.root = this.buildRootFromOpenedWidgets(this.openWidgets);
-    //     this.fireChanged();
-    // }
+    protected async initializeRoot(): Promise<void> {
+        this.toDispose.push(this.applicationShell.onDidAddWidget(widget => {
+            if (Saveable.get(widget)) {
+                // event fires before applicationShell.widgets is updated
+                setTimeout(async () => {
+                    this.updateOpenWidgets();
+                    this.root = await this.buildRootFromOpenedWidgets(this.openWidgets);
+                    console.log('SENTINEL TREE', this.root);
+                });
+            }
+        }));
+        this.toDispose.push(this.applicationShell.onDidRemoveWidget(widget => {
+            if (Saveable.get(widget)) {
+                setTimeout(async () => {
+                    this.updateOpenWidgets();
+                    this.root = await this.buildRootFromOpenedWidgets(this.openWidgets);
+                });
+            }
+        }));
+        this.updateOpenWidgets();
+        this.root = await this.buildRootFromOpenedWidgets(this.openWidgets);
+        this.fireChanged();
+    }
 
-    // protected updateOpenWidgets(): void {
-    //     this.openWidgets = this.applicationShell.widgets.filter(widget => Saveable.get(widget));
-    // }
+    protected updateOpenWidgets(): void {
+        this.openWidgets = this.applicationShell.widgets.filter(widget => Saveable.get(widget));
+    }
 
-    // protected buildRootFromOpenedWidgets(widgets: Widget[]): CompositeTreeNode {
-    //     const newRoot: CompositeTreeNode = {
-    //         id: 'open-editors:root',
-    //         parent: undefined,
-    //         visible: false,
-    //         children: []
-    //     };
-    //     this.openWidgets.forEach(widget => {
-    //         if (Navigatable.is(widget)) {
-    //             const openEditorNode = {
-    //                 id: widget.id,
-    //                 parent: undefined,
-    //                 name: widget.title.label,
-    //                 icon: widget.title.iconClass,
-    //                 children: []
-    //             }
-    //             CompositeTreeNode.addChild(newRoot, openEditorNode);
-    //         }
-    //     });
-    //     return newRoot;
-    // }
+    protected async buildRootFromOpenedWidgets(widgets: Widget[]): Promise<CompositeTreeNode> {
+        const newRoot: CompositeTreeNode = {
+            id: 'open-editors:root',
+            parent: undefined,
+            visible: false,
+            children: []
+        };
+        for (let widget of this.openWidgets) {
+            if (Navigatable.is(widget)) {
+                const uri = widget.getResourceUri();
+                if (uri) {
+                    const fileStat = await this.fileService.resolve(uri);
+                    const nodeID = uri.path.toString();
+                    const openEditorNode: FileStatNode = {
+                        id: nodeID,
+                        fileStat,
+                        uri,
+                        selected: false,
+                        parent: undefined,
+                        name: widget.title.label,
+                        icon: widget.title.iconClass,
+                        // children: []
+                    }
+                    CompositeTreeNode.addChild(newRoot, openEditorNode);
+                }
+            }
+
+        }
+        // this.openWidgets.forEach(widget => {
+        // // });
+        return newRoot;
+    }
 }
