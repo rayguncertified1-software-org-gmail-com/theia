@@ -14,17 +14,19 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { injectable } from 'inversify';
+import { injectable, inject, postConstruct } from 'inversify';
 import { FileTreeModel } from '@theia/filesystem/lib/browser';
+import { ApplicationShell, Widget, Saveable, CompositeTreeNode, Navigatable } from '@theia/core/lib/browser';
+import { EditorManager } from '@theia/editor/lib/browser';
 
 @injectable()
 export class OpenEditorsModel extends FileTreeModel {
-    // @inject(ApplicationShell) protected readonly applicationShell: ApplicationShell;
-    // @inject(EditorManager) protected readonly editorManager: EditorManager;
+    @inject(ApplicationShell) protected readonly applicationShell: ApplicationShell;
+    @inject(EditorManager) protected readonly editorManager: EditorManager;
 
-    // counter = 0;
+    counter = 0;
 
-    // protected openWidgets: Widget[];
+    protected openWidgets: Widget[];
 
 
     // @postConstruct()
