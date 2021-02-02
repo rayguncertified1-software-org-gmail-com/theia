@@ -86,13 +86,13 @@ export class OpenEditorsWidget extends FileTreeWidget {
         }
         const attributes = this.createNodeAttributes(node, props);
         const content = <div className={TREE_NODE_CONTENT_CLASS}>
-            {this.renderExpansionToggle(node, props)}
             {this.renderCloseIcon(node)}
-            {this.renderFileIcon(node, props)}
-            {/* {this.renderCaptionAffixes(node, props, 'captionPrefixes')} */}
+            {/* {this.renderExpansionToggle(node, props)} */}
+            {this.decorateIcon(node, this.renderIcon(node, props))}
+            {this.renderCaptionAffixes(node, props, 'captionPrefixes')}
             {this.renderCaption(node, props)}
-            {/* {this.renderCaptionAffixes(node, props, 'captionSuffixes')}
-            {this.renderTailDecorations(node, props)} */}
+            {this.renderCaptionAffixes(node, props, 'captionSuffixes')}
+            {this.renderTailDecorations(node, props)}
         </div>;
         return React.createElement('div', attributes, content);
     }
