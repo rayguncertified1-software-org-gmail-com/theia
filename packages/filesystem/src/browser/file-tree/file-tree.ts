@@ -104,6 +104,7 @@ export interface FileStatNode extends SelectableTreeNode, Mutable<UriSelection>,
 export namespace FileStatNode {
     export function is(node: object | undefined): node is FileStatNode {
         return !!node && 'fileStat' in node;
+
     }
 
     export function getUri(node: TreeNode | undefined): string | undefined {
