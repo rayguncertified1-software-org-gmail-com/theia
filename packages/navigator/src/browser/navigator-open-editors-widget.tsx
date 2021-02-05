@@ -15,12 +15,27 @@
  ********************************************************************************/
 import * as React from 'react';
 import { injectable, interfaces, Container, postConstruct, inject } from 'inversify';
-import { ApplicationShell, ContextMenuRenderer, defaultTreeProps, NodeProps, Tree, TreeDecoratorService, TreeModel, TreeNode, TreeProps, TREE_NODE_CONTENT_CLASS } from '@theia/core/lib/browser';
+import {
+    ApplicationShell,
+    ContextMenuRenderer,
+    defaultTreeProps,
+    NodeProps,
+    Tree,
+    TreeDecoratorService,
+    TreeModel,
+    TreeNode,
+    TreeProps,
+    TreeWidget,
+    TREE_NODE_CONTENT_CLASS,
+    TREE_NODE_SEGMENT_CLASS,
+    TREE_NODE_SEGMENT_GROW_CLASS
+} from '@theia/core/lib/browser';
 import { OpenEditorsModel } from './navigator-open-editors-tree-model';
 // import { OpenEditorsTreeDecoratorService } from './navigator-open-editors-decorator-service';
-import { createFileTreeContainer, FileTree, FileTreeModel, FileTreeWidget } from '@theia/filesystem/lib/browser';
+import { createFileTreeContainer, FileStatNode, FileTree, FileTreeModel, FileTreeWidget } from '@theia/filesystem/lib/browser';
 import { OpenEditorsTree } from './navigator-open-editors-tree';
 import { OpenEditorsTreeDecoratorService } from './navigator-open-editors-decorator-service';
+import { notEmpty } from '@theia/core/lib/common';
 
 export const OPEN_EDITORS_PROPS: TreeProps = {
     ...defaultTreeProps,
@@ -32,7 +47,7 @@ export const OPEN_EDITORS_PROPS: TreeProps = {
 };
 @injectable()
 export class OpenEditorsWidget extends FileTreeWidget {
-    static ID = 'open-editors';
+    static ID = 'theia-open-editors-widget';
     static LABEL = 'Open Editors';
 
     @inject(ApplicationShell) protected readonly applicationShell: ApplicationShell;
@@ -43,7 +58,6 @@ export class OpenEditorsWidget extends FileTreeWidget {
         child.unbind(FileTree);
         child.bind(OpenEditorsTree).toSelf();
         child.rebind(Tree).toService(OpenEditorsTree);
-
 
         child.unbind(FileTreeModel);
         child.bind(OpenEditorsModel).toSelf();
@@ -80,7 +94,7 @@ export class OpenEditorsWidget extends FileTreeWidget {
         this.update();
     }
 
-    protected renderNode(node: TreeNode, props: NodeProps): React.ReactNode {
+    protected renderNode(node: FileStatNode, props: NodeProps): React.ReactNode {
         if (!TreeNode.isVisible(node)) {
             return undefined;
         }
@@ -97,7 +111,45 @@ export class OpenEditorsWidget extends FileTreeWidget {
         return React.createElement('div', attributes, content);
     }
 
-    protected renderCloseIcon(node: TreeNode): React.ReactNode {
+    //     <div className={`noWrapInfo ${TREE_NODE_SEGMENT_GROW_CLASS}`} >
+    //     <span className='name'>{caption}</span>
+    //     <span className='path'>{path}</span>
+    // </div>
+
+    protected renderCaption(node: FileStatNode, props: NodeProps): React.ReactNode {
+        const tooltip = this.getDecorationData(node, 'tooltip').filter(notEmpty).join(' • ');
+        const classes = [TREE_NODE_SEGMENT_CLASS];
+        if (!this.hasTrailingSuffixes(node)) {
+            classes.push(TREE_NODE_SEGMENT_GROW_CLASS);
+        }
+        const className = classes.join(' ');
+        let attrs = this.decorateCaption(node, {
+            className, id: node.id
+        });
+        if (tooltip.length > 0) {
+            attrs = {
+                ...attrs,
+                title: tooltip
+            };
+        }
+        const children: React.ReactNode[] = [];
+        const caption = this.toNodeName(node);
+        const highlight = this.getDecorationData(node, 'highlight')[0];
+        if (highlight) {
+            children.push(this.toReactNode(caption, highlight));
+        }
+        const searchHighlight = this.searchHighlights ? this.searchHighlights.get(node.id) : undefined;
+        if (searchHighlight) {
+            children.push(...this.toReactNode(caption, searchHighlight));
+        } else if (!highlight) {
+            children.push(caption);
+        }
+        const path = node.uri.parent.relative(node.uri);
+        children.push(<span className='tree-node-path'>{path}</span>);
+        return <div {...attrs}>{...children}</div>;
+    }
+
+    protected renderCloseIcon(node: FileStatNode): React.ReactNode {
         return (<div data-id={node.id}
             onClick={this.closeOpenEditor}
             className={'codicon codicon-close'}

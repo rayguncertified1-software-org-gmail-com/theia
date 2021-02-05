@@ -17,7 +17,7 @@
 import { injectable } from 'inversify';
 // import { CompositeTreeNode } from "@theia/core/lib/browser";
 // import URI from "@theia/core/lib/common/uri";
-import { FileTree } from "@theia/filesystem/lib/browser";
+import { FileTree } from '@theia/filesystem/lib/browser';
 
 @injectable()
 export class OpenEditorsTree extends FileTree {

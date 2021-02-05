@@ -142,7 +142,7 @@ export class ProblemDecorator implements TreeDecorator {
                     shape: 'circle',
                     color: 'transparent'
                 }
-            },
+            }
         };
     }
 

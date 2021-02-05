@@ -40,6 +40,7 @@ import { OpenEditorsWidget } from './navigator-open-editors-widget';
 import { bindContributionProvider } from '@theia/core/lib/common';
 import { NavigatorTreeDecorator } from '.';
 import { OpenEditorsTreeDecorator } from './navigator-open-editors-decorator-service';
+import { OpenEditorsFileDecorator } from './navigator-open-editors-file-decorator';
 
 export default new ContainerModule(bind => {
     bindFileNavigatorPreferences(bind);
@@ -62,6 +63,7 @@ export default new ContainerModule(bind => {
     })).inSingletonScope();
     bindContributionProvider(bind, NavigatorTreeDecorator);
     bindContributionProvider(bind, OpenEditorsTreeDecorator);
+    bind(OpenEditorsTreeDecorator).to(OpenEditorsFileDecorator);
 
     bind(OpenEditorsWidget).toSelf().inSingletonScope();
     bind(WidgetFactory).toDynamicValue(({ container }) => ({
