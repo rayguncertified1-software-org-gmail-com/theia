@@ -47,7 +47,7 @@
     mask: url('files.svg');
 }
 
-.theia-open-editors-widget .tree-node-path {
+.theia-open-editors-widget .theia-caption-suffix {
     margin-left: var(--theia-ui-padding);
     font-size: var(--theia-ui-font-size0);
 }

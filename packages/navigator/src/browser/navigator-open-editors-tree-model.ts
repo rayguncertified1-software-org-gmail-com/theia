@@ -46,6 +46,12 @@ export class OpenEditorsModel extends FileTreeModel {
         //         });
         //     }
         // }));
+        this.toDispose.push(this.workspaceService.onWorkspaceChanged(workspaceChangedEvent => {
+            console.log('SENTINEL WORKSPACE CHANGED', workspaceChangedEvent);
+        }));
+        this.toDispose.push(this.workspaceService.onWorkspaceLocationChanged(event => {
+            console.log('SENTINEL LOCATION CHANGED', event);
+        }))
         this.toDispose.push(this.applicationShell.onDidChangeCurrentWidget(async () => {
             setTimeout(async () => {
                 this.updateOpenWidgets();

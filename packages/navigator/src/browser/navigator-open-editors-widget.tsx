@@ -25,7 +25,6 @@ import {
     TreeModel,
     TreeNode,
     TreeProps,
-    TreeWidget,
     TREE_NODE_CONTENT_CLASS,
     TREE_NODE_SEGMENT_CLASS,
     TREE_NODE_SEGMENT_GROW_CLASS
@@ -116,38 +115,38 @@ export class OpenEditorsWidget extends FileTreeWidget {
     //     <span className='path'>{path}</span>
     // </div>
 
-    protected renderCaption(node: FileStatNode, props: NodeProps): React.ReactNode {
-        const tooltip = this.getDecorationData(node, 'tooltip').filter(notEmpty).join(' • ');
-        const classes = [TREE_NODE_SEGMENT_CLASS];
-        if (!this.hasTrailingSuffixes(node)) {
-            classes.push(TREE_NODE_SEGMENT_GROW_CLASS);
-        }
-        const className = classes.join(' ');
-        let attrs = this.decorateCaption(node, {
-            className, id: node.id
-        });
-        if (tooltip.length > 0) {
-            attrs = {
-                ...attrs,
-                title: tooltip
-            };
-        }
-        const children: React.ReactNode[] = [];
-        const caption = this.toNodeName(node);
-        const highlight = this.getDecorationData(node, 'highlight')[0];
-        if (highlight) {
-            children.push(this.toReactNode(caption, highlight));
-        }
-        const searchHighlight = this.searchHighlights ? this.searchHighlights.get(node.id) : undefined;
-        if (searchHighlight) {
-            children.push(...this.toReactNode(caption, searchHighlight));
-        } else if (!highlight) {
-            children.push(caption);
-        }
-        const path = node.uri.parent.relative(node.uri);
-        children.push(<span className='tree-node-path'>{path}</span>);
-        return <div {...attrs}>{...children}</div>;
-    }
+    // protected renderCaption(node: FileStatNode, props: NodeProps): React.ReactNode {
+    //     const tooltip = this.getDecorationData(node, 'tooltip').filter(notEmpty).join(' • ');
+    //     const classes = [TREE_NODE_SEGMENT_CLASS];
+    //     if (!this.hasTrailingSuffixes(node)) {
+    //         classes.push(TREE_NODE_SEGMENT_GROW_CLASS);
+    //     }
+    //     const className = classes.join(' ');
+    //     let attrs = this.decorateCaption(node, {
+    //         className, id: node.id
+    //     });
+    //     if (tooltip.length > 0) {
+    //         attrs = {
+    //             ...attrs,
+    //             title: tooltip
+    //         };
+    //     }
+    //     const children: React.ReactNode[] = [];
+    //     const caption = this.toNodeName(node);
+    //     const highlight = this.getDecorationData(node, 'highlight')[0];
+    //     if (highlight) {
+    //         children.push(this.toReactNode(caption, highlight));
+    //     }
+    //     const searchHighlight = this.searchHighlights ? this.searchHighlights.get(node.id) : undefined;
+    //     if (searchHighlight) {
+    //         children.push(...this.toReactNode(caption, searchHighlight));
+    //     } else if (!highlight) {
+    //         children.push(caption);
+    //     }
+    //     const path = node.uri.parent.relative(node.uri);
+    //     children.push(<span className='tree-node-path'>{path?.toString()}</span>);
+    //     return <div {...attrs}>{...children}</div>;
+    // }
 
     protected renderCloseIcon(node: FileStatNode): React.ReactNode {
         return (<div data-id={node.id}
