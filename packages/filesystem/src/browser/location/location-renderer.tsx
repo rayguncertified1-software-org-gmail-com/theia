@@ -40,17 +40,15 @@ class ResolvedDirectoryCache {
     tryResolveChildDirectories(inputAsURI: URI): string[] | undefined {
         const parentDirectory = inputAsURI.path.dir.toString();
         const input = inputAsURI.path.toString();
-        if (this.cachedDirectories.has(parentDirectory)) {
-            return this.cachedDirectories.get(parentDirectory);
-        } else if (!this.pendingResolvedDirectories.has(parentDirectory)) {
-            const pendingDirectories = this.createResolutionPromise(parentDirectory);
-            this.pendingResolvedDirectories.set(parentDirectory, { input, pendingDirectories: pendingDirectories });
-        } else if (this.pendingResolvedDirectories.has(parentDirectory)) {
+        const cachedDirectories = this.cachedDirectories.get(parentDirectory);
+        const pendingDirectories = this.pendingResolvedDirectories.get(parentDirectory);
+        if (cachedDirectories) {
+            return cachedDirectories;
+        } else if (!pendingDirectories) {
+            this.pendingResolvedDirectories.set(parentDirectory, { input, pendingDirectories: this.createResolutionPromise(parentDirectory) });
+        } else if (pendingDirectories) {
             // if promise has still not resolved, update its input value to latest
-            const pendingDirectoriesData = (this.pendingResolvedDirectories.get(parentDirectory));
-            if (pendingDirectoriesData) {
-                pendingDirectoriesData.input = input;
-            }
+            pendingDirectories.input = input;
         }
         return undefined;
     }
@@ -60,8 +58,7 @@ class ResolvedDirectoryCache {
             if (children) {
                 const latestInput = this.pendingResolvedDirectories.get(directoryToResolve)?.input || '';
                 const childDirectories = children.filter(child => child.isDirectory)
-                    .map(directory => `${directory.resource.path}/`)
-                    .sort();
+                    .map(directory => `${directory.resource.path}/`);
                 this.cachedDirectories.set(directoryToResolve, childDirectories);
                 this.directoryResolvedEmitter.fire({ parent: directoryToResolve, input: latestInput, children: childDirectories });
             }
@@ -105,10 +102,8 @@ export class LocationListRenderer extends ReactRenderer {
     protected initResolveDirectoryCache(): void {
         this.toDisposeOnNewCache.dispose();
         this.directoryCache = new ResolvedDirectoryCache(this.fileService);
-        this.toDisposeOnNewCache.push(this.directoryCache.onDirectoryDidResolve(({ parent, children, input }) => {
-            if (this.locationTextInput?.value === input) {
-                this.doRenderAutoSuggestion(this.locationTextInput, children);
-            }
+        this.toDisposeOnNewCache.push(this.directoryCache.onDirectoryDidResolve(({ children, input }) => {
+            this.tryRenderFirstMatch(this.locationTextInput!, children);
         }));
     }
 
@@ -288,13 +283,13 @@ export class LocationListRenderer extends ReactRenderer {
                 const valueAsURI = new URI(value);
                 const autocompleteDirectories = this.directoryCache.tryResolveChildDirectories(valueAsURI);
                 if (autocompleteDirectories) {
-                    this.doRenderAutoSuggestion(inputElement, autocompleteDirectories);
+                    this.tryRenderFirstMatch(inputElement, autocompleteDirectories);
                 }
             }
         }
     }
 
-    protected doRenderAutoSuggestion(inputElement: HTMLInputElement, children: string[]): void {
+    protected tryRenderFirstMatch(inputElement: HTMLInputElement, children: string[]): void {
         const { value, selectionStart } = inputElement;
         if (this.locationTextInput) {
             const firstMatch = children?.find(child => child.includes(value));
