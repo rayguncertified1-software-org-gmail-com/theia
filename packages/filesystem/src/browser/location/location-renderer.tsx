@@ -23,13 +23,12 @@ import { FileService } from '../file-service';
 import { DisposableCollection, Emitter } from '@theia/core/lib/common';
 
 interface AutoSuggestDataEvent {
-    input: string;
     parent: string;
     children: string[];
 }
 
 class ResolvedDirectoryCache {
-    protected pendingResolvedDirectories = new Map<string, { input: string, pendingDirectories: Promise<void> }>();
+    protected pendingResolvedDirectories = new Map<string, Promise<void>>();
     protected cachedDirectories = new Map<string, string[]>();
 
     protected directoryResolvedEmitter = new Emitter<AutoSuggestDataEvent>();
@@ -39,16 +38,12 @@ class ResolvedDirectoryCache {
 
     tryResolveChildDirectories(inputAsURI: URI): string[] | undefined {
         const parentDirectory = inputAsURI.path.dir.toString();
-        const input = inputAsURI.path.toString();
         const cachedDirectories = this.cachedDirectories.get(parentDirectory);
         const pendingDirectories = this.pendingResolvedDirectories.get(parentDirectory);
         if (cachedDirectories) {
             return cachedDirectories;
         } else if (!pendingDirectories) {
-            this.pendingResolvedDirectories.set(parentDirectory, { input, pendingDirectories: this.createResolutionPromise(parentDirectory) });
-        } else if (pendingDirectories) {
-            // if promise has still not resolved, update its input value to latest
-            pendingDirectories.input = input;
+            this.pendingResolvedDirectories.set(parentDirectory, this.createResolutionPromise(parentDirectory));
         }
         return undefined;
     }
@@ -56,11 +51,10 @@ class ResolvedDirectoryCache {
     protected async createResolutionPromise(directoryToResolve: string): Promise<void> {
         return this.fileService.resolve(new URI(directoryToResolve)).then(({ children }) => {
             if (children) {
-                const latestInput = this.pendingResolvedDirectories.get(directoryToResolve)?.input || '';
                 const childDirectories = children.filter(child => child.isDirectory)
                     .map(directory => `${directory.resource.path}/`);
                 this.cachedDirectories.set(directoryToResolve, childDirectories);
-                this.directoryResolvedEmitter.fire({ parent: directoryToResolve, input: latestInput, children: childDirectories });
+                this.directoryResolvedEmitter.fire({ parent: directoryToResolve, children: childDirectories });
             }
         }).catch(e => {
             // no-op
@@ -102,7 +96,7 @@ export class LocationListRenderer extends ReactRenderer {
     protected initResolveDirectoryCache(): void {
         this.toDisposeOnNewCache.dispose();
         this.directoryCache = new ResolvedDirectoryCache(this.fileService);
-        this.toDisposeOnNewCache.push(this.directoryCache.onDirectoryDidResolve(({ children, input }) => {
+        this.toDisposeOnNewCache.push(this.directoryCache.onDirectoryDidResolve(({ children }) => {
             this.tryRenderFirstMatch(this.locationTextInput!, children);
         }));
     }
