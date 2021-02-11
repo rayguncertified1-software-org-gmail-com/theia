@@ -14,7 +14,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { injectable, inject, postConstruct, named } from 'inversify';
+import { injectable, inject, postConstruct } from 'inversify';
 import { TreeDecorator, TreeDecoration } from '@theia/core/lib/browser/tree/tree-decorator';
 import { Emitter } from '@theia/core/lib/common/event';
 import { Tree } from '@theia/core/lib/browser/tree/tree';
@@ -45,11 +45,11 @@ export class OpenEditorsFileDecorator implements TreeDecorator {
         });
     }
 
-    protected fireDidChangeDecorations(event: (tree: Tree) => Map<string, TreeDecoration.Data>): void {
+    protected fireDidChangeDecorations(event: (tree: Tree) => Promise<Map<string, TreeDecoration.Data>>): void {
         this.decorationsChangedEmitter.fire(event);
     }
 
-    decorations(tree: Tree): Map<string, TreeDecoration.Data> {
+    async decorations(tree: Tree): Promise<Map<string, TreeDecoration.Data>> {
         return this.collectDecorators(tree);
     }
 

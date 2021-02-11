@@ -29,7 +29,8 @@ import {
     SelectableTreeNode,
     SHELL_TABBAR_CONTEXT_MENU,
     Widget,
-    Title
+    Title,
+    waitForClosed
 } from '@theia/core/lib/browser';
 import { FileDownloadCommands } from '@theia/filesystem/lib/browser/download/file-download-command-contribution';
 import {
@@ -70,6 +71,9 @@ import { ClipboardService } from '@theia/core/lib/browser/clipboard-service';
 import { SelectionService } from '@theia/core/lib/common/selection-service';
 import { UriAwareCommandHandler } from '@theia/core/lib/common/uri-command-handler';
 import URI from '@theia/core/lib/common/uri';
+import { OpenEditorsCommands } from './navigator-open-editors-commands';
+import { EditorManager } from '@theia/editor/lib/browser';
+import { OpenEditorsWidget } from './navigator-open-editors-widget';
 
 export namespace FileNavigatorCommands {
     export const REVEAL_IN_NAVIGATOR: Command = {
@@ -184,6 +188,9 @@ export class FileNavigatorContribution extends AbstractViewContribution<FileNavi
 
     @inject(SelectionService)
     protected readonly selectionService: SelectionService;
+
+    @inject(EditorManager)
+    protected readonly editorManager: EditorManager;
 
     @inject(WorkspaceCommandContribution)
     protected readonly workspaceCommandContribution: WorkspaceCommandContribution;
@@ -358,6 +365,28 @@ export class FileNavigatorContribution extends AbstractViewContribution<FileNavi
                 });
             }
         });
+        registry.registerCommand(OpenEditorsCommands.CLOSE_ALL_TABS, {
+            execute: widget => this.withOpenEditorsWidget(widget, async () => {
+                const dirtyEditors = this.editorManager.all.filter(widget => widget.saveable.dirty);
+                // close all editors if none art dirty
+                if (dirtyEditors.length === 0) {
+                    this.editorManager.all.forEach(widget => widget.close());
+                    return;
+                }
+                // otherwise attempt to close all dirty editors and wait for individual responses from dialog
+                for (const widget of dirtyEditors) {
+                    widget.close();
+                    await waitForClosed(widget);
+                }
+            }),
+            isEnabled: widget => this.withOpenEditorsWidget(widget, () => !!this.editorManager.all.length),
+            isVisible: widget => this.withOpenEditorsWidget(widget, () => !!this.editorManager.all.length)
+        });
+        registry.registerCommand(OpenEditorsCommands.SAVE_ALL_TABS, {
+            execute: widget => this.withOpenEditorsWidget(widget, () => this.editorManager.all.forEach(editor => editor.saveable.save())),
+            isEnabled: widget => this.withOpenEditorsWidget(widget, () => !!this.editorManager.all.length),
+            isVisible: widget => this.withOpenEditorsWidget(widget, () => !!this.editorManager.all.length)
+        });
     }
 
     protected getSelectedFileNodes(): FileNode[] {
@@ -366,6 +395,13 @@ export class FileNavigatorContribution extends AbstractViewContribution<FileNavi
 
     protected withWidget<T>(widget: Widget | undefined = this.tryGetWidget(), cb: (navigator: FileNavigatorWidget) => T): T | false {
         if (widget instanceof FileNavigatorWidget && widget.id === FILE_NAVIGATOR_ID) {
+            return cb(widget);
+        }
+        return false;
+    }
+
+    protected withOpenEditorsWidget<T>(widget: Widget, cb: (navigator: OpenEditorsWidget) => T): T | false {
+        if (widget instanceof OpenEditorsWidget && widget.id === OpenEditorsWidget.ID) {
             return cb(widget);
         }
         return false;
@@ -534,6 +570,20 @@ export class FileNavigatorContribution extends AbstractViewContribution<FileNavi
             command: WorkspaceCommands.ADD_FOLDER.id,
             tooltip: WorkspaceCommands.ADD_FOLDER.label,
             group: NavigatorMoreToolbarGroups.WORKSPACE,
+        });
+
+        // Open Editors Toolbar Items
+        toolbarRegistry.registerItem({
+            id: OpenEditorsCommands.SAVE_ALL_TABS.id,
+            command: OpenEditorsCommands.SAVE_ALL_TABS.id,
+            tooltip: 'Save All Editors',
+            priority: 0,
+        });
+        toolbarRegistry.registerItem({
+            id: OpenEditorsCommands.CLOSE_ALL_TABS.id,
+            command: OpenEditorsCommands.CLOSE_ALL_TABS.id,
+            tooltip: 'Close All Editors',
+            priority: 1,
         });
     }
 

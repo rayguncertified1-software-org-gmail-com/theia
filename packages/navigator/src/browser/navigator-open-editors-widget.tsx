@@ -26,15 +26,15 @@ import {
     TreeNode,
     TreeProps,
     TREE_NODE_CONTENT_CLASS,
-    TREE_NODE_SEGMENT_CLASS,
-    TREE_NODE_SEGMENT_GROW_CLASS
+    // TREE_NODE_SEGMENT_CLASS,
+    // TREE_NODE_SEGMENT_GROW_CLASS
 } from '@theia/core/lib/browser';
 import { OpenEditorsModel } from './navigator-open-editors-tree-model';
 // import { OpenEditorsTreeDecoratorService } from './navigator-open-editors-decorator-service';
 import { createFileTreeContainer, FileStatNode, FileTree, FileTreeModel, FileTreeWidget } from '@theia/filesystem/lib/browser';
 import { OpenEditorsTree } from './navigator-open-editors-tree';
 import { OpenEditorsTreeDecoratorService } from './navigator-open-editors-decorator-service';
-import { notEmpty } from '@theia/core/lib/common';
+// import { notEmpty } from '@theia/core/lib/common';
 
 export const OPEN_EDITORS_PROPS: TreeProps = {
     ...defaultTreeProps,
