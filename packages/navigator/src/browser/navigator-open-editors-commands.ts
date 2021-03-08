@@ -14,7 +14,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { Command } from "@theia/core/lib/common";
+import { Command } from '@theia/core/lib/common';
 
 export namespace OpenEditorsCommands {
     export const CLOSE_ALL_TABS: Command = {

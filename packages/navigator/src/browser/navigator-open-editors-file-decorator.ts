@@ -23,7 +23,6 @@ import { DepthFirstTreeIterator, LabelProvider } from '@theia/core/lib/browser';
 import { FileStatNode } from '@theia/filesystem/lib/browser';
 import URI from '@theia/core/lib/common/uri';
 
-
 @injectable()
 export class OpenEditorsFileDecorator implements TreeDecorator {
     @inject(WorkspaceService) protected readonly workspaceService: WorkspaceService;
@@ -62,7 +61,7 @@ export class OpenEditorsFileDecorator implements TreeDecorator {
         for (const node of new DepthFirstTreeIterator(tree.root)) {
             if (FileStatNode.is(node)) {
 
-                const path = await this.resolvePathString(node.uri)
+                const path = await this.resolvePathString(node.uri);
                 result.set(node.id, {
                     captionSuffixes: [{ data: path }]
                 });

@@ -367,15 +367,15 @@ export class FileNavigatorContribution extends AbstractViewContribution<FileNavi
         });
         registry.registerCommand(OpenEditorsCommands.CLOSE_ALL_TABS, {
             execute: widget => this.withOpenEditorsWidget(widget, async () => {
-                const dirtyEditors = this.editorManager.all.filter(widget => widget.saveable.dirty);
+                const dirtyEditors = this.editorManager.all.filter(editorWidget => editorWidget.saveable.dirty);
                 // close all editors if none art dirty
                 if (dirtyEditors.length === 0) {
-                    this.editorManager.all.forEach(widget => widget.close());
+                    this.editorManager.all.forEach(editorWidget => editorWidget.close());
                     return;
                 }
                 // otherwise attempt to close all dirty editors and wait for individual responses from dialog
-                for (const widget of dirtyEditors) {
-                    widget.close();
+                for (const editorWidget of dirtyEditors) {
+                    editorWidget.close();
                     await waitForClosed(widget);
                 }
             }),

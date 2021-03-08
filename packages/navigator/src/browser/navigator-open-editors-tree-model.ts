@@ -51,7 +51,7 @@ export class OpenEditorsModel extends FileTreeModel {
         }));
         this.toDispose.push(this.workspaceService.onWorkspaceLocationChanged(event => {
             console.log('SENTINEL LOCATION CHANGED', event);
-        }))
+        }));
         this.toDispose.push(this.applicationShell.onDidChangeCurrentWidget(async () => {
             setTimeout(async () => {
                 this.updateOpenWidgets();
@@ -67,7 +67,6 @@ export class OpenEditorsModel extends FileTreeModel {
             this.updateOpenWidgets();
             this.root = await this.buildRootFromOpenedWidgets(this.openWidgets);
         }));
-
 
         // this.toDispose.push(this.applicationShell.onDidChangeActiveWidget(async () => {
         //     this.updateOpenWidgets();
