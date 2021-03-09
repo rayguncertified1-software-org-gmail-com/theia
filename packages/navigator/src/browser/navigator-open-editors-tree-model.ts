@@ -17,17 +17,20 @@
 import { injectable, inject, postConstruct } from 'inversify';
 import { FileStatNode, FileTreeModel } from '@theia/filesystem/lib/browser';
 import { ApplicationShell, CompositeTreeNode, Navigatable, Widget } from '@theia/core/lib/browser';
-import { EditorManager } from '@theia/editor/lib/browser';
+import { EditorManager, EditorWidget } from '@theia/editor/lib/browser';
 import { WorkspaceService } from '@theia/workspace/lib/browser';
+import { EditorPreviewManager, EditorPreviewWidget } from '@theia/editor-preview/lib/browser';
 
 @injectable()
 export class OpenEditorsModel extends FileTreeModel {
     @inject(ApplicationShell) protected readonly applicationShell: ApplicationShell;
     @inject(EditorManager) protected readonly editorManager: EditorManager;
     @inject(WorkspaceService) protected readonly workspaceService: WorkspaceService;
+    @inject(EditorPreviewManager) protected readonly editorPreviewManager: EditorPreviewManager;
     counter = 0;
 
     protected openWidgets: Widget[];
+    protected editorPreviewWidget: EditorPreviewWidget;
 
     @postConstruct()
     protected init(): void {
@@ -64,10 +67,19 @@ export class OpenEditorsModel extends FileTreeModel {
             this.root = await this.buildRootFromOpenedWidgets(this.openWidgets);
         }));
         this.toDispose.push(this.editorManager.onCreated(async _editorWidget => {
+            console.log('SENTINEL EDITOR WIDGET CREATED', _editorWidget);
             this.updateOpenWidgets();
             this.root = await this.buildRootFromOpenedWidgets(this.openWidgets);
         }));
+        this.toDispose.push(this.editorPreviewManager.onCreated(previewWidget => {
+            if (previewWidget instanceof EditorPreviewWidget) {
+                this.editorPreviewWidget = previewWidget;
+                console.log('SENTINEL PREVIEW WIDGET UPDATED', this.editorPreviewWidget);
+            }
+        }));
+        // this.toDispose.push(this.editorPreviewWidget.onPinned(({ preview, editorWidget }) => {
 
+        // }));
         // this.toDispose.push(this.applicationShell.onDidChangeActiveWidget(async () => {
         //     this.updateOpenWidgets();
         //     this.root = await this.buildRootFromOpenedWidgets(this.openWidgets);
@@ -101,9 +113,15 @@ export class OpenEditorsModel extends FileTreeModel {
 
     protected updateOpenWidgets(): void {
         // const widgets = this.applicationShell.getWidgets('main').filter(widget => Saveable.get(widget));
-        const widgets = this.editorManager.all;
-        console.log('SENTINEL WIDGETS WITH OPEN EDITORS', widgets);
-        this.openWidgets = widgets;
+        // const editorWidgets = this.editorManager.all;
+        // console.log('SENTINEL WIDGETS WITH OPEN EDITORS', editorWidgets);
+        // const previewWidget = editorWidgets.spli;
+        const editorPreviewWidget = this.editorPreviewManager.all[0];
+        const editorWidgets = this.editorManager.all.filter(widget => widget.parent !== editorPreviewWidget);
+        console.log('SENTINEL EDITORS', editorWidgets);
+        console.log('SENTINEL PREVIEW', editorPreviewWidget);
+        this.openWidgets = editorWidgets;
+
         // let previewWidget: EditorPreviewWidget | undefined = undefined;
         // let validWidgets = new Set<EditorWidget | EditorPreviewWidget>();
         // for (const widget of widgets) {
