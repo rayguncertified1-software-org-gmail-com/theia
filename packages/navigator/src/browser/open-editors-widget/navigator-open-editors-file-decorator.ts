@@ -19,14 +19,16 @@ import { TreeDecorator, TreeDecoration } from '@theia/core/lib/browser/tree/tree
 import { Emitter } from '@theia/core/lib/common/event';
 import { Tree } from '@theia/core/lib/browser/tree/tree';
 import { WorkspaceService } from '@theia/workspace/lib/browser';
-import { DepthFirstTreeIterator, LabelProvider } from '@theia/core/lib/browser';
-import { FileStatNode } from '@theia/filesystem/lib/browser';
+import { ApplicationShell, DepthFirstTreeIterator, LabelProvider } from '@theia/core/lib/browser';
 import URI from '@theia/core/lib/common/uri';
+import { OpenEditorNode } from './navigator-open-editors-tree-model';
+import { EditorPreviewWidget } from '@theia/editor-preview/lib/browser';
 
 @injectable()
 export class OpenEditorsFileDecorator implements TreeDecorator {
     @inject(WorkspaceService) protected readonly workspaceService: WorkspaceService;
     @inject(LabelProvider) protected readonly labelProvider: LabelProvider;
+    @inject(ApplicationShell) protected readonly shell: ApplicationShell;
 
     readonly id = 'theia-open-editors-file-decorator';
     // THIS SHOULD FIRE ONLY WHEN SAVEABLE STATE CHANGES
@@ -42,6 +44,13 @@ export class OpenEditorsFileDecorator implements TreeDecorator {
         this.workspaceService.onWorkspaceLocationChanged(event => {
             this.fireDidChangeDecorations((tree: Tree) => this.collectDecorators(tree));
         });
+
+        // this.shell.onDidAddWidget(widget => {
+        //     const saveable = Saveable.get(widget);
+        //     if (saveable) {
+        //         this.toDisposeOnDirtyChanged.set(widget.id, saveable.onDirtyChanged(() => this.fireDidChangeDecorations());
+        //     }
+        // })
     }
 
     protected fireDidChangeDecorations(event: (tree: Tree) => Promise<Map<string, TreeDecoration.Data>>): void {
@@ -53,18 +62,25 @@ export class OpenEditorsFileDecorator implements TreeDecorator {
     }
 
     protected async collectDecorators(tree: Tree): Promise<Map<string, TreeDecoration.Data>> {
-
+        // Add add workspace root as caption affix and italicize if PreviewWidget
         const result = new Map<string, TreeDecoration.Data>();
         if (tree.root === undefined) {
             return result;
         }
         for (const node of new DepthFirstTreeIterator(tree.root)) {
-            if (FileStatNode.is(node)) {
-
+            if (OpenEditorNode.is(node)) {
+                const isPreviewWidget = node.widget.parent instanceof EditorPreviewWidget;
                 const path = await this.resolvePathString(node.uri);
-                result.set(node.id, {
-                    captionSuffixes: [{ data: path }]
-                });
+                const decorations: TreeDecoration.Data = {
+                    captionSuffixes: [
+                        {
+                            data: path,
+                            fontData: { style: isPreviewWidget ? 'italic' : undefined }
+                        }
+                    ],
+                    fontData: { style: isPreviewWidget ? 'italic' : undefined }
+                };
+                result.set(node.id, decorations);
             }
         }
         return result;

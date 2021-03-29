@@ -172,6 +172,5 @@ export class OpenEditorsWidget extends FileTreeWidget {
     protected async doUpdateDecorations(): Promise<void> {
         this.decorations = await this.decoratorService.getDecorations(this.model);
         this.forceUpdate();
-        console.log('SENTINEL DECORATIONS', this.decorations);
     }
 }

@@ -36,11 +36,11 @@ import { NavigatorLayoutVersion3Migration } from './navigator-layout-migrations'
 import { NavigatorTabBarDecorator } from './navigator-tab-bar-decorator';
 import { TabBarDecorator } from '@theia/core/lib/browser/shell/tab-bar-decorator';
 import { NavigatorWidgetFactory } from './navigator-widget-factory';
-import { OpenEditorsWidget } from './navigator-open-editors-widget';
 import { bindContributionProvider } from '@theia/core/lib/common';
 import { NavigatorTreeDecorator } from '.';
-import { OpenEditorsTreeDecorator } from './navigator-open-editors-decorator-service';
-import { OpenEditorsFileDecorator } from './navigator-open-editors-file-decorator';
+import { OpenEditorsFileDecorator } from './open-editors-widget/navigator-open-editors-file-decorator';
+import { OpenEditorsTreeDecorator } from './open-editors-widget/navigator-open-editors-decorator-service';
+import { OpenEditorsWidget } from './open-editors-widget/navigator-open-editors-widget';
 
 export default new ContainerModule(bind => {
     bindFileNavigatorPreferences(bind);

@@ -22,6 +22,16 @@ import { WorkspaceService } from '@theia/workspace/lib/browser';
 import { EditorPreviewManager, EditorPreviewWidget } from '@theia/editor-preview/lib/browser';
 import { DisposableCollection } from '@theia/core/lib/common';
 
+export interface OpenEditorNode extends FileStatNode {
+    widget: Widget;
+};
+
+export namespace OpenEditorNode {
+    export function is(node: object | undefined): node is OpenEditorNode {
+        return FileStatNode.is(node) && 'widget' in node;
+    }
+}
+
 @injectable()
 export class OpenEditorsModel extends FileTreeModel {
     @inject(ApplicationShell) protected readonly applicationShell: ApplicationShell;
@@ -52,22 +62,22 @@ export class OpenEditorsModel extends FileTreeModel {
         //     }
         // }));
         this.toDispose.push(this.workspaceService.onWorkspaceChanged(workspaceChangedEvent => {
-            console.log('SENTINEL WORKSPACE CHANGED', workspaceChangedEvent);
+            // console.log('SENTINEL WORKSPACE CHANGED', workspaceChangedEvent);
         }));
         this.toDispose.push(this.workspaceService.onWorkspaceLocationChanged(event => {
-            console.log('SENTINEL LOCATION CHANGED', event);
+            // console.log('SENTINEL LOCATION CHANGED', event);
         }));
         this.toDispose.push(this.applicationShell.onDidChangeCurrentWidget(async () => {
             setTimeout(async () => {
                 await this.updateOpenWidgets();
-                console.log('SENTINEL CHANGED CURRENT', this.openWidgets);
+                // console.log('SENTINEL CHANGED CURRENT', this.openWidgets);
             });
         }));
         this.toDispose.push(this.editorManager.onActiveEditorChanged(async _widget => {
             await this.updateOpenWidgets();
         }));
         this.toDispose.push(this.editorManager.onCreated(async _editorWidget => {
-            console.log('SENTINEL EDITOR WIDGET CREATED', _editorWidget);
+            // console.log('SENTINEL EDITOR WIDGET CREATED', _editorWidget);
             await this.updateOpenWidgets();
         }));
 
@@ -78,7 +88,7 @@ export class OpenEditorsModel extends FileTreeModel {
                 this.toDisposeOnPreviewWidgetReplaced.push(this.editorPreviewWidget.onPinned(async ({ preview, editorWidget }) => {
                     await this.updateOpenWidgets();
                 }));
-                console.log('SENTINEL PREVIEW WIDGET UPDATED', this.editorPreviewWidget);
+                // console.log('SENTINEL PREVIEW WIDGET UPDATED', this.editorPreviewWidget);
             }
         }));
 
@@ -99,7 +109,7 @@ export class OpenEditorsModel extends FileTreeModel {
         this.applicationShell.mainPanel.widgetRemoved.connect(async (_, widget) => {
             setTimeout(async () => {
                 await this.updateOpenWidgets();
-                console.log('SENTINEL MAIN PANEL REMOVED', widget);
+                // console.log('SENTINEL MAIN PANEL REMOVED', widget);
             });
         });
         // this.toDispose.push(this.applicationShell.onDidRemoveWidget(widget => {
@@ -120,10 +130,10 @@ export class OpenEditorsModel extends FileTreeModel {
         // console.log('SENTINEL WIDGETS WITH OPEN EDITORS', editorWidgets);
         // const previewWidget = editorWidgets.spli;
         const editorPreviewWidget = this.editorPreviewManager.all[0];
-        console.log('SENTINEL PREVIEW', editorPreviewWidget);
+        // console.log('SENTINEL PREVIEW', editorPreviewWidget);
         const editorWidgets = this.editorManager.all.filter(widget => widget.parent !== editorPreviewWidget);
-        console.log('SENTINEL EDITORS', editorWidgets);
-        this.openWidgets = editorWidgets;
+        // console.log('SENTINEL EDITORS', editorWidgets);
+        this.openWidgets = [editorPreviewWidget, ...editorWidgets];
         this.root = await this.buildRootFromOpenedWidgets(this.openWidgets);
 
         // let previewWidget: EditorPreviewWidget | undefined = undefined;
@@ -155,7 +165,7 @@ export class OpenEditorsModel extends FileTreeModel {
                 const uri = widget.getResourceUri();
                 if (uri) {
                     const fileStat = await this.fileService.resolve(uri);
-                    const openEditorNode: FileStatNode = {
+                    const openEditorNode: OpenEditorNode = {
                         id: widget.id,
                         fileStat,
                         uri,
@@ -163,7 +173,7 @@ export class OpenEditorsModel extends FileTreeModel {
                         parent: undefined,
                         name: widget.title.label,
                         icon: widget.title.iconClass,
-                        // children: []
+                        widget
                     };
                     CompositeTreeNode.addChild(newRoot, openEditorNode);
                 }

@@ -71,9 +71,9 @@ import { ClipboardService } from '@theia/core/lib/browser/clipboard-service';
 import { SelectionService } from '@theia/core/lib/common/selection-service';
 import { UriAwareCommandHandler } from '@theia/core/lib/common/uri-command-handler';
 import URI from '@theia/core/lib/common/uri';
-import { OpenEditorsCommands } from './navigator-open-editors-commands';
+import { OpenEditorsCommands } from './open-editors-widget/navigator-open-editors-commands';
 import { EditorManager } from '@theia/editor/lib/browser';
-import { OpenEditorsWidget } from './navigator-open-editors-widget';
+import { OpenEditorsWidget } from './open-editors-widget/navigator-open-editors-widget';
 
 export namespace FileNavigatorCommands {
     export const REVEAL_IN_NAVIGATOR: Command = {

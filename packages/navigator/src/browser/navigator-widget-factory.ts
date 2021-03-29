@@ -22,7 +22,7 @@ import {
     WidgetManager
 } from '@theia/core/lib/browser';
 import { FILE_NAVIGATOR_ID } from './navigator-widget';
-import { OpenEditorsWidget } from './navigator-open-editors-widget';
+import { OpenEditorsWidget } from './open-editors-widget/navigator-open-editors-widget';
 
 export const EXPLORER_VIEW_CONTAINER_ID = 'explorer-view-container';
 export const EXPLORER_VIEW_CONTAINER_TITLE_OPTIONS: ViewContainerTitleOptions = {
