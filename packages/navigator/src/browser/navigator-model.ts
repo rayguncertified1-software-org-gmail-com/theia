@@ -133,7 +133,6 @@ export class FileNavigatorModel extends FileTreeModel {
                 ? this.createMultipleRootNode()
                 : WorkspaceNode.createRoot();
             const roots = await this.workspaceService.roots;
-            console.log('SENTINEL WORKSPACE ROOTS', roots);
             for (const root of roots) {
                 workspaceNode.children.push(
                     await this.tree.createWorkspaceRoot(root, workspaceNode)

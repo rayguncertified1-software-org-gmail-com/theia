@@ -36,7 +36,6 @@ export class OpenEditorsFileDecorator implements TreeDecorator {
     @inject(ApplicationShell) protected readonly shell: ApplicationShell;
 
     readonly id = 'theia-open-editors-file-decorator';
-    // THIS SHOULD FIRE ONLY WHEN SAVEABLE STATE CHANGES
     protected decorationsMap = new Map<string, OpenEditorTreeDecorationData>();
 
     protected readonly decorationsChangedEmitter = new Emitter();

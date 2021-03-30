@@ -27,3 +27,11 @@
     width: var(--theia-open-editors-icon-width);
     padding-right: var(--theia-ui-padding);
 }
+
+#explorer-view-container--theia-open-editors-widget {
+    /* background-color: pink; */
+}
+
+#explorer-view-container .body.ps {
+
+}

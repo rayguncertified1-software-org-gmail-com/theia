@@ -21,7 +21,6 @@ import {
     ContextMenuRenderer,
     defaultTreeProps,
     NodeProps,
-    Tree,
     TreeDecoratorService,
     TreeModel,
     TreeNode,
@@ -29,9 +28,7 @@ import {
     TREE_NODE_CONTENT_CLASS,
 } from '@theia/core/lib/browser';
 import { OpenEditorNode, OpenEditorsModel } from './navigator-open-editors-tree-model';
-// import { OpenEditorsTreeDecoratorService } from './navigator-open-editors-decorator-service';
-import { createFileTreeContainer, FileTree, FileTreeModel, FileTreeWidget } from '@theia/filesystem/lib/browser';
-import { OpenEditorsTree } from './navigator-open-editors-tree';
+import { createFileTreeContainer, FileTreeModel, FileTreeWidget } from '@theia/filesystem/lib/browser';
 import { OpenEditorsTreeDecoratorService } from './navigator-open-editors-decorator-service';
 import { OpenEditorTreeDecorationData } from './navigator-open-editors-file-decorator';
 import { notEmpty } from '@theia/core/lib/common';
@@ -51,10 +48,6 @@ export class OpenEditorsWidget extends FileTreeWidget {
 
     static createContainer(parent: interfaces.Container): Container {
         const child = createFileTreeContainer(parent);
-
-        child.unbind(FileTree);
-        child.bind(OpenEditorsTree).toSelf();
-        child.rebind(Tree).toService(OpenEditorsTree);
 
         child.unbind(FileTreeModel);
         child.bind(OpenEditorsModel).toSelf();
@@ -153,21 +146,16 @@ export class OpenEditorsWidget extends FileTreeWidget {
         return super.getDecorations(node);
     }
 
-    protected closeEditor = (e: React.MouseEvent<HTMLDivElement>) => this.doCloseEditor(e);
-    protected doCloseEditor(e: React.MouseEvent<HTMLDivElement>): void {
+    protected closeEditor = async (e: React.MouseEvent<HTMLDivElement>) => this.doCloseEditor(e);
+    protected async doCloseEditor(e: React.MouseEvent<HTMLDivElement>): Promise<void> {
         const widgetId = e.currentTarget.getAttribute('data-id');
         if (widgetId) {
-            this.applicationShell.closeWidget(widgetId);
+            await this.applicationShell.closeWidget(widgetId);
         }
     }
 
     protected renderFileIcon(node: TreeNode, props: NodeProps): React.ReactNode {
         const icon = this.toNodeIcon(node);
         return icon && <div className={icon + ' file-icon'}></div>;
-    }
-
-    protected async doUpdateDecorations(): Promise<void> {
-        this.decorations = await this.decoratorService.getDecorations(this.model);
-        this.forceUpdate();
     }
 }

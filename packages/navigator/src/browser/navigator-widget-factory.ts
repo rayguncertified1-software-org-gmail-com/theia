@@ -39,13 +39,17 @@ export class NavigatorWidgetFactory implements WidgetFactory {
     readonly id = NavigatorWidgetFactory.ID;
 
     protected fileNavigatorWidgetOptions: ViewContainer.Factory.WidgetOptions = {
+        order: 1,
         canHide: false,
         initiallyCollapsed: false,
+        weight: 80
     };
 
     protected openEditorsWidgetOptions: ViewContainer.Factory.WidgetOptions = {
+        order: 0,
         canHide: true,
         initiallyCollapsed: true,
+        weight: 20
     };
 
     @inject(ViewContainer.Factory)
