@@ -13,6 +13,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
+
 import * as React from 'react';
 import { injectable, interfaces, Container, postConstruct, inject } from 'inversify';
 import {
@@ -26,28 +27,25 @@ import {
     TreeNode,
     TreeProps,
     TREE_NODE_CONTENT_CLASS,
-    // TREE_NODE_SEGMENT_CLASS,
-    // TREE_NODE_SEGMENT_GROW_CLASS
 } from '@theia/core/lib/browser';
-import { OpenEditorsModel } from './navigator-open-editors-tree-model';
+import { OpenEditorNode, OpenEditorsModel } from './navigator-open-editors-tree-model';
 // import { OpenEditorsTreeDecoratorService } from './navigator-open-editors-decorator-service';
-import { createFileTreeContainer, FileStatNode, FileTree, FileTreeModel, FileTreeWidget } from '@theia/filesystem/lib/browser';
+import { createFileTreeContainer, FileTree, FileTreeModel, FileTreeWidget } from '@theia/filesystem/lib/browser';
 import { OpenEditorsTree } from './navigator-open-editors-tree';
 import { OpenEditorsTreeDecoratorService } from './navigator-open-editors-decorator-service';
-// import { notEmpty } from '@theia/core/lib/common';
+import { OpenEditorTreeDecorationData } from './navigator-open-editors-file-decorator';
+import { notEmpty } from '@theia/core/lib/common';
 
 export const OPEN_EDITORS_PROPS: TreeProps = {
     ...defaultTreeProps,
-    // contextMenuPath: NAVIGATOR_CONTEXT_MENU,
     virtualized: false,
-    // multiSelect: true,
-    // search: true,
-    // globalSelection: true
 };
 @injectable()
 export class OpenEditorsWidget extends FileTreeWidget {
     static ID = 'theia-open-editors-widget';
     static LABEL = 'Open Editors';
+
+    static PREFIX_ICON_CLASS = 'open-editors-prefix-icon';
 
     @inject(ApplicationShell) protected readonly applicationShell: ApplicationShell;
 
@@ -92,15 +90,17 @@ export class OpenEditorsWidget extends FileTreeWidget {
         this.addClass(OpenEditorsWidget.ID);
         this.update();
     }
+    protected activeTreeNodePrefixElement: string | undefined | null;
 
-    protected renderNode(node: FileStatNode, props: NodeProps): React.ReactNode {
+    protected renderNode(node: OpenEditorNode, props: NodeProps): React.ReactNode {
         if (!TreeNode.isVisible(node)) {
             return undefined;
         }
         const attributes = this.createNodeAttributes(node, props);
-        const content = <div className={TREE_NODE_CONTENT_CLASS}>
-            {this.renderCloseIcon(node)}
-            {/* {this.renderExpansionToggle(node, props)} */}
+        const content = <div className={TREE_NODE_CONTENT_CLASS}
+            onMouseEnter={this.handleMouseEnter}
+            onMouseLeave={this.handleMouseLeave}>
+            {this.renderPrefixIcon(node)}
             {this.decorateIcon(node, this.renderIcon(node, props))}
             {this.renderCaptionAffixes(node, props, 'captionPrefixes')}
             {this.renderCaption(node, props)}
@@ -110,54 +110,51 @@ export class OpenEditorsWidget extends FileTreeWidget {
         return React.createElement('div', attributes, content);
     }
 
-    //     <div className={`noWrapInfo ${TREE_NODE_SEGMENT_GROW_CLASS}`} >
-    //     <span className='name'>{caption}</span>
-    //     <span className='path'>{path}</span>
-    // </div>
+    protected handleMouseEnter = (e: React.MouseEvent<HTMLDivElement>) => this.doHandleMouseEnter(e);
+    protected doHandleMouseEnter(e: React.MouseEvent<HTMLDivElement>): void {
+        if (e.currentTarget) {
+            this.activeTreeNodePrefixElement = e.currentTarget.querySelector(`.${OpenEditorsWidget.PREFIX_ICON_CLASS}`)?.getAttribute('data-id');
+            this.update();
+        }
+    }
 
-    // protected renderCaption(node: FileStatNode, props: NodeProps): React.ReactNode {
-    //     const tooltip = this.getDecorationData(node, 'tooltip').filter(notEmpty).join(' • ');
-    //     const classes = [TREE_NODE_SEGMENT_CLASS];
-    //     if (!this.hasTrailingSuffixes(node)) {
-    //         classes.push(TREE_NODE_SEGMENT_GROW_CLASS);
-    //     }
-    //     const className = classes.join(' ');
-    //     let attrs = this.decorateCaption(node, {
-    //         className, id: node.id
-    //     });
-    //     if (tooltip.length > 0) {
-    //         attrs = {
-    //             ...attrs,
-    //             title: tooltip
-    //         };
-    //     }
-    //     const children: React.ReactNode[] = [];
-    //     const caption = this.toNodeName(node);
-    //     const highlight = this.getDecorationData(node, 'highlight')[0];
-    //     if (highlight) {
-    //         children.push(this.toReactNode(caption, highlight));
-    //     }
-    //     const searchHighlight = this.searchHighlights ? this.searchHighlights.get(node.id) : undefined;
-    //     if (searchHighlight) {
-    //         children.push(...this.toReactNode(caption, searchHighlight));
-    //     } else if (!highlight) {
-    //         children.push(caption);
-    //     }
-    //     const path = node.uri.parent.relative(node.uri);
-    //     children.push(<span className='tree-node-path'>{path?.toString()}</span>);
-    //     return <div {...attrs}>{...children}</div>;
-    // }
+    protected handleMouseLeave = (e: React.MouseEvent<HTMLElement>) => this.doHandleMouseLeave(e);
+    protected doHandleMouseLeave(e: React.MouseEvent<HTMLElement>): void {
+        if (e.currentTarget) {
+            this.activeTreeNodePrefixElement = undefined;
+            this.update();
+        }
+    }
 
-    protected renderCloseIcon(node: FileStatNode): React.ReactNode {
+    protected renderPrefixIcon(node: OpenEditorNode): React.ReactNode {
         return (<div data-id={node.id}
-            onClick={this.closeOpenEditor}
-            className={'codicon codicon-close'}
+            onClick={this.closeEditor}
+            className={`${OpenEditorsWidget.PREFIX_ICON_CLASS} codicon ${this.getPrefixIconClass(node)}`}
         />);
     }
 
-    protected closeOpenEditor = (e: React.MouseEvent<HTMLDivElement>) => this.doCloseOpenEditor(e);
+    protected getPrefixIconClass(node: OpenEditorNode): string {
+        const isDirty = (this.getDecorationData(node, 'dirty'))[0];
+        const isHighlighedNode = this.activeTreeNodePrefixElement === node.id;
+        if (isHighlighedNode) {
+            return 'codicon-close';
+        } else if (isDirty) {
+            return 'codicon-circle-filled';
+        }
+        return '';
+    }
 
-    protected doCloseOpenEditor(e: React.MouseEvent<HTMLDivElement>): void {
+    protected getDecorationData<K extends keyof OpenEditorTreeDecorationData>(node: TreeNode, key: K): OpenEditorTreeDecorationData[K][] {
+        return this.getDecorations(node).filter(data => data[key] !== undefined).map(data => data[key]).filter(notEmpty);
+    }
+
+    protected getDecorations(node: TreeNode): OpenEditorTreeDecorationData[] {
+        // Return type is set to custom DecorationData. This method is to satisfy TS
+        return super.getDecorations(node);
+    }
+
+    protected closeEditor = (e: React.MouseEvent<HTMLDivElement>) => this.doCloseEditor(e);
+    protected doCloseEditor(e: React.MouseEvent<HTMLDivElement>): void {
         const widgetId = e.currentTarget.getAttribute('data-id');
         if (widgetId) {
             this.applicationShell.closeWidget(widgetId);

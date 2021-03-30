@@ -19,10 +19,15 @@ import { TreeDecorator, TreeDecoration } from '@theia/core/lib/browser/tree/tree
 import { Emitter } from '@theia/core/lib/common/event';
 import { Tree } from '@theia/core/lib/browser/tree/tree';
 import { WorkspaceService } from '@theia/workspace/lib/browser';
-import { ApplicationShell, DepthFirstTreeIterator, LabelProvider } from '@theia/core/lib/browser';
+import { ApplicationShell, DepthFirstTreeIterator, LabelProvider, Saveable } from '@theia/core/lib/browser';
 import URI from '@theia/core/lib/common/uri';
 import { OpenEditorNode } from './navigator-open-editors-tree-model';
 import { EditorPreviewWidget } from '@theia/editor-preview/lib/browser';
+import { Disposable } from '@theia/core/lib/common';
+
+export interface OpenEditorTreeDecorationData extends TreeDecoration.Data {
+    dirty?: boolean;
+}
 
 @injectable()
 export class OpenEditorsFileDecorator implements TreeDecorator {
@@ -32,10 +37,12 @@ export class OpenEditorsFileDecorator implements TreeDecorator {
 
     readonly id = 'theia-open-editors-file-decorator';
     // THIS SHOULD FIRE ONLY WHEN SAVEABLE STATE CHANGES
-    protected decorationsMap = new Map<string, TreeDecoration.Data>();
+    protected decorationsMap = new Map<string, OpenEditorTreeDecorationData>();
 
     protected readonly decorationsChangedEmitter = new Emitter();
     readonly onDidChangeDecorations = this.decorationsChangedEmitter.event;
+    protected readonly toDisposeOnDirtyChanged = new Map<string, Disposable>();
+
     @postConstruct()
     init(): void {
         this.workspaceService.onWorkspaceChanged(event => {
@@ -45,15 +52,18 @@ export class OpenEditorsFileDecorator implements TreeDecorator {
             this.fireDidChangeDecorations((tree: Tree) => this.collectDecorators(tree));
         });
 
-        // this.shell.onDidAddWidget(widget => {
-        //     const saveable = Saveable.get(widget);
-        //     if (saveable) {
-        //         this.toDisposeOnDirtyChanged.set(widget.id, saveable.onDirtyChanged(() => this.fireDidChangeDecorations());
-        //     }
-        // })
+        this.shell.onDidAddWidget(widget => {
+            const saveable = Saveable.get(widget);
+            if (saveable) {
+                this.toDisposeOnDirtyChanged.set(widget.id, saveable.onDirtyChanged(() => {
+                    this.fireDidChangeDecorations((tree: Tree) => this.collectDecorators(tree));
+                }));
+            }
+        });
+        this.shell.onDidRemoveWidget(widget => this.toDisposeOnDirtyChanged.get(widget.id)?.dispose());
     }
 
-    protected fireDidChangeDecorations(event: (tree: Tree) => Promise<Map<string, TreeDecoration.Data>>): void {
+    protected fireDidChangeDecorations(event: (tree: Tree) => Promise<Map<string, OpenEditorTreeDecorationData>>): void {
         this.decorationsChangedEmitter.fire(event);
     }
 
@@ -61,17 +71,19 @@ export class OpenEditorsFileDecorator implements TreeDecorator {
         return this.collectDecorators(tree);
     }
 
-    protected async collectDecorators(tree: Tree): Promise<Map<string, TreeDecoration.Data>> {
+    protected async collectDecorators(tree: Tree): Promise<Map<string, OpenEditorTreeDecorationData>> {
         // Add add workspace root as caption affix and italicize if PreviewWidget
-        const result = new Map<string, TreeDecoration.Data>();
+        const result = new Map<string, OpenEditorTreeDecorationData>();
         if (tree.root === undefined) {
             return result;
         }
         for (const node of new DepthFirstTreeIterator(tree.root)) {
             if (OpenEditorNode.is(node)) {
                 const isPreviewWidget = node.widget.parent instanceof EditorPreviewWidget;
+                const saveable = Saveable.get(node.widget);
                 const path = await this.resolvePathString(node.uri);
-                const decorations: TreeDecoration.Data = {
+                const decorations: OpenEditorTreeDecorationData = {
+                    dirty: saveable?.dirty,
                     captionSuffixes: [
                         {
                             data: path,

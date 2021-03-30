@@ -68,17 +68,21 @@ export class OpenEditorsModel extends FileTreeModel {
             // console.log('SENTINEL LOCATION CHANGED', event);
         }));
         this.toDispose.push(this.applicationShell.onDidChangeCurrentWidget(async () => {
-            setTimeout(async () => {
-                await this.updateOpenWidgets();
-                // console.log('SENTINEL CHANGED CURRENT', this.openWidgets);
-            });
+            this.updateOpenWidgetsAfterTimeout();
+
         }));
+        this.toDispose.push(this.applicationShell.onDidRemoveWidget(async _widget => {
+            this.updateOpenWidgetsAfterTimeout();
+
+        }));
+
         this.toDispose.push(this.editorManager.onActiveEditorChanged(async _widget => {
-            await this.updateOpenWidgets();
+            this.updateOpenWidgetsAfterTimeout();
+
         }));
         this.toDispose.push(this.editorManager.onCreated(async _editorWidget => {
             // console.log('SENTINEL EDITOR WIDGET CREATED', _editorWidget);
-            await this.updateOpenWidgets();
+            this.updateOpenWidgetsAfterTimeout();
         }));
 
         this.toDispose.push(this.editorPreviewManager.onCreated(previewWidget => {
@@ -86,7 +90,7 @@ export class OpenEditorsModel extends FileTreeModel {
                 this.toDisposeOnPreviewWidgetReplaced.dispose();
                 this.editorPreviewWidget = previewWidget;
                 this.toDisposeOnPreviewWidgetReplaced.push(this.editorPreviewWidget.onPinned(async ({ preview, editorWidget }) => {
-                    await this.updateOpenWidgets();
+                    this.updateOpenWidgetsAfterTimeout();
                 }));
                 // console.log('SENTINEL PREVIEW WIDGET UPDATED', this.editorPreviewWidget);
             }
@@ -106,12 +110,12 @@ export class OpenEditorsModel extends FileTreeModel {
         //         console.log('SENTINEL MAIN PANEL ADDED', widget);
         //     });
         // });
-        this.applicationShell.mainPanel.widgetRemoved.connect(async (_, widget) => {
-            setTimeout(async () => {
-                await this.updateOpenWidgets();
-                // console.log('SENTINEL MAIN PANEL REMOVED', widget);
-            });
-        });
+        // this.applicationShell.mainPanel.widgetRemoved.connect(async (_, widget) => {
+        //     setTimeout(async () => {
+        //         await this.updateOpenWidgets();
+        //         // console.log('SENTINEL MAIN PANEL REMOVED', widget);
+        //     });
+        // });
         // this.toDispose.push(this.applicationShell.onDidRemoveWidget(widget => {
         //     if (Saveable.get(widget)) {
         //         setTimeout(async () => {
@@ -124,33 +128,37 @@ export class OpenEditorsModel extends FileTreeModel {
         this.fireChanged();
     }
 
-    protected async updateOpenWidgets(): Promise<void> {
-        // const widgets = this.applicationShell.getWidgets('main').filter(widget => Saveable.get(widget));
-        // const editorWidgets = this.editorManager.all;
-        // console.log('SENTINEL WIDGETS WITH OPEN EDITORS', editorWidgets);
-        // const previewWidget = editorWidgets.spli;
-        const editorPreviewWidget = this.editorPreviewManager.all[0];
-        // console.log('SENTINEL PREVIEW', editorPreviewWidget);
-        const editorWidgets = this.editorManager.all.filter(widget => widget.parent !== editorPreviewWidget);
-        // console.log('SENTINEL EDITORS', editorWidgets);
-        this.openWidgets = [editorPreviewWidget, ...editorWidgets];
-        this.root = await this.buildRootFromOpenedWidgets(this.openWidgets);
+    protected updateOpenWidgetsAfterTimeout = () => this.updateOpenWidgets();
 
-        // let previewWidget: EditorPreviewWidget | undefined = undefined;
-        // let validWidgets = new Set<EditorWidget | EditorPreviewWidget>();
-        // for (const widget of widgets) {
-        //     if (Saveable.get(widget) && (widget instanceof EditorWidget || widget instanceof EditorPreviewWidget)) {
-        //         if (widget instanceof EditorPreviewWidget) {
-        //             previewWidget = widget;
-        //         }
-        //         validWidgets.add(widget);
-        //     }
-        // }
-        // console.log('SENTINEL BEFORE FILTERED WIDGETS', Array.from(validWidgets));
-        // if (previewWidget && previewWidget.editorWidget) {
-        //     validWidgets.delete(previewWidget.editorWidget);
-        // }
-        // this.openWidgets = Array.from(validWidgets);
+    protected async updateOpenWidgets(): Promise<void> {
+        setTimeout(async () => {
+            // const widgets = this.applicationShell.getWidgets('main').filter(widget => Saveable.get(widget));
+            // const editorWidgets = this.editorManager.all;
+            // console.log('SENTINEL WIDGETS WITH OPEN EDITORS', editorWidgets);
+            // const previewWidget = editorWidgets.spli;
+            const editorPreviewWidget = this.editorPreviewManager.all[0];
+            // console.log('SENTINEL PREVIEW', editorPreviewWidget);
+            const editorWidgets = this.editorManager.all.filter(widget => widget.parent !== editorPreviewWidget);
+            // console.log('SENTINEL EDITORS', editorWidgets);
+            this.openWidgets = [editorPreviewWidget, ...editorWidgets];
+            this.root = await this.buildRootFromOpenedWidgets(this.openWidgets);
+
+            // let previewWidget: EditorPreviewWidget | undefined = undefined;
+            // let validWidgets = new Set<EditorWidget | EditorPreviewWidget>();
+            // for (const widget of widgets) {
+            //     if (Saveable.get(widget) && (widget instanceof EditorWidget || widget instanceof EditorPreviewWidget)) {
+            //         if (widget instanceof EditorPreviewWidget) {
+            //             previewWidget = widget;
+            //         }
+            //         validWidgets.add(widget);
+            //     }
+            // }
+            // console.log('SENTINEL BEFORE FILTERED WIDGETS', Array.from(validWidgets));
+            // if (previewWidget && previewWidget.editorWidget) {
+            //     validWidgets.delete(previewWidget.editorWidget);
+            // }
+            // this.openWidgets = Array.from(validWidgets);
+        });
     }
 
     protected async buildRootFromOpenedWidgets(_widgets: Widget[]): Promise<CompositeTreeNode> {
@@ -180,8 +188,6 @@ export class OpenEditorsModel extends FileTreeModel {
             }
 
         }
-        // this.openWidgets.forEach(widget => {
-        // // });
         return newRoot;
     }
 }
