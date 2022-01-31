@@ -4,16 +4,17 @@
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<title>MonacoEditorCommandHandlers | Theia TypeDoc</title>
-	<meta name="description" content="">
+	<meta name="description" content="Documentation for Theia TypeDoc">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
+	<script async src="../assets/js/search.js" id="search-script"></script>
 </head>
 <body>
 <header>
 	<div class="tsd-page-toolbar">
 		<div class="container">
 			<div class="table-wrap">
-				<div class="table-cell" id="tsd-search" data-index="../assets/js/search.js" data-base="..">
+				<div class="table-cell" id="tsd-search" data-index="../assets/js/search.json" data-base="..">
 					<div class="field">
 						<label for="tsd-search-field" class="tsd-widget search no-caption">Search</label>
 						<input id="tsd-search-field" type="text" />
@@ -38,8 +39,6 @@
 							</div>
 							<input type="checkbox" id="tsd-filter-inherited" checked />
 							<label class="tsd-widget" for="tsd-filter-inherited">Inherited</label>
-							<input type="checkbox" id="tsd-filter-only-exported" />
-							<label class="tsd-widget" for="tsd-filter-only-exported">Only exported</label>
 						</div>
 					</div>
 					<a href="#" class="tsd-widget menu no-caption" data-toggle="menu">Menu</a>
@@ -51,7 +50,7 @@
 		<div class="container">
 			<ul class="tsd-breadcrumb">
 				<li>
-					<a href="../globals.html">Globals</a>
+					<a href="../modules.html">Theia TypeDoc</a>
 				</li>
 				<li>
 					<a href="../modules/monaco.html">monaco</a>
@@ -78,22 +77,30 @@
 			<section class="tsd-panel">
 				<h3>Implements</h3>
 				<ul class="tsd-hierarchy">
-					<li><a href="../interfaces/core.commandcontribution.html" class="tsd-signature-type">CommandContribution</a></li>
+					<li><span class="tsd-signature-type">CommandContribution</span></li>
 				</ul>
 			</section>
 			<section class="tsd-panel-group tsd-index-group">
 				<h2>Index</h2>
 				<section class="tsd-panel tsd-index-panel">
 					<div class="tsd-index-content">
+						<section class="tsd-index-section ">
+							<h3>Constructors</h3>
+							<ul class="tsd-index-list">
+								<li class="tsd-kind-constructor tsd-parent-kind-class"><a href="monaco.monacoeditorcommandhandlers.html#constructor" class="tsd-kind-icon">constructor</a></li>
+							</ul>
+						</section>
 						<section class="tsd-index-section tsd-is-private-protected">
 							<h3>Properties</h3>
 							<ul class="tsd-index-list">
 								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-protected"><a href="monaco.monacoeditorcommandhandlers.html#codeeditorservice" class="tsd-kind-icon">code<wbr>Editor<wbr>Service</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-protected"><a href="monaco.monacoeditorcommandhandlers.html#commandregistry" class="tsd-kind-icon">command<wbr>Registry</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-protected"><a href="monaco.monacoeditorcommandhandlers.html#contextkeyservice" class="tsd-kind-icon">context<wbr>Key<wbr>Service</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-protected"><a href="monaco.monacoeditorcommandhandlers.html#editormanager" class="tsd-kind-icon">editor<wbr>Manager</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-protected"><a href="monaco.monacoeditorcommandhandlers.html#monacocommandregistry" class="tsd-kind-icon">monaco<wbr>Command<wbr>Registry</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-protected"><a href="monaco.monacoeditorcommandhandlers.html#p2m" class="tsd-kind-icon">p2m</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-protected"><a href="monaco.monacoeditorcommandhandlers.html#quickopenservice" class="tsd-kind-icon">quick<wbr>Open<wbr>Service</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-protected"><a href="monaco.monacoeditorcommandhandlers.html#quickinputservice" class="tsd-kind-icon">quick<wbr>Input<wbr>Service</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-protected"><a href="monaco.monacoeditorcommandhandlers.html#shell" class="tsd-kind-icon">shell</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-protected"><a href="monaco.monacoeditorcommandhandlers.html#textmodelservice" class="tsd-kind-icon">text<wbr>Model<wbr>Service</a></li>
 							</ul>
 						</section>
@@ -103,88 +110,130 @@
 								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a href="monaco.monacoeditorcommandhandlers.html#configureeol" class="tsd-kind-icon">configure<wbr>Eol</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a href="monaco.monacoeditorcommandhandlers.html#configureindentation" class="tsd-kind-icon">configure<wbr>Indentation</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a href="monaco.monacoeditorcommandhandlers.html#configuretabsize" class="tsd-kind-icon">configure<wbr>Tab<wbr>Size</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a href="monaco.monacoeditorcommandhandlers.html#getactiveeditor" class="tsd-kind-icon">get<wbr>Active<wbr>Editor</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a href="monaco.monacoeditorcommandhandlers.html#newconfigeolhandler" class="tsd-kind-icon">new<wbr>Config<wbr>Eol<wbr>Handler</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a href="monaco.monacoeditorcommandhandlers.html#newconfigindentationhandler" class="tsd-kind-icon">new<wbr>Config<wbr>Indentation<wbr>Handler</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a href="monaco.monacoeditorcommandhandlers.html#newconfigtabsizehandler" class="tsd-kind-icon">new<wbr>Config<wbr>Tab<wbr>Size<wbr>Handler</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a href="monaco.monacoeditorcommandhandlers.html#newrevertactiveeditorhandler" class="tsd-kind-icon">new<wbr>Revert<wbr>Active<wbr>Editor<wbr>Handler</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a href="monaco.monacoeditorcommandhandlers.html#newrevertandcloseactiveeditorhandler" class="tsd-kind-icon">new<wbr>Revert<wbr>And<wbr>Close<wbr>Active<wbr>Editor<wbr>Handler</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a href="monaco.monacoeditorcommandhandlers.html#newshowreferencehandler" class="tsd-kind-icon">new<wbr>Show<wbr>Reference<wbr>Handler</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="monaco.monacoeditorcommandhandlers.html#registercommands" class="tsd-kind-icon">register<wbr>Commands</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a href="monaco.monacoeditorcommandhandlers.html#registereditorcommandhandlers" class="tsd-kind-icon">register<wbr>Editor<wbr>Command<wbr>Handlers</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a href="monaco.monacoeditorcommandhandlers.html#registermonacocommands" class="tsd-kind-icon">register<wbr>Monaco<wbr>Commands</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a href="monaco.monacoeditorcommandhandlers.html#revertandcloseactiveeditor" class="tsd-kind-icon">revert<wbr>And<wbr>Close<wbr>Active<wbr>Editor</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a href="monaco.monacoeditorcommandhandlers.html#reverteditor" class="tsd-kind-icon">revert<wbr>Editor</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a href="monaco.monacoeditorcommandhandlers.html#seteol" class="tsd-kind-icon">set<wbr>Eol</a></li>
 							</ul>
 						</section>
 					</div>
 				</section>
 			</section>
+			<section class="tsd-panel-group tsd-member-group ">
+				<h2>Constructors</h2>
+				<section class="tsd-panel tsd-member tsd-kind-constructor tsd-parent-kind-class">
+					<a name="constructor" class="tsd-anchor"></a>
+					<h3>constructor</h3>
+					<ul class="tsd-signatures tsd-kind-constructor tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">new <wbr>Monaco<wbr>Editor<wbr>Command<wbr>Handlers<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="monaco.monacoeditorcommandhandlers.html" class="tsd-signature-type" data-tsd-kind="Class">MonacoEditorCommandHandlers</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+							</aside>
+							<h4 class="tsd-returns-title">Returns <a href="monaco.monacoeditorcommandhandlers.html" class="tsd-signature-type" data-tsd-kind="Class">MonacoEditorCommandHandlers</a></h4>
+						</li>
+					</ul>
+				</section>
+			</section>
 			<section class="tsd-panel-group tsd-member-group tsd-is-private-protected">
 				<h2>Properties</h2>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-protected">
 					<a name="codeeditorservice" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagProtected">Protected</span> code<wbr>Editor<wbr>Service</h3>
-					<div class="tsd-signature tsd-kind-icon">code<wbr>Editor<wbr>Service<span class="tsd-signature-symbol">:</span> <a href="monaco.monacoeditorservice.html" class="tsd-signature-type">MonacoEditorService</a></div>
+					<h3><span class="tsd-flag ts-flagProtected">Protected</span> <span class="tsd-flag ts-flagReadonly">Readonly</span> code<wbr>Editor<wbr>Service</h3>
+					<div class="tsd-signature tsd-kind-icon">code<wbr>Editor<wbr>Service<span class="tsd-signature-symbol">:</span> <a href="monaco.monacoeditorservice.html" class="tsd-signature-type" data-tsd-kind="Class">MonacoEditorService</a></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/eclipse-theia/theia/blob/db5f57b/packages/monaco/src/browser/monaco-command.ts#L66">packages/monaco/src/browser/monaco-command.ts:66</a></li>
+							<li>Defined in <a href="https://github.com/kenneth-marut-work/theia/blob/be4eba9d5/packages/monaco/src/browser/monaco-command.ts#L65">packages/monaco/src/browser/monaco-command.ts:65</a></li>
 						</ul>
 					</aside>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-protected">
 					<a name="commandregistry" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagProtected">Protected</span> command<wbr>Registry</h3>
-					<div class="tsd-signature tsd-kind-icon">command<wbr>Registry<span class="tsd-signature-symbol">:</span> <a href="core.commandregistry.html" class="tsd-signature-type">CommandRegistry</a></div>
+					<h3><span class="tsd-flag ts-flagProtected">Protected</span> <span class="tsd-flag ts-flagReadonly">Readonly</span> command<wbr>Registry</h3>
+					<div class="tsd-signature tsd-kind-icon">command<wbr>Registry<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">CommandRegistry</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/eclipse-theia/theia/blob/db5f57b/packages/monaco/src/browser/monaco-command.ts#L57">packages/monaco/src/browser/monaco-command.ts:57</a></li>
+							<li>Defined in <a href="https://github.com/kenneth-marut-work/theia/blob/be4eba9d5/packages/monaco/src/browser/monaco-command.ts#L56">packages/monaco/src/browser/monaco-command.ts:56</a></li>
 						</ul>
 					</aside>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-protected">
 					<a name="contextkeyservice" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagProtected">Protected</span> context<wbr>Key<wbr>Service</h3>
+					<h3><span class="tsd-flag ts-flagProtected">Protected</span> <span class="tsd-flag ts-flagReadonly">Readonly</span> context<wbr>Key<wbr>Service</h3>
 					<div class="tsd-signature tsd-kind-icon">context<wbr>Key<wbr>Service<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">ContextKeyService</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/eclipse-theia/theia/blob/db5f57b/packages/monaco/src/browser/monaco-command.ts#L72">packages/monaco/src/browser/monaco-command.ts:72</a></li>
+							<li>Defined in <a href="https://github.com/kenneth-marut-work/theia/blob/be4eba9d5/packages/monaco/src/browser/monaco-command.ts#L71">packages/monaco/src/browser/monaco-command.ts:71</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-protected">
+					<a name="editormanager" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagProtected">Protected</span> editor<wbr>Manager</h3>
+					<div class="tsd-signature tsd-kind-icon">editor<wbr>Manager<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">EditorManager</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/kenneth-marut-work/theia/blob/be4eba9d5/packages/monaco/src/browser/monaco-command.ts#L77">packages/monaco/src/browser/monaco-command.ts:77</a></li>
 						</ul>
 					</aside>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-protected">
 					<a name="monacocommandregistry" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagProtected">Protected</span> monaco<wbr>Command<wbr>Registry</h3>
-					<div class="tsd-signature tsd-kind-icon">monaco<wbr>Command<wbr>Registry<span class="tsd-signature-symbol">:</span> <a href="monaco.monacocommandregistry.html" class="tsd-signature-type">MonacoCommandRegistry</a></div>
+					<h3><span class="tsd-flag ts-flagProtected">Protected</span> <span class="tsd-flag ts-flagReadonly">Readonly</span> monaco<wbr>Command<wbr>Registry</h3>
+					<div class="tsd-signature tsd-kind-icon">monaco<wbr>Command<wbr>Registry<span class="tsd-signature-symbol">:</span> <a href="monaco.monacocommandregistry.html" class="tsd-signature-type" data-tsd-kind="Class">MonacoCommandRegistry</a></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/eclipse-theia/theia/blob/db5f57b/packages/monaco/src/browser/monaco-command.ts#L54">packages/monaco/src/browser/monaco-command.ts:54</a></li>
+							<li>Defined in <a href="https://github.com/kenneth-marut-work/theia/blob/be4eba9d5/packages/monaco/src/browser/monaco-command.ts#L53">packages/monaco/src/browser/monaco-command.ts:53</a></li>
 						</ul>
 					</aside>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-protected">
 					<a name="p2m" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagProtected">Protected</span> p2m</h3>
-					<div class="tsd-signature tsd-kind-icon">p2m<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">ProtocolToMonacoConverter</span></div>
+					<h3><span class="tsd-flag ts-flagProtected">Protected</span> <span class="tsd-flag ts-flagReadonly">Readonly</span> p2m</h3>
+					<div class="tsd-signature tsd-kind-icon">p2m<span class="tsd-signature-symbol">:</span> <a href="monaco.protocoltomonacoconverter.html" class="tsd-signature-type" data-tsd-kind="Class">ProtocolToMonacoConverter</a></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/eclipse-theia/theia/blob/db5f57b/packages/monaco/src/browser/monaco-command.ts#L60">packages/monaco/src/browser/monaco-command.ts:60</a></li>
+							<li>Defined in <a href="https://github.com/kenneth-marut-work/theia/blob/be4eba9d5/packages/monaco/src/browser/monaco-command.ts#L59">packages/monaco/src/browser/monaco-command.ts:59</a></li>
 						</ul>
 					</aside>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-protected">
-					<a name="quickopenservice" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagProtected">Protected</span> quick<wbr>Open<wbr>Service</h3>
-					<div class="tsd-signature tsd-kind-icon">quick<wbr>Open<wbr>Service<span class="tsd-signature-symbol">:</span> <a href="core.quickopenservice.html" class="tsd-signature-type">QuickOpenService</a></div>
+					<a name="quickinputservice" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagProtected">Protected</span> <span class="tsd-flag ts-flagReadonly">Readonly</span> quick<wbr>Input<wbr>Service</h3>
+					<div class="tsd-signature tsd-kind-icon">quick<wbr>Input<wbr>Service<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">QuickInputService</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/eclipse-theia/theia/blob/db5f57b/packages/monaco/src/browser/monaco-command.ts#L63">packages/monaco/src/browser/monaco-command.ts:63</a></li>
+							<li>Defined in <a href="https://github.com/kenneth-marut-work/theia/blob/be4eba9d5/packages/monaco/src/browser/monaco-command.ts#L62">packages/monaco/src/browser/monaco-command.ts:62</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-protected">
+					<a name="shell" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagProtected">Protected</span> <span class="tsd-flag ts-flagReadonly">Readonly</span> shell</h3>
+					<div class="tsd-signature tsd-kind-icon">shell<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">ApplicationShell</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/kenneth-marut-work/theia/blob/be4eba9d5/packages/monaco/src/browser/monaco-command.ts#L74">packages/monaco/src/browser/monaco-command.ts:74</a></li>
 						</ul>
 					</aside>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-protected">
 					<a name="textmodelservice" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagProtected">Protected</span> text<wbr>Model<wbr>Service</h3>
-					<div class="tsd-signature tsd-kind-icon">text<wbr>Model<wbr>Service<span class="tsd-signature-symbol">:</span> <a href="monaco.monacotextmodelservice.html" class="tsd-signature-type">MonacoTextModelService</a></div>
+					<h3><span class="tsd-flag ts-flagProtected">Protected</span> <span class="tsd-flag ts-flagReadonly">Readonly</span> text<wbr>Model<wbr>Service</h3>
+					<div class="tsd-signature tsd-kind-icon">text<wbr>Model<wbr>Service<span class="tsd-signature-symbol">:</span> <a href="monaco.monacotextmodelservice.html" class="tsd-signature-type" data-tsd-kind="Class">MonacoTextModelService</a></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/eclipse-theia/theia/blob/db5f57b/packages/monaco/src/browser/monaco-command.ts#L69">packages/monaco/src/browser/monaco-command.ts:69</a></li>
+							<li>Defined in <a href="https://github.com/kenneth-marut-work/theia/blob/be4eba9d5/packages/monaco/src/browser/monaco-command.ts#L68">packages/monaco/src/browser/monaco-command.ts:68</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -195,19 +244,19 @@
 					<a name="configureeol" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagProtected">Protected</span> configure<wbr>Eol</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected">
-						<li class="tsd-signature tsd-kind-icon">configure<wbr>Eol<span class="tsd-signature-symbol">(</span>editor<span class="tsd-signature-symbol">: </span><a href="monaco.monacoeditor.html" class="tsd-signature-type">MonacoEditor</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+						<li class="tsd-signature tsd-kind-icon">configure<wbr>Eol<span class="tsd-signature-symbol">(</span>editor<span class="tsd-signature-symbol">: </span><a href="monaco.monacoeditor-1.html" class="tsd-signature-type" data-tsd-kind="Class">MonacoEditor</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/eclipse-theia/theia/blob/db5f57b/packages/monaco/src/browser/monaco-command.ts#L229">packages/monaco/src/browser/monaco-command.ts:229</a></li>
+									<li>Defined in <a href="https://github.com/kenneth-marut-work/theia/blob/be4eba9d5/packages/monaco/src/browser/monaco-command.ts#L231">packages/monaco/src/browser/monaco-command.ts:231</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>editor: <a href="monaco.monacoeditor.html" class="tsd-signature-type">MonacoEditor</a></h5>
+									<h5>editor: <a href="monaco.monacoeditor-1.html" class="tsd-signature-type" data-tsd-kind="Class">MonacoEditor</a></h5>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
@@ -218,19 +267,19 @@
 					<a name="configureindentation" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagProtected">Protected</span> configure<wbr>Indentation</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected">
-						<li class="tsd-signature tsd-kind-icon">configure<wbr>Indentation<span class="tsd-signature-symbol">(</span>editor<span class="tsd-signature-symbol">: </span><a href="monaco.monacoeditor.html" class="tsd-signature-type">MonacoEditor</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+						<li class="tsd-signature tsd-kind-icon">configure<wbr>Indentation<span class="tsd-signature-symbol">(</span>editor<span class="tsd-signature-symbol">: </span><a href="monaco.monacoeditor-1.html" class="tsd-signature-type" data-tsd-kind="Class">MonacoEditor</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/eclipse-theia/theia/blob/db5f57b/packages/monaco/src/browser/monaco-command.ts#L205">packages/monaco/src/browser/monaco-command.ts:205</a></li>
+									<li>Defined in <a href="https://github.com/kenneth-marut-work/theia/blob/be4eba9d5/packages/monaco/src/browser/monaco-command.ts#L217">packages/monaco/src/browser/monaco-command.ts:217</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>editor: <a href="monaco.monacoeditor.html" class="tsd-signature-type">MonacoEditor</a></h5>
+									<h5>editor: <a href="monaco.monacoeditor-1.html" class="tsd-signature-type" data-tsd-kind="Class">MonacoEditor</a></h5>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
@@ -241,19 +290,19 @@
 					<a name="configuretabsize" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagProtected">Protected</span> configure<wbr>Tab<wbr>Size</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected">
-						<li class="tsd-signature tsd-kind-icon">configure<wbr>Tab<wbr>Size<span class="tsd-signature-symbol">(</span>editor<span class="tsd-signature-symbol">: </span><a href="monaco.monacoeditor.html" class="tsd-signature-type">MonacoEditor</a>, useSpaces<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+						<li class="tsd-signature tsd-kind-icon">configure<wbr>Tab<wbr>Size<span class="tsd-signature-symbol">(</span>editor<span class="tsd-signature-symbol">: </span><a href="monaco.monacoeditor-1.html" class="tsd-signature-type" data-tsd-kind="Class">MonacoEditor</a>, useSpaces<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/eclipse-theia/theia/blob/db5f57b/packages/monaco/src/browser/monaco-command.ts#L264">packages/monaco/src/browser/monaco-command.ts:264</a></li>
+									<li>Defined in <a href="https://github.com/kenneth-marut-work/theia/blob/be4eba9d5/packages/monaco/src/browser/monaco-command.ts#L257">packages/monaco/src/browser/monaco-command.ts:257</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>editor: <a href="monaco.monacoeditor.html" class="tsd-signature-type">MonacoEditor</a></h5>
+									<h5>editor: <a href="monaco.monacoeditor-1.html" class="tsd-signature-type" data-tsd-kind="Class">MonacoEditor</a></h5>
 								</li>
 								<li>
 									<h5>useSpaces: <span class="tsd-signature-type">boolean</span></h5>
@@ -264,19 +313,44 @@
 					</ul>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-protected">
-					<a name="newconfigeolhandler" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagProtected">Protected</span> new<wbr>Config<wbr>Eol<wbr>Handler</h3>
+					<a name="getactiveeditor" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagProtected">Protected</span> get<wbr>Active<wbr>Editor</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected">
-						<li class="tsd-signature tsd-kind-icon">new<wbr>Config<wbr>Eol<wbr>Handler<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/monaco.monacoeditorcommandhandler.html" class="tsd-signature-type">MonacoEditorCommandHandler</a></li>
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Active<wbr>Editor<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">{ </span>editor<span class="tsd-signature-symbol">?: </span><a href="monaco.monacoeditor-1.html" class="tsd-signature-type" data-tsd-kind="Class">MonacoEditor</a><span class="tsd-signature-symbol">; </span>widget<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">EditorWidget</span><span class="tsd-signature-symbol"> }</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/eclipse-theia/theia/blob/db5f57b/packages/monaco/src/browser/monaco-command.ts#L223">packages/monaco/src/browser/monaco-command.ts:223</a></li>
+									<li>Defined in <a href="https://github.com/kenneth-marut-work/theia/blob/be4eba9d5/packages/monaco/src/browser/monaco-command.ts#L288">packages/monaco/src/browser/monaco-command.ts:288</a></li>
 								</ul>
 							</aside>
-							<h4 class="tsd-returns-title">Returns <a href="../interfaces/monaco.monacoeditorcommandhandler.html" class="tsd-signature-type">MonacoEditorCommandHandler</a></h4>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-symbol">{ </span>editor<span class="tsd-signature-symbol">?: </span><a href="monaco.monacoeditor-1.html" class="tsd-signature-type" data-tsd-kind="Class">MonacoEditor</a><span class="tsd-signature-symbol">; </span>widget<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">EditorWidget</span><span class="tsd-signature-symbol"> }</span></h4>
+							<ul class="tsd-parameters">
+								<li class="tsd-parameter">
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> editor<span class="tsd-signature-symbol">?: </span><a href="monaco.monacoeditor-1.html" class="tsd-signature-type" data-tsd-kind="Class">MonacoEditor</a></h5>
+								</li>
+								<li class="tsd-parameter">
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> widget<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">EditorWidget</span></h5>
+								</li>
+							</ul>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-protected">
+					<a name="newconfigeolhandler" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagProtected">Protected</span> new<wbr>Config<wbr>Eol<wbr>Handler</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected">
+						<li class="tsd-signature tsd-kind-icon">new<wbr>Config<wbr>Eol<wbr>Handler<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/monaco.monacoeditorcommandhandler.html" class="tsd-signature-type" data-tsd-kind="Interface">MonacoEditorCommandHandler</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/kenneth-marut-work/theia/blob/be4eba9d5/packages/monaco/src/browser/monaco-command.ts#L225">packages/monaco/src/browser/monaco-command.ts:225</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-returns-title">Returns <a href="../interfaces/monaco.monacoeditorcommandhandler.html" class="tsd-signature-type" data-tsd-kind="Interface">MonacoEditorCommandHandler</a></h4>
 						</li>
 					</ul>
 				</section>
@@ -284,16 +358,16 @@
 					<a name="newconfigindentationhandler" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagProtected">Protected</span> new<wbr>Config<wbr>Indentation<wbr>Handler</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected">
-						<li class="tsd-signature tsd-kind-icon">new<wbr>Config<wbr>Indentation<wbr>Handler<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/monaco.monacoeditorcommandhandler.html" class="tsd-signature-type">MonacoEditorCommandHandler</a></li>
+						<li class="tsd-signature tsd-kind-icon">new<wbr>Config<wbr>Indentation<wbr>Handler<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/monaco.monacoeditorcommandhandler.html" class="tsd-signature-type" data-tsd-kind="Interface">MonacoEditorCommandHandler</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/eclipse-theia/theia/blob/db5f57b/packages/monaco/src/browser/monaco-command.ts#L200">packages/monaco/src/browser/monaco-command.ts:200</a></li>
+									<li>Defined in <a href="https://github.com/kenneth-marut-work/theia/blob/be4eba9d5/packages/monaco/src/browser/monaco-command.ts#L212">packages/monaco/src/browser/monaco-command.ts:212</a></li>
 								</ul>
 							</aside>
-							<h4 class="tsd-returns-title">Returns <a href="../interfaces/monaco.monacoeditorcommandhandler.html" class="tsd-signature-type">MonacoEditorCommandHandler</a></h4>
+							<h4 class="tsd-returns-title">Returns <a href="../interfaces/monaco.monacoeditorcommandhandler.html" class="tsd-signature-type" data-tsd-kind="Interface">MonacoEditorCommandHandler</a></h4>
 						</li>
 					</ul>
 				</section>
@@ -301,13 +375,13 @@
 					<a name="newconfigtabsizehandler" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagProtected">Protected</span> new<wbr>Config<wbr>Tab<wbr>Size<wbr>Handler</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected">
-						<li class="tsd-signature tsd-kind-icon">new<wbr>Config<wbr>Tab<wbr>Size<wbr>Handler<span class="tsd-signature-symbol">(</span>useSpaces<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/monaco.monacoeditorcommandhandler.html" class="tsd-signature-type">MonacoEditorCommandHandler</a></li>
+						<li class="tsd-signature tsd-kind-icon">new<wbr>Config<wbr>Tab<wbr>Size<wbr>Handler<span class="tsd-signature-symbol">(</span>useSpaces<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/monaco.monacoeditorcommandhandler.html" class="tsd-signature-type" data-tsd-kind="Interface">MonacoEditorCommandHandler</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/eclipse-theia/theia/blob/db5f57b/packages/monaco/src/browser/monaco-command.ts#L259">packages/monaco/src/browser/monaco-command.ts:259</a></li>
+									<li>Defined in <a href="https://github.com/kenneth-marut-work/theia/blob/be4eba9d5/packages/monaco/src/browser/monaco-command.ts#L252">packages/monaco/src/browser/monaco-command.ts:252</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -316,7 +390,41 @@
 									<h5>useSpaces: <span class="tsd-signature-type">boolean</span></h5>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="../interfaces/monaco.monacoeditorcommandhandler.html" class="tsd-signature-type">MonacoEditorCommandHandler</a></h4>
+							<h4 class="tsd-returns-title">Returns <a href="../interfaces/monaco.monacoeditorcommandhandler.html" class="tsd-signature-type" data-tsd-kind="Interface">MonacoEditorCommandHandler</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-protected">
+					<a name="newrevertactiveeditorhandler" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagProtected">Protected</span> new<wbr>Revert<wbr>Active<wbr>Editor<wbr>Handler</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected">
+						<li class="tsd-signature tsd-kind-icon">new<wbr>Revert<wbr>Active<wbr>Editor<wbr>Handler<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/monaco.monacoeditorcommandhandler.html" class="tsd-signature-type" data-tsd-kind="Interface">MonacoEditorCommandHandler</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/kenneth-marut-work/theia/blob/be4eba9d5/packages/monaco/src/browser/monaco-command.ts#L276">packages/monaco/src/browser/monaco-command.ts:276</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-returns-title">Returns <a href="../interfaces/monaco.monacoeditorcommandhandler.html" class="tsd-signature-type" data-tsd-kind="Interface">MonacoEditorCommandHandler</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-protected">
+					<a name="newrevertandcloseactiveeditorhandler" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagProtected">Protected</span> new<wbr>Revert<wbr>And<wbr>Close<wbr>Active<wbr>Editor<wbr>Handler</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected">
+						<li class="tsd-signature tsd-kind-icon">new<wbr>Revert<wbr>And<wbr>Close<wbr>Active<wbr>Editor<wbr>Handler<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/monaco.monacoeditorcommandhandler.html" class="tsd-signature-type" data-tsd-kind="Interface">MonacoEditorCommandHandler</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/kenneth-marut-work/theia/blob/be4eba9d5/packages/monaco/src/browser/monaco-command.ts#L282">packages/monaco/src/browser/monaco-command.ts:282</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-returns-title">Returns <a href="../interfaces/monaco.monacoeditorcommandhandler.html" class="tsd-signature-type" data-tsd-kind="Interface">MonacoEditorCommandHandler</a></h4>
 						</li>
 					</ul>
 				</section>
@@ -324,16 +432,16 @@
 					<a name="newshowreferencehandler" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagProtected">Protected</span> new<wbr>Show<wbr>Reference<wbr>Handler</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected">
-						<li class="tsd-signature tsd-kind-icon">new<wbr>Show<wbr>Reference<wbr>Handler<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/monaco.monacoeditorcommandhandler.html" class="tsd-signature-type">MonacoEditorCommandHandler</a></li>
+						<li class="tsd-signature tsd-kind-icon">new<wbr>Show<wbr>Reference<wbr>Handler<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/monaco.monacoeditorcommandhandler.html" class="tsd-signature-type" data-tsd-kind="Interface">MonacoEditorCommandHandler</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/eclipse-theia/theia/blob/db5f57b/packages/monaco/src/browser/monaco-command.ts#L187">packages/monaco/src/browser/monaco-command.ts:187</a></li>
+									<li>Defined in <a href="https://github.com/kenneth-marut-work/theia/blob/be4eba9d5/packages/monaco/src/browser/monaco-command.ts#L199">packages/monaco/src/browser/monaco-command.ts:199</a></li>
 								</ul>
 							</aside>
-							<h4 class="tsd-returns-title">Returns <a href="../interfaces/monaco.monacoeditorcommandhandler.html" class="tsd-signature-type">MonacoEditorCommandHandler</a></h4>
+							<h4 class="tsd-returns-title">Returns <a href="../interfaces/monaco.monacoeditorcommandhandler.html" class="tsd-signature-type" data-tsd-kind="Interface">MonacoEditorCommandHandler</a></h4>
 						</li>
 					</ul>
 				</section>
@@ -346,8 +454,9 @@
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
+								<p>Implementation of CommandContribution.registerCommands</p>
 								<ul>
-									<li>Defined in <a href="https://github.com/eclipse-theia/theia/blob/db5f57b/packages/monaco/src/browser/monaco-command.ts#L74">packages/monaco/src/browser/monaco-command.ts:74</a></li>
+									<li>Defined in <a href="https://github.com/kenneth-marut-work/theia/blob/be4eba9d5/packages/monaco/src/browser/monaco-command.ts#L79">packages/monaco/src/browser/monaco-command.ts:79</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
@@ -364,7 +473,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/eclipse-theia/theia/blob/db5f57b/packages/monaco/src/browser/monaco-command.ts#L179">packages/monaco/src/browser/monaco-command.ts:179</a></li>
+									<li>Defined in <a href="https://github.com/kenneth-marut-work/theia/blob/be4eba9d5/packages/monaco/src/browser/monaco-command.ts#L189">packages/monaco/src/browser/monaco-command.ts:189</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
@@ -381,7 +490,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/eclipse-theia/theia/blob/db5f57b/packages/monaco/src/browser/monaco-command.ts#L126">packages/monaco/src/browser/monaco-command.ts:126</a></li>
+									<li>Defined in <a href="https://github.com/kenneth-marut-work/theia/blob/be4eba9d5/packages/monaco/src/browser/monaco-command.ts#L131">packages/monaco/src/browser/monaco-command.ts:131</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -399,13 +508,13 @@
 									<h3>Editor Commands</h3>
 								</a>
 								<p>Such actions should be enabled only if the current editor is available.</p>
-								<p><code>actions.find</code> and <code>editor.action.startFindReplaceAction</code> are registed as handlers for <code>find</code> and <code>replace</code>.
-									If handlers are not enabled then the core should prevent the default browser behaviour.
+								<p><code>actions.find</code> and <code>editor.action.startFindReplaceAction</code> are registered as handlers for <code>find</code> and <code>replace</code>.
+									If handlers are not enabled then the core should prevent the default browser behavior.
 								Other Theia extensions can register alternative implementations using custom enablement.</p>
 								<a href="#global-commands" id="global-commands" style="color: inherit; text-decoration: none;">
 									<h3>Global Commands</h3>
 								</a>
-								<p>These commands are not necessary dependend on the current editor and enabled always.
+								<p>These commands are not necessary dependent on the current editor and enabled always.
 									But they depend on services which are global in VS Code, but bound to the editor in Monaco,
 								i.e. <code>ICodeEditorService</code> or <code>IContextKeyService</code>. We should take care of providing Theia implementations for such services.</p>
 								<a href="#global-native-or-editor-commands" id="global-native-or-editor-commands" style="color: inherit; text-decoration: none;">
@@ -435,22 +544,76 @@
 					</ul>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-protected">
-					<a name="seteol" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagProtected">Protected</span> set<wbr>Eol</h3>
+					<a name="revertandcloseactiveeditor" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagProtected">Protected</span> revert<wbr>And<wbr>Close<wbr>Active<wbr>Editor</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected">
-						<li class="tsd-signature tsd-kind-icon">set<wbr>Eol<span class="tsd-signature-symbol">(</span>editor<span class="tsd-signature-symbol">: </span><a href="monaco.monacoeditor.html" class="tsd-signature-type">MonacoEditor</a>, lineEnding<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+						<li class="tsd-signature tsd-kind-icon">revert<wbr>And<wbr>Close<wbr>Active<wbr>Editor<span class="tsd-signature-symbol">(</span>current<span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">{ </span>editor<span class="tsd-signature-symbol">?: </span><a href="monaco.monacoeditor-1.html" class="tsd-signature-type" data-tsd-kind="Class">MonacoEditor</a><span class="tsd-signature-symbol">; </span>widget<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">EditorWidget</span><span class="tsd-signature-symbol"> }</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/eclipse-theia/theia/blob/db5f57b/packages/monaco/src/browser/monaco-command.ts#L248">packages/monaco/src/browser/monaco-command.ts:248</a></li>
+									<li>Defined in <a href="https://github.com/kenneth-marut-work/theia/blob/be4eba9d5/packages/monaco/src/browser/monaco-command.ts#L299">packages/monaco/src/browser/monaco-command.ts:299</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>editor: <a href="monaco.monacoeditor.html" class="tsd-signature-type">MonacoEditor</a></h5>
+									<h5>current: <span class="tsd-signature-symbol">{ </span>editor<span class="tsd-signature-symbol">?: </span><a href="monaco.monacoeditor-1.html" class="tsd-signature-type" data-tsd-kind="Class">MonacoEditor</a><span class="tsd-signature-symbol">; </span>widget<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">EditorWidget</span><span class="tsd-signature-symbol"> }</span></h5>
+									<ul class="tsd-parameters">
+										<li class="tsd-parameter">
+											<h5><span class="tsd-flag ts-flagOptional">Optional</span> editor<span class="tsd-signature-symbol">?: </span><a href="monaco.monacoeditor-1.html" class="tsd-signature-type" data-tsd-kind="Class">MonacoEditor</a></h5>
+										</li>
+										<li class="tsd-parameter">
+											<h5><span class="tsd-flag ts-flagOptional">Optional</span> widget<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">EditorWidget</span></h5>
+										</li>
+									</ul>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-protected">
+					<a name="reverteditor" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagProtected">Protected</span> revert<wbr>Editor</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected">
+						<li class="tsd-signature tsd-kind-icon">revert<wbr>Editor<span class="tsd-signature-symbol">(</span>editor<span class="tsd-signature-symbol">?: </span><a href="monaco.monacoeditor-1.html" class="tsd-signature-type" data-tsd-kind="Class">MonacoEditor</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/kenneth-marut-work/theia/blob/be4eba9d5/packages/monaco/src/browser/monaco-command.ts#L293">packages/monaco/src/browser/monaco-command.ts:293</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> editor: <a href="monaco.monacoeditor-1.html" class="tsd-signature-type" data-tsd-kind="Class">MonacoEditor</a></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-protected">
+					<a name="seteol" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagProtected">Protected</span> set<wbr>Eol</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected">
+						<li class="tsd-signature tsd-kind-icon">set<wbr>Eol<span class="tsd-signature-symbol">(</span>editor<span class="tsd-signature-symbol">: </span><a href="monaco.monacoeditor-1.html" class="tsd-signature-type" data-tsd-kind="Class">MonacoEditor</a>, lineEnding<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/kenneth-marut-work/theia/blob/be4eba9d5/packages/monaco/src/browser/monaco-command.ts#L241">packages/monaco/src/browser/monaco-command.ts:241</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>editor: <a href="monaco.monacoeditor-1.html" class="tsd-signature-type" data-tsd-kind="Class">MonacoEditor</a></h5>
 								</li>
 								<li>
 									<h5>lineEnding: <span class="tsd-signature-type">string</span></h5>
@@ -465,44 +628,62 @@
 		<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
 			<nav class="tsd-navigation primary">
 				<ul>
-					<li class="globals  ">
-						<a href="../globals.html"><em>Globals</em></a>
+					<li class=" ">
+						<a href="../modules.html">Exports</a>
 					</li>
-					<li class="current tsd-kind-external-module">
+					<li class="current tsd-kind-module">
 						<a href="../modules/monaco.html">monaco</a>
 						<ul>
-							<li class=" tsd-kind-module tsd-parent-kind-external-module">
-								<a href="../modules/monaco.createresourceedit.html">Create<wbr>Resource<wbr>Edit</a>
-							</li>
-							<li class=" tsd-kind-module tsd-parent-kind-external-module">
-								<a href="../modules/monaco.deleteresourceedit.html">Delete<wbr>Resource<wbr>Edit</a>
-							</li>
-							<li class=" tsd-kind-module tsd-parent-kind-external-module">
-								<a href="../modules/monaco.editsbyeditor.html">Edits<wbr>ByEditor</a>
-							</li>
-							<li class=" tsd-kind-module tsd-parent-kind-external-module">
+							<li class=" tsd-kind-namespace tsd-parent-kind-module">
 								<a href="../modules/monaco.jsonserializedsnippet.html">Json<wbr>Serialized<wbr>Snippet</a>
 							</li>
-							<li class=" tsd-kind-module tsd-parent-kind-external-module">
+							<li class=" tsd-kind-namespace tsd-parent-kind-module">
 								<a href="../modules/monaco.monacocommands.html">Monaco<wbr>Commands</a>
 							</li>
-							<li class=" tsd-kind-module tsd-parent-kind-external-module">
+							<li class=" tsd-kind-namespace tsd-parent-kind-module">
+								<a href="../modules/monaco.monacodiffeditor.html">Monaco<wbr>Diff<wbr>Editor</a>
+							</li>
+							<li class=" tsd-kind-namespace tsd-parent-kind-module">
+								<a href="../modules/monaco.monacoeditor.html">Monaco<wbr>Editor</a>
+							</li>
+							<li class=" tsd-kind-namespace tsd-parent-kind-module">
+								<a href="../modules/monaco.monacoeditormodel.html">Monaco<wbr>Editor<wbr>Model</a>
+							</li>
+							<li class=" tsd-kind-namespace tsd-parent-kind-module">
+								<a href="../modules/monaco.monacoeditorzonewidget.html">Monaco<wbr>Editor<wbr>Zone<wbr>Widget</a>
+							</li>
+							<li class=" tsd-kind-namespace tsd-parent-kind-module">
 								<a href="../modules/monaco.monacomenus.html">Monaco<wbr>Menus</a>
 							</li>
-							<li class=" tsd-kind-module tsd-parent-kind-external-module">
+							<li class=" tsd-kind-namespace tsd-parent-kind-module">
+								<a href="../modules/monaco.monacooutlinecontribution.html">Monaco<wbr>Outline<wbr>Contribution</a>
+							</li>
+							<li class=" tsd-kind-namespace tsd-parent-kind-module">
 								<a href="../modules/monaco.monacooutlinesymbolinformationnode.html">Monaco<wbr>Outline<wbr>Symbol<wbr>Information<wbr>Node</a>
 							</li>
-							<li class=" tsd-kind-module tsd-parent-kind-external-module">
+							<li class=" tsd-kind-namespace tsd-parent-kind-module">
+								<a href="../modules/monaco.monacorangereplace.html">Monaco<wbr>Range<wbr>Replace</a>
+							</li>
+							<li class=" tsd-kind-namespace tsd-parent-kind-module">
+								<a href="../modules/monaco.monacothemeregistry.html">Monaco<wbr>Theme<wbr>Registry</a>
+							</li>
+							<li class=" tsd-kind-namespace tsd-parent-kind-module">
 								<a href="../modules/monaco.monacothemestate.html">Monaco<wbr>Theme<wbr>State</a>
 							</li>
-							<li class=" tsd-kind-module tsd-parent-kind-external-module">
-								<a href="../modules/monaco.renameresourceedit.html">Rename<wbr>Resource<wbr>Edit</a>
+							<li class=" tsd-kind-namespace tsd-parent-kind-module">
+								<a href="../modules/monaco.resourcefileedit.html">Resource<wbr>File<wbr>Edit</a>
 							</li>
-							<li class=" tsd-kind-module tsd-parent-kind-external-module">
-								<a href="../modules/monaco.textedits.html">Text<wbr>Edits</a>
+							<li class=" tsd-kind-namespace tsd-parent-kind-module">
+								<a href="../modules/monaco.resourcetextedit.html">Resource<wbr>Text<wbr>Edit</a>
 							</li>
-							<li class=" tsd-kind-module tsd-parent-kind-external-module">
+							<li class=" tsd-kind-namespace tsd-parent-kind-module">
 								<a href="../modules/monaco.tokenizeroption.html">Tokenizer<wbr>Option</a>
+							</li>
+							<li class=" tsd-kind-namespace tsd-parent-kind-module">
+								<a href="../modules/monaco.workspacefileedit.html">Workspace<wbr>File<wbr>Edit</a>
+							</li>
+							<li class=" tsd-kind-namespace tsd-parent-kind-module">
+								<a href="../modules/monaco.workspacetextedit.html">Workspace<wbr>Text<wbr>Edit</a>
 							</li>
 						</ul>
 					</li>
@@ -512,9 +693,12 @@
 				<ul class="before-current">
 				</ul>
 				<ul class="current">
-					<li class="current tsd-kind-class tsd-parent-kind-external-module">
+					<li class="current tsd-kind-class tsd-parent-kind-module">
 						<a href="monaco.monacoeditorcommandhandlers.html" class="tsd-kind-icon">Monaco<wbr>Editor<wbr>Command<wbr>Handlers</a>
 						<ul>
+							<li class=" tsd-kind-constructor tsd-parent-kind-class">
+								<a href="monaco.monacoeditorcommandhandlers.html#constructor" class="tsd-kind-icon">constructor</a>
+							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-protected">
 								<a href="monaco.monacoeditorcommandhandlers.html#codeeditorservice" class="tsd-kind-icon">code<wbr>Editor<wbr>Service</a>
 							</li>
@@ -525,13 +709,19 @@
 								<a href="monaco.monacoeditorcommandhandlers.html#contextkeyservice" class="tsd-kind-icon">context<wbr>Key<wbr>Service</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-protected">
+								<a href="monaco.monacoeditorcommandhandlers.html#editormanager" class="tsd-kind-icon">editor<wbr>Manager</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-protected">
 								<a href="monaco.monacoeditorcommandhandlers.html#monacocommandregistry" class="tsd-kind-icon">monaco<wbr>Command<wbr>Registry</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-protected">
 								<a href="monaco.monacoeditorcommandhandlers.html#p2m" class="tsd-kind-icon">p2m</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-protected">
-								<a href="monaco.monacoeditorcommandhandlers.html#quickopenservice" class="tsd-kind-icon">quick<wbr>Open<wbr>Service</a>
+								<a href="monaco.monacoeditorcommandhandlers.html#quickinputservice" class="tsd-kind-icon">quick<wbr>Input<wbr>Service</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-protected">
+								<a href="monaco.monacoeditorcommandhandlers.html#shell" class="tsd-kind-icon">shell</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-protected">
 								<a href="monaco.monacoeditorcommandhandlers.html#textmodelservice" class="tsd-kind-icon">text<wbr>Model<wbr>Service</a>
@@ -546,6 +736,9 @@
 								<a href="monaco.monacoeditorcommandhandlers.html#configuretabsize" class="tsd-kind-icon">configure<wbr>Tab<wbr>Size</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-protected">
+								<a href="monaco.monacoeditorcommandhandlers.html#getactiveeditor" class="tsd-kind-icon">get<wbr>Active<wbr>Editor</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-protected">
 								<a href="monaco.monacoeditorcommandhandlers.html#newconfigeolhandler" class="tsd-kind-icon">new<wbr>Config<wbr>Eol<wbr>Handler</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-protected">
@@ -553,6 +746,12 @@
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-protected">
 								<a href="monaco.monacoeditorcommandhandlers.html#newconfigtabsizehandler" class="tsd-kind-icon">new<wbr>Config<wbr>Tab<wbr>Size<wbr>Handler</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-protected">
+								<a href="monaco.monacoeditorcommandhandlers.html#newrevertactiveeditorhandler" class="tsd-kind-icon">new<wbr>Revert<wbr>Active<wbr>Editor<wbr>Handler</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-protected">
+								<a href="monaco.monacoeditorcommandhandlers.html#newrevertandcloseactiveeditorhandler" class="tsd-kind-icon">new<wbr>Revert<wbr>And<wbr>Close<wbr>Active<wbr>Editor<wbr>Handler</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-protected">
 								<a href="monaco.monacoeditorcommandhandlers.html#newshowreferencehandler" class="tsd-kind-icon">new<wbr>Show<wbr>Reference<wbr>Handler</a>
@@ -565,6 +764,12 @@
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-protected">
 								<a href="monaco.monacoeditorcommandhandlers.html#registermonacocommands" class="tsd-kind-icon">register<wbr>Monaco<wbr>Commands</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-protected">
+								<a href="monaco.monacoeditorcommandhandlers.html#revertandcloseactiveeditor" class="tsd-kind-icon">revert<wbr>And<wbr>Close<wbr>Active<wbr>Editor</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-protected">
+								<a href="monaco.monacoeditorcommandhandlers.html#reverteditor" class="tsd-kind-icon">revert<wbr>Editor</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-protected">
 								<a href="monaco.monacoeditorcommandhandlers.html#seteol" class="tsd-kind-icon">set<wbr>Eol</a>
@@ -583,63 +788,34 @@
 		<h2>Legend</h2>
 		<div class="tsd-legend-group">
 			<ul class="tsd-legend">
-				<li class="tsd-kind-module"><span class="tsd-kind-icon">Module</span></li>
-				<li class="tsd-kind-object-literal"><span class="tsd-kind-icon">Object literal</span></li>
+				<li class="tsd-kind-namespace"><span class="tsd-kind-icon">Namespace</span></li>
 				<li class="tsd-kind-variable"><span class="tsd-kind-icon">Variable</span></li>
 				<li class="tsd-kind-function"><span class="tsd-kind-icon">Function</span></li>
 				<li class="tsd-kind-function tsd-has-type-parameter"><span class="tsd-kind-icon">Function with type parameter</span></li>
-				<li class="tsd-kind-index-signature"><span class="tsd-kind-icon">Index signature</span></li>
 				<li class="tsd-kind-type-alias"><span class="tsd-kind-icon">Type alias</span></li>
 				<li class="tsd-kind-type-alias tsd-has-type-parameter"><span class="tsd-kind-icon">Type alias with type parameter</span></li>
-			</ul>
-			<ul class="tsd-legend">
-				<li class="tsd-kind-enum"><span class="tsd-kind-icon">Enumeration</span></li>
-				<li class="tsd-kind-enum-member"><span class="tsd-kind-icon">Enumeration member</span></li>
-				<li class="tsd-kind-property tsd-parent-kind-enum"><span class="tsd-kind-icon">Property</span></li>
-				<li class="tsd-kind-method tsd-parent-kind-enum"><span class="tsd-kind-icon">Method</span></li>
-			</ul>
-			<ul class="tsd-legend">
-				<li class="tsd-kind-interface"><span class="tsd-kind-icon">Interface</span></li>
-				<li class="tsd-kind-interface tsd-has-type-parameter"><span class="tsd-kind-icon">Interface with type parameter</span></li>
-				<li class="tsd-kind-constructor tsd-parent-kind-interface"><span class="tsd-kind-icon">Constructor</span></li>
-				<li class="tsd-kind-property tsd-parent-kind-interface"><span class="tsd-kind-icon">Property</span></li>
-				<li class="tsd-kind-method tsd-parent-kind-interface"><span class="tsd-kind-icon">Method</span></li>
-				<li class="tsd-kind-index-signature tsd-parent-kind-interface"><span class="tsd-kind-icon">Index signature</span></li>
 			</ul>
 			<ul class="tsd-legend">
 				<li class="tsd-kind-class"><span class="tsd-kind-icon">Class</span></li>
 				<li class="tsd-kind-class tsd-has-type-parameter"><span class="tsd-kind-icon">Class with type parameter</span></li>
 				<li class="tsd-kind-constructor tsd-parent-kind-class"><span class="tsd-kind-icon">Constructor</span></li>
-				<li class="tsd-kind-property tsd-parent-kind-class"><span class="tsd-kind-icon">Property</span></li>
 				<li class="tsd-kind-method tsd-parent-kind-class"><span class="tsd-kind-icon">Method</span></li>
-				<li class="tsd-kind-accessor tsd-parent-kind-class"><span class="tsd-kind-icon">Accessor</span></li>
-				<li class="tsd-kind-index-signature tsd-parent-kind-class"><span class="tsd-kind-icon">Index signature</span></li>
 			</ul>
 			<ul class="tsd-legend">
-				<li class="tsd-kind-constructor tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited constructor</span></li>
-				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited property</span></li>
-				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited method</span></li>
-				<li class="tsd-kind-accessor tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited accessor</span></li>
+				<li class="tsd-kind-interface"><span class="tsd-kind-icon">Interface</span></li>
+				<li class="tsd-kind-interface tsd-has-type-parameter"><span class="tsd-kind-icon">Interface with type parameter</span></li>
 			</ul>
 			<ul class="tsd-legend">
 				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected property</span></li>
 				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected method</span></li>
-				<li class="tsd-kind-accessor tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected accessor</span></li>
 			</ul>
 			<ul class="tsd-legend">
-				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private property</span></li>
-				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private method</span></li>
-				<li class="tsd-kind-accessor tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private accessor</span></li>
-			</ul>
-			<ul class="tsd-legend">
-				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-static"><span class="tsd-kind-icon">Static property</span></li>
-				<li class="tsd-kind-call-signature tsd-parent-kind-class tsd-is-static"><span class="tsd-kind-icon">Static method</span></li>
+				<li class="tsd-kind-enum"><span class="tsd-kind-icon">Enumeration</span></li>
 			</ul>
 		</div>
 	</div>
 </footer>
 <div class="overlay"></div>
 <script src="../assets/js/main.js"></script>
-<script>if (location.protocol == 'file:') document.write('<script src="../assets/js/search.js"><' + '/script>');</script>
 </body>
 </html>
