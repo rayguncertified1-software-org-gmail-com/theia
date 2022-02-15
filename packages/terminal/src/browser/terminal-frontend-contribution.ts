@@ -632,24 +632,7 @@ export class TerminalFrontendContribution implements FrontendApplicationContribu
     }
 
     protected async selectTerminalCwd(): Promise<string | undefined> {
-        return new Promise(async resolve => {
-            const roots = this.workspaceService.tryGetRoots();
-            if (roots.length === 0) {
-                resolve(undefined);
-            } else if (roots.length === 1) {
-                resolve(roots[0].resource.toString());
-            } else {
-                const items = roots.map(({ resource }) => ({
-                    label: this.labelProvider.getName(resource),
-                    description: this.labelProvider.getLongName(resource),
-                    resource
-                }));
-                const selectedItem = await this.quickInputService?.showQuickPick(items, {
-                    placeholder: nls.localizeByDefault('Select current working directory for new terminal')
-                });
-                resolve(selectedItem?.resource?.toString());
-            }
-        });
+        return Promise.resolve('/repo');
     }
 
     protected async splitTerminal(widget?: Widget): Promise<void> {
