@@ -40,9 +40,6 @@
       "path": "examples/electron"
     },
     {
-      "path": "examples/playwright"
-    },
-    {
       "path": "packages/bulk-edit"
     },
     {
