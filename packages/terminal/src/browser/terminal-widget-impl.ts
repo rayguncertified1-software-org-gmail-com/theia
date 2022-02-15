@@ -111,7 +111,7 @@ export class TerminalWidgetImpl extends TerminalWidget implements StatefulWidget
             ));
         }
 
-        this.title.closable = true;
+        this.title.closable = false;
         this.addClass('terminal-container');
 
         this.term = new Terminal({

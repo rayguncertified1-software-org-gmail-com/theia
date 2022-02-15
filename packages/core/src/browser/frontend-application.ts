@@ -309,7 +309,8 @@ export class FrontendApplication {
      */
     protected async restoreLayout(): Promise<boolean> {
         try {
-            return await this.layoutRestorer.restoreLayout(this);
+            return Promise.resolve(true);
+            // return await this.layoutRestorer.restoreLayout(this);
         } catch (error) {
             if (ApplicationShellLayoutMigrationError.is(error)) {
                 console.warn(error.message);

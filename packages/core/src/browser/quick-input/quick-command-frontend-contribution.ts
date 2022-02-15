@@ -48,13 +48,13 @@ export class QuickCommandFrontendContribution implements CommandContribution, Ke
     }
 
     registerKeybindings(keybindings: KeybindingRegistry): void {
-        keybindings.registerKeybinding({
-            command: quickCommand.id,
-            keybinding: 'f1'
-        });
-        keybindings.registerKeybinding({
-            command: quickCommand.id,
-            keybinding: 'ctrlcmd+shift+p'
-        });
+        // keybindings.registerKeybinding({
+        //     command: quickCommand.id,
+        //     keybinding: 'f1'
+        // });
+        // keybindings.registerKeybinding({
+        //     command: quickCommand.id,
+        //     keybinding: 'ctrlcmd+shift+p'
+        // });
     }
 }

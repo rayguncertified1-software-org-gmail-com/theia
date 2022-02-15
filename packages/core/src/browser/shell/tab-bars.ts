@@ -24,7 +24,6 @@ import { Message, MessageLoop } from '@phosphor/messaging';
 import { ArrayExt } from '@phosphor/algorithm';
 import { ElementExt } from '@phosphor/domutils';
 import { TabBarToolbarRegistry, TabBarToolbar } from './tab-bar-toolbar';
-import { TheiaDockPanel, MAIN_AREA_ID, BOTTOM_AREA_ID } from './theia-dock-panel';
 import { WidgetDecoration } from '../widget-decoration';
 import { TabBarDecoratorService } from './tab-bar-decorator';
 import { IconThemeService } from '../icon-theme-service';
@@ -440,43 +439,43 @@ export class TabBarRenderer extends TabBar.Renderer {
     }
 
     protected handleContextMenuEvent = (event: MouseEvent) => {
-        if (this.contextMenuRenderer && this.contextMenuPath && event.currentTarget instanceof HTMLElement) {
-            event.stopPropagation();
-            event.preventDefault();
-            let widget: Widget | undefined = undefined;
-            if (this.tabBar) {
-                const titleIndex = Array.from(this.tabBar.contentNode.getElementsByClassName('p-TabBar-tab'))
-                    .findIndex(node => node.contains(event.currentTarget as HTMLElement));
-                if (titleIndex !== -1) {
-                    widget = this.tabBar.titles[titleIndex].owner;
-                }
-            }
+        // if (this.contextMenuRenderer && this.contextMenuPath && event.currentTarget instanceof HTMLElement) {
+        //     event.stopPropagation();
+        //     event.preventDefault();
+        //     let widget: Widget | undefined = undefined;
+        //     if (this.tabBar) {
+        //         const titleIndex = Array.from(this.tabBar.contentNode.getElementsByClassName('p-TabBar-tab'))
+        //             .findIndex(node => node.contains(event.currentTarget as HTMLElement));
+        //         if (titleIndex !== -1) {
+        //             widget = this.tabBar.titles[titleIndex].owner;
+        //         }
+        //     }
 
-            const oldSelection = this.selectionService?.selection;
-            if (widget && this.selectionService) {
-                this.selectionService.selection = NavigatableWidget.is(widget) ? { uri: widget.getResourceUri() } : widget;
-            }
+        //     const oldSelection = this.selectionService?.selection;
+        //     if (widget && this.selectionService) {
+        //         this.selectionService.selection = NavigatableWidget.is(widget) ? { uri: widget.getResourceUri() } : widget;
+        //     }
 
-            this.contextMenuRenderer.render({
-                menuPath: this.contextMenuPath!,
-                anchor: event,
-                args: [event],
-                // We'd like to wait until the command triggered by the context menu has been run, but this should let it get through the preamble, at least.
-                onHide: () => setTimeout(() => { if (this.selectionService) { this.selectionService.selection = oldSelection; } })
-            });
-        }
+        //     this.contextMenuRenderer.render({
+        //         menuPath: this.contextMenuPath!,
+        //         anchor: event,
+        //         args: [event],
+        //         // We'd like to wait until the command triggered by the context menu has been run, but this should let it get through the preamble, at least.
+        //         onHide: () => setTimeout(() => { if (this.selectionService) { this.selectionService.selection = oldSelection; } })
+        //     });
+        // }
     };
 
     protected handleDblClickEvent = (event: MouseEvent) => {
-        if (this.tabBar && event.currentTarget instanceof HTMLElement) {
-            const id = event.currentTarget.id;
-            // eslint-disable-next-line no-null/no-null
-            const title = this.tabBar.titles.find(t => this.createTabId(t) === id) || null;
-            const area = title && title.owner.parent;
-            if (area instanceof TheiaDockPanel && (area.id === BOTTOM_AREA_ID || area.id === MAIN_AREA_ID)) {
-                area.toggleMaximized();
-            }
-        }
+        // if (this.tabBar && event.currentTarget instanceof HTMLElement) {
+        //     const id = event.currentTarget.id;
+        //     // eslint-disable-next-line no-null/no-null
+        //     const title = this.tabBar.titles.find(t => this.createTabId(t) === id) || null;
+        //     const area = title && title.owner.parent;
+        //     if (area instanceof TheiaDockPanel && (area.id === BOTTOM_AREA_ID || area.id === MAIN_AREA_ID)) {
+        //         area.toggleMaximized();
+        //     }
+        // }
     };
 }
 

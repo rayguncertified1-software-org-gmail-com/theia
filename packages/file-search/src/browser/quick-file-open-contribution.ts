@@ -46,10 +46,10 @@ export class QuickFileOpenFrontendContribution implements QuickAccessContributio
     }
 
     registerKeybindings(keybindings: KeybindingRegistry): void {
-        keybindings.registerKeybinding({
-            command: quickFileOpen.id,
-            keybinding: 'ctrlcmd+p'
-        });
+        // keybindings.registerKeybinding({
+        //     command: quickFileOpen.id,
+        //     keybinding: 'ctrlcmd+p'
+        // });
     }
 
     registerMenus(menus: MenuModelRegistry): void {

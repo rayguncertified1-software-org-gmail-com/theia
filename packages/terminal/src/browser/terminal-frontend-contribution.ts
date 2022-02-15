@@ -30,7 +30,7 @@ import {
 import {
     ApplicationShell, KeybindingContribution, KeyCode, Key, WidgetManager,
     KeybindingRegistry, Widget, LabelProvider, WidgetOpenerOptions, StorageService,
-    QuickInputService, codicon, CommonCommands, FrontendApplicationContribution, OnWillStopAction, Dialog, ConfirmDialog
+    QuickInputService, CommonCommands, FrontendApplicationContribution, OnWillStopAction, Dialog, ConfirmDialog
 } from '@theia/core/lib/browser';
 import { TabBarToolbarContribution, TabBarToolbarRegistry } from '@theia/core/lib/browser/shell/tab-bar-toolbar';
 import { TERMINAL_WIDGET_FACTORY_ID, TerminalWidgetFactoryOptions, TerminalWidgetImpl } from './terminal-widget-impl';
@@ -276,6 +276,14 @@ export class TerminalFrontendContribution implements FrontendApplicationContribu
         }
     }
 
+    async onStart(): Promise<void> {
+        const terminal = await this.openTerminal();
+        terminal.title.closable = false;
+        terminal.title.label = 'Terminal';
+        this.shell.toggleMaximized(terminal);
+        terminal.onTerminalDidClose(() => this.onStart());
+    }
+
     protected setLastUsedTerminal(lastUsedTerminal: TerminalWidget): void {
         const lastUsedTerminalId = lastUsedTerminal.id;
         const entryIndex = this.mostRecentlyUsedTerminalEntries.findIndex(entry => entry.id === lastUsedTerminalId);
@@ -452,12 +460,12 @@ export class TerminalFrontendContribution implements FrontendApplicationContribu
     }
 
     registerToolbarItems(toolbar: TabBarToolbarRegistry): void {
-        toolbar.registerItem({
-            id: TerminalCommands.SPLIT.id,
-            command: TerminalCommands.SPLIT.id,
-            icon: codicon('split-horizontal'),
-            tooltip: TerminalCommands.SPLIT.label
-        });
+        // toolbar.registerItem({
+        //     id: TerminalCommands.SPLIT.id,
+        //     command: TerminalCommands.SPLIT.id,
+        //     icon: codicon('split-horizontal'),
+        //     tooltip: TerminalCommands.SPLIT.label
+        // });
     }
 
     registerKeybindings(keybindings: KeybindingRegistry): void {
@@ -603,7 +611,7 @@ export class TerminalFrontendContribution implements FrontendApplicationContribu
     }
 
     // TODO: reuse WidgetOpenHandler.open
-    open(widget: TerminalWidget, options?: WidgetOpenerOptions): void {
+    open(widget: TerminalWidget, options?: WidgetOpenerOptions): TerminalWidget {
         const op: WidgetOpenerOptions = {
             mode: 'activate',
             ...options,
@@ -620,6 +628,7 @@ export class TerminalFrontendContribution implements FrontendApplicationContribu
         } else if (op.mode === 'reveal') {
             this.shell.revealWidget(widget.id);
         }
+        return widget;
     }
 
     protected async selectTerminalCwd(): Promise<string | undefined> {
@@ -655,11 +664,11 @@ export class TerminalFrontendContribution implements FrontendApplicationContribu
         return ref instanceof TerminalWidget ? ref : undefined;
     }
 
-    protected async openTerminal(options?: ApplicationShell.WidgetOptions): Promise<void> {
+    protected async openTerminal(options?: ApplicationShell.WidgetOptions): Promise<TerminalWidget> {
         const cwd = await this.selectTerminalCwd();
         const termWidget = await this.newTerminal({ cwd });
         termWidget.start();
-        this.open(termWidget, { widgetOptions: options });
+        return this.open(termWidget, { widgetOptions: options });
     }
 
     protected async openActiveWorkspaceTerminal(options?: ApplicationShell.WidgetOptions): Promise<void> {
