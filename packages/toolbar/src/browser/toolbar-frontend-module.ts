@@ -18,7 +18,7 @@ import '../../src/browser/style/toolbar-shell-style.css';
 import '../../src/browser/style/easy-search-style.css';
 import { ContainerModule, interfaces } from '@theia/core/shared/inversify';
 import { bindToolbarApplicationShell } from './application-shell-with-toolbar-override';
-import { bindMainToolbar } from './main-toolbar-command-contribution';
+import { bindToolbar } from './toolbar-command-contribution';
 
 export default new ContainerModule((
     bind: interfaces.Bind,
@@ -27,5 +27,5 @@ export default new ContainerModule((
     rebind: interfaces.Rebind,
 ) => {
     bindToolbarApplicationShell(bind, rebind, unbind);
-    bindMainToolbar(bind);
+    bindToolbar(bind);
 });

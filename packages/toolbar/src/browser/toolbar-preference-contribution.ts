@@ -16,23 +16,23 @@
 
 import { PreferenceSchema, PreferenceProxy, PreferenceScope } from '@theia/core/lib/browser';
 
-export const TOOLBAR_ENABLE_PREFERENCE_ID = 'mainToolbar.showToolbar';
+export const TOOLBAR_ENABLE_PREFERENCE_ID = 'toolbar.showToolbar';
 
-export const MainToolbarPreferencesSchema: PreferenceSchema = {
+export const ToolbarPreferencesSchema: PreferenceSchema = {
     type: 'object',
     properties: {
         [TOOLBAR_ENABLE_PREFERENCE_ID]: {
             'type': 'boolean',
-            'description': 'Show main toolbar',
+            'description': 'Show toolbar',
             'default': false,
             'scope': PreferenceScope.Workspace,
         },
     },
 };
 
-class MainToolbarPreferencesContribution {
+class ToolbarPreferencesContribution {
     [TOOLBAR_ENABLE_PREFERENCE_ID]: boolean;
 }
 
-export const MainToolbarPreferences = Symbol('MainToolbarPreferences');
-export type MainToolbarPreferences = PreferenceProxy<MainToolbarPreferencesContribution>;
+export const ToolbarPreferences = Symbol('ToolbarPreferences');
+export type ToolbarPreferences = PreferenceProxy<ToolbarPreferencesContribution>;

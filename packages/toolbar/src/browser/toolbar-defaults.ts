@@ -14,12 +14,12 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { DeflatedMainToolbarTreeSchema, ToolbarAlignment } from './main-toolbar-interfaces';
+import { DeflatedToolbarTree, ToolbarAlignment } from './toolbar-interfaces';
 
 // This file specifies the default layout of the toolbar. This binding should be overridden for extenders.
 // Both Toolbar Command Items and Toolbar Contributions can be specified here.
-export const MainToolbarDefaultsFactory = Symbol('MainToolbarDefaultsFactory');
-export const MainToolbarDefaults: () => DeflatedMainToolbarTreeSchema = () => ({
+export const ToolbarDefaultsFactory = Symbol('ToolbarDefaultsFactory');
+export const ToolbarDefaults: () => DeflatedToolbarTree = () => ({
     items: {
         [ToolbarAlignment.LEFT]: [
             [

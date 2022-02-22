@@ -21,21 +21,21 @@ import * as React from '@theia/core/shared/react';
 import { quickFileOpen } from '@theia/file-search/lib/browser/quick-file-open';
 import { SearchInWorkspaceCommands } from '@theia/search-in-workspace/lib/browser/search-in-workspace-frontend-contribution';
 import { WorkspaceService } from '@theia/workspace/lib/browser';
-import { AbstractMainToolbarContribution } from './abstract-main-toolbar-contribution';
+import { AbstractToolbarContribution } from './abstract-toolbar-contribution';
 import { SearchInWorkspaceQuickInputService } from './search-in-workspace-root-quick-input-service';
-import { MainToolbarMenus, ReactInteraction } from './main-toolbar-constants';
+import { ToolbarMenus, ReactInteraction } from './toolbar-constants';
 import {
-    MainToolbarContribution,
-} from './main-toolbar-interfaces';
+    ToolbarContribution,
+} from './toolbar-interfaces';
 
 export const FIND_IN_WORKSPACE_ROOT = Command.toLocalizedCommand({
-    id: 'main.toolbar.find.in.workspace.root',
+    id: 'easy.search.find.in.workspace.root',
     category: 'Search',
     label: 'Search Workspace Root for Text',
 }, 'theia/toolbar/searchWorkspaceRootForText', nls.getDefaultKey('Search'));
 
 @injectable()
-export class EasySearchToolbarItem extends AbstractMainToolbarContribution
+export class EasySearchToolbarItem extends AbstractToolbarContribution
     implements CommandContribution,
     MenuContribution {
     @inject(SearchInWorkspaceQuickInputService) protected readonly searchPickService: SearchInWorkspaceQuickInputService;
@@ -52,7 +52,7 @@ export class EasySearchToolbarItem extends AbstractMainToolbarContribution
             const { left } = e.currentTarget.getBoundingClientRect();
             this.contextMenuRenderer.render({
                 includeAnchorArg: false,
-                menuPath: MainToolbarMenus.SEARCH_WIDGET_DROPDOWN_MENU,
+                menuPath: ToolbarMenus.SEARCH_WIDGET_DROPDOWN_MENU,
                 anchor: { x: left, y: bottom },
             });
         }
@@ -95,22 +95,22 @@ export class EasySearchToolbarItem extends AbstractMainToolbarContribution
     }
 
     registerMenus(registry: MenuModelRegistry): void {
-        registry.registerMenuAction(MainToolbarMenus.SEARCH_WIDGET_DROPDOWN_MENU, {
+        registry.registerMenuAction(ToolbarMenus.SEARCH_WIDGET_DROPDOWN_MENU, {
             commandId: quickCommand.id,
             label: nls.localize('theia/toolbar/search/findACommand', 'Find a Command'),
             order: 'a',
         });
-        registry.registerMenuAction(MainToolbarMenus.SEARCH_WIDGET_DROPDOWN_MENU, {
+        registry.registerMenuAction(ToolbarMenus.SEARCH_WIDGET_DROPDOWN_MENU, {
             commandId: quickFileOpen.id,
             order: 'b',
             label: nls.localize('theia/toolbar/search/searchForAFile', 'Search for a file')
         });
-        registry.registerMenuAction(MainToolbarMenus.SEARCH_WIDGET_DROPDOWN_MENU, {
+        registry.registerMenuAction(ToolbarMenus.SEARCH_WIDGET_DROPDOWN_MENU, {
             commandId: SearchInWorkspaceCommands.OPEN_SIW_WIDGET.id,
             label: nls.localize('theia/toolbar/search/searchWorkspaceForText', 'Search Entire Workspace for Text'),
             order: 'c',
         });
-        registry.registerMenuAction(MainToolbarMenus.SEARCH_WIDGET_DROPDOWN_MENU, {
+        registry.registerMenuAction(ToolbarMenus.SEARCH_WIDGET_DROPDOWN_MENU, {
             commandId: FIND_IN_WORKSPACE_ROOT.id,
             order: 'd',
         });
@@ -119,7 +119,7 @@ export class EasySearchToolbarItem extends AbstractMainToolbarContribution
 
 export const bindEasySearchToolbarWidget = (bind: interfaces.Bind): void => {
     bind(EasySearchToolbarItem).toSelf().inSingletonScope();
-    bind(MainToolbarContribution).to(EasySearchToolbarItem);
+    bind(ToolbarContribution).to(EasySearchToolbarItem);
     bind(CommandContribution).to(EasySearchToolbarItem);
     bind(MenuContribution).to(EasySearchToolbarItem);
 };
