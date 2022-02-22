@@ -14,6 +14,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
+import { nls } from '@theia/core';
 import { DeflatedToolbarTree, ToolbarAlignment } from './toolbar-interfaces';
 
 // This file specifies the default layout of the toolbar. This binding should be overridden for extenders.
@@ -42,21 +43,15 @@ export const ToolbarDefaults: () => DeflatedToolbarTree = () => ({
                 },
             ],
         ],
-        [ToolbarAlignment.CENTER]: [
-            [
-                {
-                    id: 'terminal:new',
-                    command: 'terminal:new',
-                    icon: 'codicon codicon-terminal',
-                }
-            ],
-        ],
+        [ToolbarAlignment.CENTER]: [[]],
         [ToolbarAlignment.RIGHT]: [
             [
                 {
-                    id: 'easy-search-toolbar-widget',
-                    group: 'contributed'
-                }
+                    id: 'workbench.action.showCommands',
+                    command: 'workbench.action.showCommands',
+                    icon: 'codicon codicon-terminal',
+                    tooltip: nls.localizeByDefault('Command Palette'),
+                },
             ]
         ]
     },

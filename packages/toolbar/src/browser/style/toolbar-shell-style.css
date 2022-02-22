@@ -94,6 +94,10 @@
     background-color: var(--theia-toolbar-hoverBackground);
 }
 
+#main-toolbar .toolbar-item.action-item:not(.enabled) {
+    cursor: default;
+}
+
 #main-toolbar .toolbar-item .hover-overlay {
     position: absolute;
     pointer-events: none;
