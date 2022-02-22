@@ -21,12 +21,22 @@ import * as React from '@theia/core/shared/react';
 import { quickFileOpen } from '@theia/file-search/lib/browser/quick-file-open';
 import { SearchInWorkspaceCommands } from '@theia/search-in-workspace/lib/browser/search-in-workspace-frontend-contribution';
 import { WorkspaceService } from '@theia/workspace/lib/browser';
-import { AbstractToolbarContribution } from './abstract-toolbar-contribution';
+import { AbstractToolbarContribution } from '@theia/toolbar/lib/browser/abstract-toolbar-contribution';
+import { ToolbarMenus, ReactInteraction } from '@theia/toolbar/lib/browser/toolbar-constants';
+import { ToolbarContribution } from '@theia/toolbar/lib/browser/toolbar-interfaces';
+import { ToolbarDefaultsFactory } from '@theia/toolbar/lib/browser/toolbar-defaults';
 import { SearchInWorkspaceQuickInputService } from './search-in-workspace-root-quick-input-service';
-import { ToolbarMenus, ReactInteraction } from './toolbar-constants';
-import {
-    ToolbarContribution,
-} from './toolbar-interfaces';
+import '../../../src/browser/toolbar-contribution-example/easy-search-style.css';
+import { ToolbarDefaultsOverride } from './toolbar-defaults-override';
+
+export const bindSampleToolbarContribution = (bind: interfaces.Bind, rebind: interfaces.Rebind) => {
+    bind(EasySearchToolbarItem).toSelf().inSingletonScope();
+    bind(ToolbarContribution).to(EasySearchToolbarItem);
+    bind(CommandContribution).to(EasySearchToolbarItem);
+    bind(MenuContribution).to(EasySearchToolbarItem);
+    bind(SearchInWorkspaceQuickInputService).toSelf().inSingletonScope();
+    rebind(ToolbarDefaultsFactory).toConstantValue(ToolbarDefaultsOverride);
+};
 
 export const FIND_IN_WORKSPACE_ROOT = Command.toLocalizedCommand({
     id: 'easy.search.find.in.workspace.root',
@@ -41,7 +51,8 @@ export class EasySearchToolbarItem extends AbstractToolbarContribution
     @inject(SearchInWorkspaceQuickInputService) protected readonly searchPickService: SearchInWorkspaceQuickInputService;
     @inject(WorkspaceService) protected readonly workspaceService: WorkspaceService;
 
-    id = 'easy-search-toolbar-widget';
+    static ID = 'easy-search-toolbar-widget';
+    id = EasySearchToolbarItem.ID;
 
     protected handleOnClick = (e: ReactInteraction<HTMLSpanElement>): void => this.doHandleOnClick(e);
     protected doHandleOnClick(e: ReactInteraction<HTMLSpanElement>): void {
@@ -117,9 +128,3 @@ export class EasySearchToolbarItem extends AbstractToolbarContribution
     }
 }
 
-export const bindEasySearchToolbarWidget = (bind: interfaces.Bind): void => {
-    bind(EasySearchToolbarItem).toSelf().inSingletonScope();
-    bind(ToolbarContribution).to(EasySearchToolbarItem);
-    bind(CommandContribution).to(EasySearchToolbarItem);
-    bind(MenuContribution).to(EasySearchToolbarItem);
-};

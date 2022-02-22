@@ -36,7 +36,6 @@ import {
 } from '@theia/core/lib/browser';
 import { injectable, inject, interfaces, Container } from '@theia/core/shared/inversify';
 import { EditorManager } from '@theia/editor/lib/browser';
-import { bindEasySearchToolbarWidget } from './easy-search-toolbar-item';
 import { ToolbarImpl } from './toolbar';
 import { bindToolbarIconDialog } from './toolbar-icon-selector-dialog';
 import {
@@ -50,7 +49,6 @@ import {
 import { ToolbarCommandQuickInputService } from './toolbar-command-quick-input-service';
 import { ToolbarStorageProvider } from './toolbar-storage-provider';
 import { ToolbarController } from './toolbar-controller';
-import { SearchInWorkspaceQuickInputService } from './search-in-workspace-root-quick-input-service';
 import { ToolbarPreferencesSchema, ToolbarPreferences, TOOLBAR_ENABLE_PREFERENCE_ID } from './toolbar-preference-contribution';
 import { ToolbarDefaults, ToolbarDefaultsFactory } from './toolbar-defaults';
 import { ToolbarCommands, ToolbarMenus, UserToolbarURI, USER_TOOLBAR_URI } from './toolbar-constants';
@@ -191,7 +189,6 @@ export function bindToolbar(bind: interfaces.Bind): void {
     bind(JsonSchemaContribution).toService(ToolbarCommandContribution);
 
     bind(ToolbarCommandQuickInputService).toSelf().inSingletonScope();
-    bind(SearchInWorkspaceQuickInputService).toSelf().inSingletonScope();
 
     bindToolbarIconDialog(bind);
     bind(ToolbarDefaultsFactory).toConstantValue(ToolbarDefaults);
@@ -208,7 +205,6 @@ export function bindToolbar(bind: interfaces.Bind): void {
     bind(ToolbarController).toSelf().inSingletonScope();
     bind(ToolbarStorageProvider).toSelf().inSingletonScope();
     bindContributionProvider(bind, ToolbarContribution);
-    bindEasySearchToolbarWidget(bind);
     bind(LateInjector).toFactory(
         <T>(context: interfaces.Context) => (id: interfaces.ServiceIdentifier<T>): T => lateInjector(context.container, id),
     );
