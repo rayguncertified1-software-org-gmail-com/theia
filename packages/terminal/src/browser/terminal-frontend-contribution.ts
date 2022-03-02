@@ -427,7 +427,7 @@ export class TerminalFrontendContribution implements FrontendApplicationContribu
         commands.registerCommand(TerminalCommands.WRITE_TO_TERMINAL, {
             execute: (command: string) => {
                 const [terminal] = this.widgetManager.getWidgets(TERMINAL_WIDGET_FACTORY_ID) as TerminalWidget[];
-                terminal.term.write(command);
+                terminal.write(command);
             }
         });
     }

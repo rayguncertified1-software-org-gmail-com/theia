@@ -20,7 +20,6 @@ import { CommandLineOptions } from '@theia/process/lib/common/shell-command-buil
 import { TerminalSearchWidget } from '../search/terminal-search-widget';
 import { TerminalProcessInfo } from '../../common/base-terminal-protocol';
 import URI from '@theia/core/lib/common/uri';
-import { Terminal } from 'xterm';
 
 export interface TerminalDimensions {
     cols: number;
@@ -86,7 +85,7 @@ export abstract class TerminalWidget extends BaseWidget {
 
     /** Event that fires when the terminal input data */
     abstract onData: Event<string>;
-    abstract term: Terminal;
+
     abstract scrollLineUp(): void;
 
     abstract scrollLineDown(): void;
