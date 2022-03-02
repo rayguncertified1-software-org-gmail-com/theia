@@ -54,7 +54,7 @@ export class TerminalWidgetImpl extends TerminalWidget implements StatefulWidget
     protected _terminalId = -1;
     protected readonly onTermDidClose = new Emitter<TerminalWidget>();
     protected fitAddon: FitAddon;
-    protected term: Terminal;
+    term: Terminal;
     protected searchBox: TerminalSearchWidget;
     protected restored = false;
     protected closeOnDispose = true;

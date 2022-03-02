@@ -138,6 +138,12 @@ export namespace TerminalCommands {
         category: CommonCommands.VIEW_CATEGORY,
         label: 'Show All Opened Terminals'
     });
+
+    export const WRITE_TO_TERMINAL = Command.toDefaultLocalizedCommand({
+        id: 'terminal:write',
+        category: TERMINAL_CATEGORY,
+        label: 'Write to Terminal',
+    });
 }
 
 @injectable()
@@ -416,6 +422,12 @@ export class TerminalFrontendContribution implements FrontendApplicationContribu
             isVisible: () => false,
             execute: () => {
                 (this.shell.activeWidget as TerminalWidget).scrollPageDown();
+            }
+        });
+        commands.registerCommand(TerminalCommands.WRITE_TO_TERMINAL, {
+            execute: (command: string) => {
+                const [terminal] = this.widgetManager.getWidgets(TERMINAL_WIDGET_FACTORY_ID) as TerminalWidget[];
+                terminal.term.write(command);
             }
         });
     }

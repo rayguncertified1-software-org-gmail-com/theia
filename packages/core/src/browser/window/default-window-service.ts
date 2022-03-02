@@ -15,7 +15,7 @@
  ********************************************************************************/
 
 import { inject, injectable, named } from 'inversify';
-import { Event, Emitter } from '../../common';
+import { Event, Emitter, CommandService } from '../../common';
 import { CorePreferences } from '../core-preferences';
 import { ContributionProvider } from '../../common/contribution-provider';
 import { FrontendApplicationContribution, FrontendApplication, OnWillStopAction } from '../frontend-application';
@@ -23,9 +23,21 @@ import { WindowService } from './window-service';
 import { DEFAULT_WINDOW_HASH } from '../../common/window';
 import { confirmExit } from '../dialogs';
 
+export enum CloudStudioMessageType {
+    CLOSE = 'close',
+    PASTE = 'paste',
+}
+
+export type CloseMessageResponse = 'success' | 'failure';
+interface CloudStudioMessage {
+    source: 'cloud-studio' | 'emca-studio';
+    type: CloudStudioMessageType;
+    id: number;
+    body?: string | CloseMessageResponse;
+}
+
 @injectable()
 export class DefaultWindowService implements WindowService, FrontendApplicationContribution {
-
     protected frontendApplication: FrontendApplication;
     protected allowVetoes = true;
 
@@ -36,14 +48,44 @@ export class DefaultWindowService implements WindowService, FrontendApplicationC
 
     @inject(CorePreferences)
     protected readonly corePreferences: CorePreferences;
-
     @inject(ContributionProvider)
     @named(FrontendApplicationContribution)
     protected readonly contributions: ContributionProvider<FrontendApplicationContribution>;
+    @inject(CommandService) protected readonly commandService: CommandService;
 
     onStart(app: FrontendApplication): void {
         this.frontendApplication = app;
+        window.addEventListener('message', async (event) => {
+            const { data } = event;
+            const [header, messageBody] = data.split('::');
+            if (header === 'cloud-studio') {
+                const { type, id, body } = JSON.parse(messageBody) as CloudStudioMessage;
+                const response: CloudStudioMessage = {
+                    source: 'emca-studio',
+                    id,
+                    type,
+                    body: 'success',
+                };
+                if (type === CloudStudioMessageType.CLOSE) {
+                    response.body = this.tryClose() ? 'success' : 'failure';
+                } else if (type === CloudStudioMessageType.PASTE && body) {
+                    this.commandService.executeCommand('terminal:write', body);
+                    response.body = 'success';
+                }
+                window.parent.postMessage(JSON.stringify(response), event.origin);
+            }
+        });
         this.registerUnloadListeners();
+    }
+
+    protected tryClose(): boolean {
+        const vetoes = this.collectContributionUnloadVetoes();
+        if (vetoes.length) {
+            // In the browser, we don't call the functions because this has to finish in a single tick, so we treat any desired action as a veto.
+            console.log('Shutdown prevented by', vetoes.map(({ reason }) => reason).join(', '));
+            return false;
+        }
+        return true;
     }
 
     openNewWindow(url: string): undefined {
