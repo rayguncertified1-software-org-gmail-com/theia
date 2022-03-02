@@ -26,6 +26,7 @@ import { confirmExit } from '../dialogs';
 export enum CloudStudioMessageType {
     CLOSE = 'close',
     PASTE = 'paste',
+    EXECUTE = 'execute',
 }
 
 export type CloseMessageResponse = 'success' | 'failure';
@@ -33,7 +34,12 @@ interface CloudStudioMessage {
     source: 'cloud-studio' | 'emca-studio';
     type: CloudStudioMessageType;
     id: number;
-    body?: string | CloseMessageResponse;
+    body?: unknown;
+}
+
+export interface ExecuteCommandOptions {
+    cwd: string;
+    args: string[];
 }
 
 @injectable()
@@ -71,6 +77,9 @@ export class DefaultWindowService implements WindowService, FrontendApplicationC
                 } else if (type === CloudStudioMessageType.PASTE && body) {
                     this.commandService.executeCommand('terminal:write', body);
                     response.body = 'success';
+                } else if (type === CloudStudioMessageType.EXECUTE && body) {
+                    const commandLineOptions = body as ExecuteCommandOptions;
+                    this.commandService.executeCommand('terminal:execute', commandLineOptions)
                 }
                 window.parent.postMessage(JSON.stringify(response), event.origin);
             }

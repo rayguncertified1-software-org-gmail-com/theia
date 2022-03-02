@@ -55,6 +55,7 @@ import {
 } from '../common/base-terminal-protocol';
 import { nls } from '@theia/core/lib/common/nls';
 import { TerminalPreferences } from './terminal-preferences';
+import { CommandLineOptions } from '@theia/process/lib/common/shell-command-builder';
 
 export namespace TerminalMenus {
     export const TERMINAL = [...MAIN_MENU_BAR, '7_terminal'];
@@ -143,6 +144,12 @@ export namespace TerminalCommands {
         id: 'terminal:write',
         category: TERMINAL_CATEGORY,
         label: 'Write to Terminal',
+    });
+
+    export const EXECUTE_TERMINAL_COMMAND = Command.toDefaultLocalizedCommand({
+        id: 'terminal:execute',
+        category: TERMINAL_CATEGORY,
+        label: 'Execute Command in Terminal',
     });
 }
 
@@ -428,6 +435,13 @@ export class TerminalFrontendContribution implements FrontendApplicationContribu
             execute: (command: string) => {
                 const [terminal] = this.widgetManager.getWidgets(TERMINAL_WIDGET_FACTORY_ID) as TerminalWidget[];
                 terminal.write(command);
+
+            }
+        });
+        commands.registerCommand(TerminalCommands.EXECUTE_TERMINAL_COMMAND, {
+            execute: async (commandLineOptions: CommandLineOptions): Promise<void> => {
+                const [terminal] = this.widgetManager.getWidgets(TERMINAL_WIDGET_FACTORY_ID) as TerminalWidget[];
+                terminal.executeCommand(commandLineOptions);
             }
         });
     }
