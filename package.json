@@ -7,7 +7,11 @@
     "node": ">=12.14.1"
   },
   "resolutions": {
-    "**/@types/node": "12"
+    "**/keytar": "7.6.0",
+    "**/drivelist": "9.2.4",
+    "**/oniguruma": "7.2.1",
+    "**/@types/node": "12",
+    "**/node-abi": "^2.18.0"
   },
   "devDependencies": {
     "@types/chai-string": "^1.4.0",
