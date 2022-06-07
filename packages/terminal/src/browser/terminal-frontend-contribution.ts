@@ -638,9 +638,9 @@ export class TerminalFrontendContribution extends AbstractViewContribution<Termi
             // this.shell.addWidget(widget, op.widgetOptions);
         }
         if (op.mode === 'activate') {
-            this.shell.activateWidget(widget.id);
+            this.shell.activateWidget(TerminalManagerWidget.ID);
         } else if (op.mode === 'reveal') {
-            this.shell.revealWidget(widget.id);
+            this.shell.revealWidget(TerminalManagerWidget.ID);
         }
     }
 

@@ -72,5 +72,5 @@
 }
 
 .p-DockPanel-overlay.p-mod-root-bottom {
-    background: var(--theia-panel-dropBackground);
+  background: var(--theia-panel-dropBackground);
 }

@@ -14,8 +14,8 @@
 // SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
 // *****************************************************************************
 
-import { injectable, postConstruct } from '@theia/core/shared/inversify';
-import { BaseWidget, codicon, SplitLayout, SplitPanel } from '@theia/core/lib/browser';
+import { inject, injectable, postConstruct } from '@theia/core/shared/inversify';
+import { BaseWidget, codicon, PanelLayout, SplitLayout, SplitPanel, SplitPositionHandler, ViewContainerLayout, ViewContainerPart } from '@theia/core/lib/browser';
 import { TerminalWidget } from './base/terminal-widget';
 
 @injectable()
@@ -23,7 +23,10 @@ export class TerminalManagerWidget extends BaseWidget {
     static ID = 'terminal-manager-widget';
     static LABEL = 'Terminal';
 
-    override layout: SplitLayout;
+    protected panel: SplitPanel;
+
+    @inject(SplitPositionHandler)
+    protected readonly splitPositionHandler: SplitPositionHandler;
 
     @postConstruct()
     protected async init(): Promise<void> {
@@ -32,11 +35,36 @@ export class TerminalManagerWidget extends BaseWidget {
         this.title.label = TerminalManagerWidget.LABEL;
         this.title.iconClass = codicon('terminal');
 
-        const layoutOptions: SplitLayout.IOptions = { renderer: SplitPanel.defaultRenderer };
-        this.layout = new SplitLayout(layoutOptions);
+        // const layout = new PanelLayout();
+        // this.layout = layout;
+        // const layoutOptions: SplitLayout.IOptions = { renderer: SplitPanel.defaultRenderer };
+        // this.panel = new SplitPanel({
+        //     layout: new SplitLayout(layoutOptions),
+        // });
+        // this.panel.node.tabIndex = -1;
+        // this.configureLayout(layout);
+        const layout = new PanelLayout();
+        this.layout = layout;
+        this.panel = new SplitPanel({
+            layout: new ViewContainerLayout({
+                renderer: SplitPanel.defaultRenderer,
+                orientation: 'horizontal',
+                spacing: 2,
+                headerSize: ViewContainerPart.HEADER_HEIGHT,
+                animationDuration: 200
+            }, this.splitPositionHandler)
+        });
+        this.panel.node.tabIndex = -1;
+        this.configureLayout(layout);
+    }
+
+    protected configureLayout(layout: PanelLayout): void {
+        layout.addWidget(this.panel);
     }
 
     addWidget(widget: TerminalWidget): void {
-        this.layout.addWidget(widget);
+        if (this.panel.layout) {
+            (this.panel.layout as SplitLayout).addWidget(widget);
+        }
     }
 }
