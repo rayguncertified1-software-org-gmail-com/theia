@@ -6535,7 +6535,7 @@ export module '@theia/plugin' {
          * the port forwarding tunnel is managed by VS Code and the tunnel can be closed by the user.
          *
          * Extensions should not cache the result of `asExternalUri` as the resolved uri may become invalid due to
-         * a system or user action — for example, in remote cases, a user may close a port forwarding tunnel
+         * a system or user action — for example, in remote cases, a user may close a port forwarding tunnel
          * that was opened by `asExternalUri`.
          *
          * *Note* that uris passed through `openExternal` are automatically resolved and you should not call `asExternalUri`
@@ -6709,6 +6709,10 @@ export module '@theia/plugin' {
          * This rule will only execute if the text after the cursor matches this regular expression.
          */
         afterText?: RegExp;
+        /**
+         * This rule will only execute if the text above the current line matches this regular expression.
+         */
+        previousLineText?: RegExp;
         /**
          * The action to execute.
          */
