@@ -18,9 +18,15 @@ import '../../src/browser/style/terminal.css';
 import 'xterm/css/xterm.css';
 
 import { ContainerModule, Container } from '@theia/core/shared/inversify';
-import { CommandContribution, MenuContribution } from '@theia/core/lib/common';
+import { CommandContribution } from '@theia/core/lib/common';
 import { bindContributionProvider } from '@theia/core';
-import { KeybindingContribution, WebSocketConnectionProvider, WidgetFactory, KeybindingContext, FrontendApplicationContribution } from '@theia/core/lib/browser';
+import {
+    WebSocketConnectionProvider,
+    WidgetFactory,
+    KeybindingContext,
+    FrontendApplicationContribution,
+    bindViewContribution,
+} from '@theia/core/lib/browser';
 import { TabBarToolbarContribution } from '@theia/core/lib/browser/shell/tab-bar-toolbar';
 import { TerminalFrontendContribution } from './terminal-frontend-contribution';
 import { TerminalWidgetImpl, TERMINAL_WIDGET_FACTORY_ID } from './terminal-widget-impl';
@@ -43,6 +49,7 @@ import { TerminalCopyOnSelectionHandler } from './terminal-copy-on-selection-han
 import { ColorContribution } from '@theia/core/lib/browser/color-application-contribution';
 import { TerminalThemeService } from './terminal-theme-service';
 import { QuickAccessContribution } from '@theia/core/lib/browser/quick-input/quick-access';
+import { TerminalManagerWidget } from './terminal-manager-widget';
 
 export default new ContainerModule(bind => {
     bindTerminalPreferences(bind);
@@ -84,9 +91,16 @@ export default new ContainerModule(bind => {
     }
 
     bind(TerminalThemeService).toSelf().inSingletonScope();
-    bind(TerminalFrontendContribution).toSelf().inSingletonScope();
+
+    bind(TerminalManagerWidget).toSelf().inSingletonScope();
+    bind(WidgetFactory).toDynamicValue(context => ({
+        id: TerminalManagerWidget.ID,
+        createWidget: () => context.container.get(TerminalManagerWidget),
+    }));
+    bind(FrontendApplicationContribution).to(TerminalFrontendContribution);
+    bindViewContribution(bind, TerminalFrontendContribution);
     bind(TerminalService).toService(TerminalFrontendContribution);
-    for (const identifier of [CommandContribution, MenuContribution, KeybindingContribution, TabBarToolbarContribution, ColorContribution]) {
+    for (const identifier of [TabBarToolbarContribution, ColorContribution]) {
         bind(identifier).toService(TerminalFrontendContribution);
     }
 
@@ -123,5 +137,4 @@ export default new ContainerModule(bind => {
     bind(TerminalLinkmatcherDiffPost).toSelf().inSingletonScope();
     bind(TerminalContribution).toService(TerminalLinkmatcherDiffPost);
 
-    bind(FrontendApplicationContribution).to(TerminalFrontendContribution);
 });

@@ -16,11 +16,9 @@
 
 import { inject, injectable, optional, postConstruct } from '@theia/core/shared/inversify';
 import {
-    CommandContribution,
     Command,
     CommandRegistry,
     DisposableCollection,
-    MenuContribution,
     MenuModelRegistry,
     isOSX,
     SelectionService,
@@ -28,9 +26,9 @@ import {
     Event
 } from '@theia/core/lib/common';
 import {
-    ApplicationShell, KeybindingContribution, KeyCode, Key, WidgetManager,
+    ApplicationShell, KeyCode, Key,
     KeybindingRegistry, Widget, LabelProvider, WidgetOpenerOptions, StorageService,
-    QuickInputService, codicon, CommonCommands, FrontendApplicationContribution, OnWillStopAction, Dialog, ConfirmDialog
+    QuickInputService, codicon, CommonCommands, FrontendApplicationContribution, OnWillStopAction, Dialog, ConfirmDialog, FrontendApplication, AbstractViewContribution
 } from '@theia/core/lib/browser';
 import { TabBarToolbarContribution, TabBarToolbarRegistry } from '@theia/core/lib/browser/shell/tab-bar-toolbar';
 import { TERMINAL_WIDGET_FACTORY_ID, TerminalWidgetFactoryOptions, TerminalWidgetImpl } from './terminal-widget-impl';
@@ -55,6 +53,7 @@ import {
 } from '../common/base-terminal-protocol';
 import { nls } from '@theia/core/lib/common/nls';
 import { TerminalPreferences } from './terminal-preferences';
+import { TerminalManagerWidget } from './terminal-manager-widget';
 
 export namespace TerminalMenus {
     export const TERMINAL = [...MAIN_MENU_BAR, '7_terminal'];
@@ -141,12 +140,10 @@ export namespace TerminalCommands {
 }
 
 @injectable()
-export class TerminalFrontendContribution implements FrontendApplicationContribution, TerminalService, CommandContribution, MenuContribution,
-    KeybindingContribution, TabBarToolbarContribution, ColorContribution {
+export class TerminalFrontendContribution extends AbstractViewContribution<TerminalManagerWidget>
+    implements FrontendApplicationContribution, TerminalService, TabBarToolbarContribution, ColorContribution {
 
-    @inject(ApplicationShell) protected readonly shell: ApplicationShell;
     @inject(ShellTerminalServerProxy) protected readonly shellTerminalServer: ShellTerminalServerProxy;
-    @inject(WidgetManager) protected readonly widgetManager: WidgetManager;
     @inject(FileService) protected readonly fileService: FileService;
     @inject(SelectionService) protected readonly selectionService: SelectionService;
 
@@ -177,6 +174,19 @@ export class TerminalFrontendContribution implements FrontendApplicationContribu
     @inject(ContextKeyService)
     protected readonly contextKeyService: ContextKeyService;
 
+    constructor() {
+        super({
+            widgetId: TerminalManagerWidget.ID,
+            widgetName: nls.localizeByDefault('Terminal'),
+            defaultWidgetOptions: {
+                area: 'bottom',
+                rank: 0,
+            },
+            toggleCommandId: 'terminalView:toggle',
+            toggleKeybinding: 'ctrlcmd+~',
+        });
+    }
+
     @postConstruct()
     protected init(): void {
         this.shell.onDidChangeCurrentWidget(() => this.updateCurrentTerminal());
@@ -204,6 +214,12 @@ export class TerminalFrontendContribution implements FrontendApplicationContribu
                 }
             });
         });
+    }
+
+    async initializeLayout(app: FrontendApplication): Promise<void> {
+        const terminalManagerWidget = await this.widgetManager.getOrCreateWidget(TerminalManagerWidget.ID);
+        console.log('SENTINEL INITIALIZED LAYOUT');
+        app.shell.bottomPanel.addWidget(terminalManagerWidget);
     }
 
     onWillStop(): OnWillStopAction<number> | undefined {
@@ -328,7 +344,8 @@ export class TerminalFrontendContribution implements FrontendApplicationContribu
         return this.shellTerminalServer.getDefaultShell();
     }
 
-    registerCommands(commands: CommandRegistry): void {
+    override registerCommands(commands: CommandRegistry): void {
+        super.registerCommands(commands);
         commands.registerCommand(TerminalCommands.NEW, {
             execute: () => this.openTerminal()
         });
@@ -431,7 +448,8 @@ export class TerminalFrontendContribution implements FrontendApplicationContribu
         this.open(termWidget);
     }
 
-    registerMenus(menus: MenuModelRegistry): void {
+    override registerMenus(menus: MenuModelRegistry): void {
+        super.registerMenus(menus);
         menus.registerSubmenu(TerminalMenus.TERMINAL, TerminalWidgetImpl.LABEL);
         menus.registerMenuAction(TerminalMenus.TERMINAL_NEW, {
             commandId: TerminalCommands.NEW.id,
@@ -461,7 +479,8 @@ export class TerminalFrontendContribution implements FrontendApplicationContribu
         });
     }
 
-    registerKeybindings(keybindings: KeybindingRegistry): void {
+    override registerKeybindings(keybindings: KeybindingRegistry): void {
+        super.registerKeybindings(keybindings);
         /* Register passthrough keybindings for combinations recognized by
            xterm.js and converted to control characters.
              See: https://github.com/xtermjs/xterm.js/blob/v3/src/Terminal.ts#L1684 */
@@ -613,8 +632,10 @@ export class TerminalFrontendContribution implements FrontendApplicationContribu
                 ...(options && options.widgetOptions)
             }
         };
+        const terminalManagerWidget = this.tryGetWidget();
         if (!widget.isAttached) {
-            this.shell.addWidget(widget, op.widgetOptions);
+            terminalManagerWidget?.addWidget(widget);
+            // this.shell.addWidget(widget, op.widgetOptions);
         }
         if (op.mode === 'activate') {
             this.shell.activateWidget(widget.id);

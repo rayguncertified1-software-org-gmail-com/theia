@@ -451,6 +451,8 @@ export class CommonFrontendContribution implements FrontendApplicationContributi
                 app.shell.leftPanelHandler.removeBottomMenu(accountsMenu.id);
             }
         });
+
+        // app.shell.bottomPanel.addWidget
     }
 
     protected updateStyles(): void {
