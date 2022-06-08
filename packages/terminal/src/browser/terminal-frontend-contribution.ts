@@ -72,6 +72,11 @@ export namespace TerminalCommands {
         category: TERMINAL_CATEGORY,
         label: 'Create New Integrated Terminal'
     });
+    export const NEW_FROM_TOOLBAR = Command.toDefaultLocalizedCommand({
+        id: 'terminal:new-toolbar',
+        category: TERMINAL_CATEGORY,
+        label: 'Create New Terminal',
+    });
     export const NEW_ACTIVE_WORKSPACE = Command.toDefaultLocalizedCommand({
         id: 'terminal:new:active:workspace',
         category: TERMINAL_CATEGORY,
@@ -349,6 +354,13 @@ export class TerminalFrontendContribution extends AbstractViewContribution<Termi
         commands.registerCommand(TerminalCommands.NEW, {
             execute: () => this.openTerminal()
         });
+        commands.registerCommand(TerminalCommands.NEW_FROM_TOOLBAR, {
+            execute: () => this.openTerminal(),
+            isVisible: widget => {
+                console.log('SENTINEL COMMAND ARGS', widget);
+                return widget instanceof TerminalManagerWidget;
+            }
+        });
         commands.registerCommand(TerminalCommands.NEW_ACTIVE_WORKSPACE, {
             execute: () => this.openActiveWorkspaceTerminal()
         });
@@ -476,6 +488,12 @@ export class TerminalFrontendContribution extends AbstractViewContribution<Termi
             command: TerminalCommands.SPLIT.id,
             icon: codicon('split-horizontal'),
             tooltip: TerminalCommands.SPLIT.label
+        });
+        toolbar.registerItem({
+            id: TerminalCommands.NEW_FROM_TOOLBAR.id,
+            command: TerminalCommands.NEW_FROM_TOOLBAR.id,
+            icon: codicon('add'),
+            tooltip: TerminalCommands.NEW_FROM_TOOLBAR.label,
         });
     }
 

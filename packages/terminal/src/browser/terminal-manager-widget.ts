@@ -87,7 +87,7 @@ export class TerminalManagerWidget extends BaseWidget {
         this.panelLayout?.addWidget(this.treeWidget);
     }
 
-    addWidget(widget: TerminalWidgetImpl): void {
+    addWidget(widget: TerminalWidget): void {
         const numWidgets = this.panelLayout?.widgets.length;
         const index = numWidgets ? numWidgets - 2 : 0;
         this.panelLayout?.insertWidget(index, widget);

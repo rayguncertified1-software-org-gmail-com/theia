@@ -14,9 +14,10 @@
 // SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
 // *****************************************************************************
 
-import { Container, inject, injectable, interfaces, postConstruct } from '@theia/core/shared/inversify';
-import { CompositeTreeNode, createTreeContainer, SelectableTreeNode, Tree, TreeImpl, TreeModel, TreeModelImpl, TreeWidget } from '@theia/core/lib/browser';
+import { Container, injectable, interfaces } from '@theia/core/shared/inversify';
+import { createTreeContainer, SelectableTreeNode, TreeWidget } from '@theia/core/lib/browser';
 import { TerminalWidgetImpl } from './terminal-widget-impl';
+import { TerminalWidget } from './base/terminal-widget';
 
 export interface TerminalManagerTreeNode extends SelectableTreeNode {
     widget: TerminalWidgetImpl;
@@ -28,49 +29,49 @@ export class TerminalManagerTreeWidget extends TreeWidget {
 
     static createContainer(parent: interfaces.Container): Container {
         const child = createTreeContainer(parent);
-        child.bind(TerminalManagerTreeWidget).toSelf().inSingletonScope();
-        child.bind(TerminalManagerTreeModel).toSelf().inSingletonScope();
-        child.bind(TerminalManagerTree).toSelf().inSingletonScope();
-        child.rebind(TreeModelImpl).to(TerminalManagerTreeModel);
-        child.rebind(TreeImpl).to(TerminalManagerTree);
+        // child.bind(TerminalManagerTree).toSelf().inSingletonScope();
+        // child.rebind(Tree).to(TerminalManagerTree);
+        // child.bind(TerminalManagerTreeModel).toSelf().inSingletonScope();
+        // child.rebind(TreeModel).to(TerminalManagerTreeModel);
+        // child.bind(TerminalManagerTreeWidget).toSelf().inSingletonScope();
         return child;
     }
 
-    @inject(TreeModel) override readonly model: TerminalManagerTreeModel;
+    // @inject(TreeModel) override readonly model: TerminalManagerTreeModel;
 
     static createWidget(parent: interfaces.Container): TerminalManagerTreeWidget {
         return TerminalManagerTreeWidget.createContainer(parent).get(TerminalManagerTreeWidget);
     }
 
-    addWidget(widget: TerminalWidgetImpl): void {
-        this.model.addWidget(widget);
+    addWidget(widget: TerminalWidget): void {
+        // this.model.addWidget(widget);
     }
 }
 
-@injectable()
-export class TerminalManagerTreeModel extends TreeModelImpl {
-    @inject(Tree) protected override readonly tree: TerminalManagerTree;
+// @injectable()
+// export class TerminalManagerTreeModel extends TreeModelImpl {
+//     @inject(Tree) protected override readonly tree: TerminalManagerTree;
 
-    addWidget(widget: TerminalWidgetImpl): void {
-        this.tree.addWidget(widget);
-    }
-}
+//     addWidget(widget: TerminalWidget): void {
+//         this.tree.addWidget(widget);
+//     }
+// }
 
-@injectable()
-export class TerminalManagerTree extends TreeImpl {
-    @postConstruct()
-    protected init(): void {
-        const dummyRoot: CompositeTreeNode = { id: 'root', parent: undefined, children: [] };
-        this.root = dummyRoot;
-        CompositeTreeNode.addChild(this.root as CompositeTreeNode, { id: 'child1', parent: undefined });
-    }
+// @injectable()
+// export class TerminalManagerTree extends TreeImpl {
+//     @postConstruct()
+//     protected init(): void {
+//         const dummyRoot: CompositeTreeNode = { id: 'root', parent: undefined, children: [] };
+//         this.root = dummyRoot;
+//         CompositeTreeNode.addChild(this.root as CompositeTreeNode, { id: 'child1', parent: undefined });
+//     }
 
-    addWidget(widget: TerminalWidgetImpl): void {
-        const widgetNode: TerminalManagerTreeNode = {
-            id: widget.id,
-            parent: undefined,
-            widget,
-        };
-    }
-}
+//     addWidget(widget: TerminalWidget): void {
+//         // const widgetNode: TerminalManagerTreeNode = {
+//         //     id: widget.id,
+//         //     parent: undefined,
+//         //     widget,
+//         // };
+//     }
+// }
 
