@@ -15,13 +15,13 @@
 // *****************************************************************************
 
 import { Container, injectable, interfaces } from '@theia/core/shared/inversify';
-import { createTreeContainer, SelectableTreeNode, TreeWidget } from '@theia/core/lib/browser';
-import { TerminalWidgetImpl } from './terminal-widget-impl';
+import { createTreeContainer, TreeWidget } from '@theia/core/lib/browser';
+// import { TerminalWidgetImpl } from './terminal-widget-impl';
 import { TerminalWidget } from './base/terminal-widget';
 
-export interface TerminalManagerTreeNode extends SelectableTreeNode {
-    widget: TerminalWidgetImpl;
-};
+// export interface TerminalManagerTreeNode extends SelectableTreeNode {
+//     widget: TerminalWidgetImpl;
+// };
 
 @injectable()
 export class TerminalManagerTreeWidget extends TreeWidget {
@@ -33,7 +33,7 @@ export class TerminalManagerTreeWidget extends TreeWidget {
         // child.rebind(Tree).to(TerminalManagerTree);
         // child.bind(TerminalManagerTreeModel).toSelf().inSingletonScope();
         // child.rebind(TreeModel).to(TerminalManagerTreeModel);
-        // child.bind(TerminalManagerTreeWidget).toSelf().inSingletonScope();
+        child.bind(TerminalManagerTreeWidget).toSelf().inSingletonScope();
         return child;
     }
 

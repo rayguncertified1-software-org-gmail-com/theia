@@ -29,7 +29,7 @@ export class TerminalManagerWidget extends BaseWidget {
 
     static createContainer(parent: interfaces.Container): interfaces.Container {
         const child = parent.createChild();
-        child.bind(TerminalManagerTreeWidget).toDynamicValue(context => TerminalManagerTreeWidget.createWidget(context.container));
+        child.bind(TerminalManagerTreeWidget).toDynamicValue(context => TerminalManagerTreeWidget.createWidget(child));
         child.bind(TerminalManagerWidget).toSelf().inSingletonScope();
         return child;
     }
