@@ -35,3 +35,8 @@
 #terminal-manager-widget .p-Widget.p-Panel.p-SplitPanel {
   height: 100%;
 }
+
+#terminal-manager-widget .p-SplitPanel-handle {
+  width: 1px !important;
+  background-color: var(--theia-sideBarSectionHeader-border);
+}

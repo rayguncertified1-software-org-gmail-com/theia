@@ -95,8 +95,9 @@ export default new ContainerModule(bind => {
     bind(TerminalManagerWidget).toSelf().inSingletonScope();
     bind(WidgetFactory).toDynamicValue(context => ({
         id: TerminalManagerWidget.ID,
-        createWidget: () => context.container.get(TerminalManagerWidget),
+        createWidget: () => TerminalManagerWidget.createWidget(context.container),
     }));
+
     bind(FrontendApplicationContribution).to(TerminalFrontendContribution);
     bindViewContribution(bind, TerminalFrontendContribution);
     bind(TerminalService).toService(TerminalFrontendContribution);
