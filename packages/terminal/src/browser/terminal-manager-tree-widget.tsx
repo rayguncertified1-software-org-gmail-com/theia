@@ -15,9 +15,10 @@
 // *****************************************************************************
 
 import { Container, injectable, interfaces } from '@theia/core/shared/inversify';
-import { createTreeContainer, TreeWidget } from '@theia/core/lib/browser';
+import { createTreeContainer, Tree, TreeWidget } from '@theia/core/lib/browser';
 // import { TerminalWidgetImpl } from './terminal-widget-impl';
 import { TerminalWidget } from './base/terminal-widget';
+import { TerminalManagerTree } from './terminal-manager-tree';
 
 // export interface TerminalManagerTreeNode extends SelectableTreeNode {
 //     widget: TerminalWidgetImpl;
@@ -29,8 +30,8 @@ export class TerminalManagerTreeWidget extends TreeWidget {
 
     static createContainer(parent: interfaces.Container): Container {
         const child = createTreeContainer(parent);
-        // child.bind(TerminalManagerTree).toSelf().inSingletonScope();
-        // child.rebind(Tree).to(TerminalManagerTree);
+        child.bind(TerminalManagerTree).toSelf().inSingletonScope();
+        child.rebind(Tree).to(TerminalManagerTree);
         // child.bind(TerminalManagerTreeModel).toSelf().inSingletonScope();
         // child.rebind(TreeModel).to(TerminalManagerTreeModel);
         child.bind(TerminalManagerTreeWidget).toSelf().inSingletonScope();
@@ -47,31 +48,4 @@ export class TerminalManagerTreeWidget extends TreeWidget {
         // this.model.addWidget(widget);
     }
 }
-
-// @injectable()
-// export class TerminalManagerTreeModel extends TreeModelImpl {
-//     @inject(Tree) protected override readonly tree: TerminalManagerTree;
-
-//     addWidget(widget: TerminalWidget): void {
-//         this.tree.addWidget(widget);
-//     }
-// }
-
-// @injectable()
-// export class TerminalManagerTree extends TreeImpl {
-//     @postConstruct()
-//     protected init(): void {
-//         const dummyRoot: CompositeTreeNode = { id: 'root', parent: undefined, children: [] };
-//         this.root = dummyRoot;
-//         CompositeTreeNode.addChild(this.root as CompositeTreeNode, { id: 'child1', parent: undefined });
-//     }
-
-//     addWidget(widget: TerminalWidget): void {
-//         // const widgetNode: TerminalManagerTreeNode = {
-//         //     id: widget.id,
-//         //     parent: undefined,
-//         //     widget,
-//         // };
-//     }
-// }
 

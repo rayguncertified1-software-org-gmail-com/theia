@@ -223,7 +223,7 @@ export class TerminalFrontendContribution extends AbstractViewContribution<Termi
 
     async initializeLayout(app: FrontendApplication): Promise<void> {
         const terminalManagerWidget = await this.widgetManager.getOrCreateWidget(TerminalManagerWidget.ID);
-        console.log('SENTINEL INITIALIZED LAYOUT');
+        // console.log('SENTINEL INITIALIZED LAYOUT');
         app.shell.bottomPanel.addWidget(terminalManagerWidget);
     }
 
@@ -356,10 +356,7 @@ export class TerminalFrontendContribution extends AbstractViewContribution<Termi
         });
         commands.registerCommand(TerminalCommands.NEW_FROM_TOOLBAR, {
             execute: () => this.openTerminal(),
-            isVisible: widget => {
-                console.log('SENTINEL COMMAND ARGS', widget);
-                return widget instanceof TerminalManagerWidget;
-            }
+            isVisible: widget => widget instanceof TerminalManagerWidget,
         });
         commands.registerCommand(TerminalCommands.NEW_ACTIVE_WORKSPACE, {
             execute: () => this.openActiveWorkspaceTerminal()
