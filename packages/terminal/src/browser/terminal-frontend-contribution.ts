@@ -72,11 +72,6 @@ export namespace TerminalCommands {
         category: TERMINAL_CATEGORY,
         label: 'Create New Integrated Terminal'
     });
-    export const NEW_FROM_TOOLBAR = Command.toDefaultLocalizedCommand({
-        id: 'terminal:new-toolbar',
-        category: TERMINAL_CATEGORY,
-        label: 'Create New Terminal',
-    });
     export const NEW_ACTIVE_WORKSPACE = Command.toDefaultLocalizedCommand({
         id: 'terminal:new:active:workspace',
         category: TERMINAL_CATEGORY,
@@ -141,6 +136,12 @@ export namespace TerminalCommands {
         id: 'workbench.action.showAllTerminals',
         category: CommonCommands.VIEW_CATEGORY,
         label: 'Show All Opened Terminals'
+    });
+
+    export const NEW_FROM_TOOLBAR = Command.toDefaultLocalizedCommand({
+        id: 'terminal:new-toolbar',
+        category: TERMINAL_CATEGORY,
+        label: 'Create New Terminal',
     });
 }
 
@@ -486,6 +487,7 @@ export class TerminalFrontendContribution extends AbstractViewContribution<Termi
             icon: codicon('split-horizontal'),
             tooltip: TerminalCommands.SPLIT.label
         });
+
         toolbar.registerItem({
             id: TerminalCommands.NEW_FROM_TOOLBAR.id,
             command: TerminalCommands.NEW_FROM_TOOLBAR.id,

@@ -59,10 +59,12 @@ import { ConfirmDialog, confirmExit, Dialog } from './dialogs';
 import { WindowService } from './window/window-service';
 import { FrontendApplicationConfigProvider } from './frontend-application-config-provider';
 import { DecorationStyle } from './decoration-style';
-import { isPinned, Title, togglePinned, Widget } from './widgets';
+import { codicon, isPinned, Title, togglePinned, Widget } from './widgets';
 import { SaveResourceService } from './save-resource-service';
 import { UserWorkingDirectoryProvider } from './user-working-directory-provider';
-import { createUntitledURI } from '../common';
+import { createUntitledURI, Emitter } from '../common';
+import { TabBarToolbarContribution, TabBarToolbarRegistry } from './shell/tab-bar-toolbar';
+import { BOTTOM_AREA_ID, MAXIMIZED_CLASS } from './shell/theia-dock-panel';
 
 export namespace CommonMenus {
 
@@ -240,6 +242,16 @@ export namespace CommonCommands {
         category: VIEW_CATEGORY,
         label: 'Toggle Bottom Panel'
     }, 'theia/core/common/collapseBottomPanel', VIEW_CATEGORY_KEY);
+    export const MAXIMIZE_BOTTOM_PANEL = Command.toDefaultLocalizedCommand({
+        id: 'workbench.action.toggleMaximizedPanel',
+        label: 'Maximize Bottom Panel',
+        category: VIEW_CATEGORY,
+    });
+    export const MINIMIZE_BOTTOM_PANEL = Command.toDefaultLocalizedCommand({
+        id: 'workbench.action.toggleMinimizedPanel',
+        label: 'Minimize Bottom Panel',
+        category: VIEW_CATEGORY,
+    });
     export const TOGGLE_STATUS_BAR = Command.toDefaultLocalizedCommand({
         id: 'workbench.action.toggleStatusbarVisibility',
         category: VIEW_CATEGORY,
@@ -340,7 +352,7 @@ export const supportPaste = browser.isNative || (!browser.isChrome && document.q
 export const RECENT_COMMANDS_STORAGE_KEY = 'commands';
 
 @injectable()
-export class CommonFrontendContribution implements FrontendApplicationContribution, MenuContribution, CommandContribution, KeybindingContribution, ColorContribution {
+export class CommonFrontendContribution implements FrontendApplicationContribution, MenuContribution, CommandContribution, KeybindingContribution, ColorContribution, TabBarToolbarContribution {
 
     protected commonDecorationsStyleSheet: CSSStyleSheet = DecorationStyle.createStyleSheet('coreCommonDecorationsStyle');
 
@@ -400,7 +412,8 @@ export class CommonFrontendContribution implements FrontendApplicationContributi
     protected readonly workingDirProvider: UserWorkingDirectoryProvider;
 
     protected pinnedKey: ContextKey<boolean>;
-
+    protected onBottomPanelMaximizeDidChangeEmitter = new Emitter<void>();
+    protected onBottomPanelMaximizeDidChange = this.onBottomPanelMaximizeDidChangeEmitter.event;
     async configure(app: FrontendApplication): Promise<void> {
         const configDirUri = await this.environments.getConfigDirUri();
         // Global settings
@@ -960,6 +973,19 @@ export class CommonFrontendContribution implements FrontendApplicationContributi
         commandRegistry.registerCommand(CommonCommands.NEW_FILE, {
             execute: async () => open(this.openerService, createUntitledURI('', await this.workingDirProvider.getUserWorkingDir()))
         });
+        commandRegistry.registerCommand(CommonCommands.MAXIMIZE_BOTTOM_PANEL, {
+            execute: () => this.maximizeBottomPanel(),
+            isVisible: widget => widget instanceof Widget && widget.parent?.id === BOTTOM_AREA_ID && !this.shell.bottomPanel.hasClass(MAXIMIZED_CLASS),
+        });
+        commandRegistry.registerCommand(CommonCommands.MINIMIZE_BOTTOM_PANEL, {
+            execute: () => this.maximizeBottomPanel(),
+            isVisible: widget => widget instanceof Widget && widget.parent?.id === BOTTOM_AREA_ID && this.shell.bottomPanel.hasClass(MAXIMIZED_CLASS),
+        });
+    }
+
+    protected maximizeBottomPanel(): void {
+        this.shell.bottomPanel.toggleMaximized();
+        this.onBottomPanelMaximizeDidChangeEmitter.fire();
     }
 
     protected isElectron(): boolean {
@@ -971,6 +997,21 @@ export class CommonFrontendContribution implements FrontendApplicationContributi
             togglePinned(title);
             this.updatePinnedKey();
         }
+    }
+
+    registerToolbarItems(registry: TabBarToolbarRegistry): void {
+        registry.registerItem({
+            id: CommonCommands.MAXIMIZE_BOTTOM_PANEL.id,
+            command: CommonCommands.MAXIMIZE_BOTTOM_PANEL.id,
+            icon: codicon('chevron-up'),
+            onDidChange: this.onBottomPanelMaximizeDidChange,
+        });
+        registry.registerItem({
+            id: CommonCommands.MINIMIZE_BOTTOM_PANEL.id,
+            command: CommonCommands.MINIMIZE_BOTTOM_PANEL.id,
+            icon: codicon('chevron-down'),
+            onDidChange: this.onBottomPanelMaximizeDidChange,
+        });
     }
 
     registerKeybindings(registry: KeybindingRegistry): void {
