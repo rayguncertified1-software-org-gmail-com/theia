@@ -17,33 +17,59 @@
 import { injectable, postConstruct } from '@theia/core/shared/inversify';
 import { TreeImpl, CompositeTreeNode, SelectableTreeNode } from '@theia/core/lib/browser';
 import { TerminalWidget } from './base/terminal-widget';
+import { Emitter } from '@theia/core';
 
 export namespace TerminalManagerTreeTypes {
-    export interface TerminalTreeNode extends SelectableTreeNode, CompositeTreeNode {
+    export interface TerminalNode extends SelectableTreeNode, CompositeTreeNode {
+        terminal: true;
         widget: TerminalWidget;
     };
     export interface PageNode extends SelectableTreeNode, CompositeTreeNode {
-        children: TerminalTreeNode[];
+        page: true;
+        children: TerminalNode[];
     }
     export const isPageNode = (obj: unknown): obj is PageNode => !!obj && typeof obj === 'object' && 'page' in obj;
+    export const isTerminalNode = (obj: unknown): obj is TerminalNode => !!obj && typeof obj === 'object' && 'terminal' in obj;
+    export interface SelectionChangedEvent {
+        activePage: PageNode;
+        activeTerminal: TerminalNode;
+    }
 }
 @injectable()
 export class TerminalManagerTree extends TreeImpl {
     protected pages: Set<TerminalManagerTreeTypes.PageNode> = new Set();
     protected activePage: TerminalManagerTreeTypes.PageNode;
+    protected activeTerminal: TerminalManagerTreeTypes.TerminalNode;
     protected pageNum = 0;
+
+    protected onTreeSelectionChangedEmitter = new Emitter<TerminalManagerTreeTypes.SelectionChangedEvent>();
+    readonly onTreeSelectionChanged = this.onTreeSelectionChangedEmitter.event;
 
     @postConstruct()
     protected init(): void {
         this.root = { id: 'root', parent: undefined, children: [], visible: false } as CompositeTreeNode;
+        this.toDispose.push(this.onTreeSelectionChangedEmitter);
     }
 
-    addWidget(widget: TerminalWidget, page: number): void {
+    addWidget(widget: TerminalWidget, _activePage: TerminalManagerTreeTypes.PageNode): void {
         const widgetNode = this.createWidgetNode(widget);
         if (this.root && CompositeTreeNode.is(this.root)) {
             CompositeTreeNode.addChild(this.activePage, widgetNode);
             this.refresh();
         }
+    }
+
+    handleSelectionChanged(selectedNode: SelectableTreeNode): void {
+        if (TerminalManagerTreeTypes.isPageNode(selectedNode)) {
+            this.activePage = selectedNode;
+        } else if (TerminalManagerTreeTypes.isTerminalNode(selectedNode)) {
+            const activePage = selectedNode.parent;
+            if (TerminalManagerTreeTypes.isPageNode(activePage) && TerminalManagerTreeTypes.isTerminalNode(selectedNode)) {
+                this.activePage = activePage;
+                this.activeTerminal = selectedNode;
+            }
+        }
+        this.onTreeSelectionChangedEmitter.fire({ activePage: this.activePage, activeTerminal: this.activeTerminal });
     }
 
     protected createPageNode(): TerminalManagerTreeTypes.PageNode {
@@ -52,16 +78,18 @@ export class TerminalManagerTree extends TreeImpl {
             parent: undefined,
             selected: false,
             children: [],
+            page: true,
         };
     }
 
-    protected createWidgetNode(widget: TerminalWidget): TerminalManagerTreeTypes.TerminalTreeNode {
+    protected createWidgetNode(widget: TerminalWidget): TerminalManagerTreeTypes.TerminalNode {
         return {
             id: `${widget.id}`,
             parent: undefined,
             children: [],
             widget,
             selected: false,
+            terminal: true,
         };
     }
 

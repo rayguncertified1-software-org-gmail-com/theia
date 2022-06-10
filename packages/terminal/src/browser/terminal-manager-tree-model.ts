@@ -14,17 +14,33 @@
 // SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
 // *****************************************************************************
 
-import { inject, injectable } from '@theia/core/shared/inversify';
+import { inject, injectable, postConstruct } from '@theia/core/shared/inversify';
 import { TreeModelImpl, Tree } from '@theia/core/lib/browser';
 import { TerminalWidget } from './base/terminal-widget';
-import { TerminalManagerTree } from './terminal-manager-tree';
+import { TerminalManagerTree, TerminalManagerTreeTypes } from './terminal-manager-tree';
+import { Emitter } from '@theia/core';
 
 @injectable()
 export class TerminalManagerTreeModel extends TreeModelImpl {
     @inject(Tree) protected override readonly tree: TerminalManagerTree;
 
-    addWidget(widget: TerminalWidget, page: number): void {
-        this.tree.addWidget(widget, page);
+    protected onTreeSelectionChangedEmitter = new Emitter<TerminalManagerTreeTypes.SelectionChangedEvent>();
+    readonly onTreeSelectionChanged = this.onTreeSelectionChangedEmitter.event;
+
+    @postConstruct()
+    protected override init(): void {
+        super.init();
+        this.toDispose.push(this.selectionService.onSelectionChanged(selectionEvent => {
+            const selectedNode = selectionEvent.find(node => node.selected);
+            if (selectedNode) {
+                this.tree.handleSelectionChanged(selectedNode);
+            }
+        }));
+        this.toDispose.push(this.tree.onTreeSelectionChanged(changeEvent => this.onTreeSelectionChangedEmitter.fire(changeEvent)));
+    }
+
+    addWidget(widget: TerminalWidget, _activePage: TerminalManagerTreeTypes.PageNode): void {
+        this.tree.addWidget(widget, _activePage);
     }
 
     addPage(): void {

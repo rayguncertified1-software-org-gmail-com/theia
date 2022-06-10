@@ -35,8 +35,13 @@ export class TerminalManagerTreeWidget extends TreeWidget {
         return child;
     }
 
+    static createWidget(parent: interfaces.Container): TerminalManagerTreeWidget {
+        return TerminalManagerTreeWidget.createContainer(parent).get(TerminalManagerTreeWidget);
+    }
     protected onDidChangeEmitter = new Emitter();
     readonly onDidChange = this.onDidChangeEmitter.event;
+    protected onTreeSelectionChangedEmitter = new Emitter<TerminalManagerTreeTypes.SelectionChangedEvent>();
+    readonly onTreeSelectionChanged = this.onTreeSelectionChangedEmitter.event;
 
     @inject(TreeModel) override readonly model: TerminalManagerTreeModel;
 
@@ -46,20 +51,15 @@ export class TerminalManagerTreeWidget extends TreeWidget {
         this.toDispose.push(this.onDidChangeEmitter);
     }
 
-    static createWidget(parent: interfaces.Container): TerminalManagerTreeWidget {
-        return TerminalManagerTreeWidget.createContainer(parent).get(TerminalManagerTreeWidget);
-    }
-
-    addWidget(widget: TerminalWidget, page: number): void {
-        this.model.addWidget(widget, page);
+    addWidget(widget: TerminalWidget, activePage: TerminalManagerTreeTypes.PageNode): void {
+        this.model.addWidget(widget, activePage);
     }
 
     addPage(): void {
         this.model.addPage();
     }
 
-    protected override toNodeName(node: TerminalManagerTreeTypes.TerminalTreeNode): string {
-        console.log('SENTINEL TREE NODE', node);
+    protected override toNodeName(node: TerminalManagerTreeTypes.TerminalNode): string {
         return node.id ?? 'root';
     }
 

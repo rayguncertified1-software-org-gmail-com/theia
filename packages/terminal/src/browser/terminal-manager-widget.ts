@@ -21,6 +21,7 @@ import { TerminalManagerTreeWidget } from './terminal-manager-tree-widget';
 import { TerminalWidgetImpl } from './terminal-widget-impl';
 import { CommandService } from '@theia/core';
 import { TerminalCommands } from './terminal-frontend-contribution';
+import { TerminalManagerTreeTypes } from './terminal-manager-tree';
 
 @injectable()
 export class TerminalManagerWidget extends BaseWidget {
@@ -54,12 +55,14 @@ export class TerminalManagerWidget extends BaseWidget {
     @inject(CommandService) protected readonly commandService: CommandService;
 
     protected terminalPages: ViewContainerLayout[] = [];
-    protected activePageNumber = 0;
+    protected activePage: TerminalManagerTreeTypes.PageNode;
     protected terminalLayout: ViewContainerLayout;
 
     @postConstruct()
     protected async init(): Promise<void> {
         this.toDispose.push(this.treeWidget.onDidChange(() => this.updateView()));
+        this.toDispose.push(this.treeWidget.onTreeSelectionChanged(({ activePage, activeTerminal }) => this.handleSelectionChange(activePage, activeTerminal)));
+
         this.id = TerminalManagerWidget.ID;
         this.title.closable = false;
         this.title.label = TerminalManagerWidget.LABEL;
@@ -86,6 +89,14 @@ export class TerminalManagerWidget extends BaseWidget {
         this.update();
     }
 
+    protected handleSelectionChange(activePage: TerminalManagerTreeTypes.PageNode, _activeTerminal: TerminalManagerTreeTypes.TerminalNode): void {
+        this.activePage = activePage;
+        const { children } = activePage;
+        const widgets = children.map(child => child.widget);
+        this.terminalLayout.widgets.forEach(widget => this.terminalLayout.removeWidget(widget));
+        widgets.forEach(widget => this.terminalLayout.addWidget(widget));
+    }
+
     protected async initializeDefaultWidgets(): Promise<void> {
         if (this.widgets.length === 0) {
             await this.commandService.executeCommand(TerminalCommands.NEW_MANAGER_PAGE.id);
@@ -103,6 +114,6 @@ export class TerminalManagerWidget extends BaseWidget {
         const numWidgets = this.terminalLayout.widgets.length;
         const index = numWidgets ? numWidgets - 2 : 0;
         this.terminalLayout.insertWidget(index, widget);
-        this.treeWidget.addWidget(widget, this.activePageNumber);
+        this.treeWidget.addWidget(widget, this.activePage);
     }
 }
