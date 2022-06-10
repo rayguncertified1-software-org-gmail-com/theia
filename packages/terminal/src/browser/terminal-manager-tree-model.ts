@@ -23,7 +23,11 @@ import { TerminalManagerTree } from './terminal-manager-tree';
 export class TerminalManagerTreeModel extends TreeModelImpl {
     @inject(Tree) protected override readonly tree: TerminalManagerTree;
 
-    addWidget(widget: TerminalWidget): void {
-        this.tree.addWidget(widget);
+    addWidget(widget: TerminalWidget, page: number): void {
+        this.tree.addWidget(widget, page);
+    }
+
+    addPage(): void {
+        this.tree.addPage();
     }
 }

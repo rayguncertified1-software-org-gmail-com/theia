@@ -138,16 +138,21 @@ export namespace TerminalCommands {
         label: 'Show All Opened Terminals'
     });
 
-    export const NEW_FROM_TOOLBAR = Command.toDefaultLocalizedCommand({
-        id: 'terminal:new-toolbar',
+    export const NEW_IN_MANAGER = Command.toDefaultLocalizedCommand({
+        id: 'terminal:new-in-manager',
         category: TERMINAL_CATEGORY,
         label: 'Create New Terminal',
+    });
+    export const NEW_MANAGER_PAGE = Command.toDefaultLocalizedCommand({
+        id: 'terminal:new-manager-page',
+        category: TERMINAL_CATEGORY,
+        label: 'Create New Terminal Page',
     });
 }
 
 export namespace TerminalManager {
-    export type Area = ApplicationShell.Area | 'terminal-manager';
-    export const isTerminalManagerArea = (obj: unknown): obj is Area => typeof obj === 'string' && obj === 'terminal-manager';
+    export type Area = ApplicationShell.Area | 'terminal-manager-current' | 'terminal-manager-new-page';
+    export const isTerminalManagerArea = (obj: unknown): obj is Area => typeof obj === 'string' && (obj === 'terminal-manager-current' || obj === 'terminal-manager-new-page');
     export type ExtendedWidgetOptions = Omit<ApplicationShell.WidgetOptions, 'area'> & { area?: Area };
     export type ExtendedWidgetOpenerOptions = Omit<WidgetOpenerOptions, 'widgetOptions'> & { widgetOptions?: ExtendedWidgetOptions };
 }
@@ -361,8 +366,12 @@ export class TerminalFrontendContribution extends AbstractViewContribution<Termi
         commands.registerCommand(TerminalCommands.NEW, {
             execute: () => this.openTerminal()
         });
-        commands.registerCommand(TerminalCommands.NEW_FROM_TOOLBAR, {
-            execute: () => this.openTerminal({ area: 'terminal-manager' }),
+        commands.registerCommand(TerminalCommands.NEW_IN_MANAGER, {
+            execute: () => this.openTerminal({ area: 'terminal-manager-current' }),
+            isVisible: widget => widget instanceof TerminalManagerWidget,
+        });
+        commands.registerCommand(TerminalCommands.NEW_MANAGER_PAGE, {
+            execute: () => this.openTerminal({ area: 'terminal-manager-new-page' }),
             isVisible: widget => widget instanceof TerminalManagerWidget,
         });
         commands.registerCommand(TerminalCommands.NEW_ACTIVE_WORKSPACE, {
@@ -495,10 +504,15 @@ export class TerminalFrontendContribution extends AbstractViewContribution<Termi
         });
 
         toolbar.registerItem({
-            id: TerminalCommands.NEW_FROM_TOOLBAR.id,
-            command: TerminalCommands.NEW_FROM_TOOLBAR.id,
+            id: TerminalCommands.NEW_IN_MANAGER.id,
+            command: TerminalCommands.NEW_IN_MANAGER.id,
             icon: codicon('add'),
-            tooltip: TerminalCommands.NEW_FROM_TOOLBAR.label,
+            tooltip: TerminalCommands.NEW_IN_MANAGER.label,
+        });
+        toolbar.registerItem({
+            id: TerminalCommands.NEW_MANAGER_PAGE.id,
+            command: TerminalCommands.NEW_MANAGER_PAGE.id,
+            icon: codicon('new-file'),
         });
     }
 
@@ -645,7 +659,7 @@ export class TerminalFrontendContribution extends AbstractViewContribution<Termi
         return widget;
     }
 
-    openInManager(widget: TerminalWidget, options?: WidgetOpenerOptions): void {
+    async openInManager(widget: TerminalWidget, options?: TerminalManager.ExtendedWidgetOpenerOptions): Promise<void> {
         // const mergedOptions: WidgetOpenerOptions = {
         //     mode: 'activate',
         //     ...options,
@@ -657,8 +671,16 @@ export class TerminalFrontendContribution extends AbstractViewContribution<Termi
         const terminalManagerWidget = this.tryGetWidget();
         if (terminalManagerWidget && !widget.isAttached) {
             this.shell.revealWidget(TerminalManagerWidget.ID);
-            terminalManagerWidget?.addWidget(widget);
-            this.shell.activateWidget(widget.id);
+            const area = options?.widgetOptions?.area;
+            if (area) {
+                if (area === 'terminal-manager-current') {
+                    terminalManagerWidget.addWidget(widget);
+                } else if (area === 'terminal-manager-new-page') {
+                    await terminalManagerWidget.addTerminalPage();
+                    terminalManagerWidget.addWidget(widget);
+                }
+            }
+            // this.shell.activateWidget(widget.id);
         }
     }
 

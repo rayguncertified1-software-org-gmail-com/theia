@@ -18,25 +18,58 @@ import { injectable, postConstruct } from '@theia/core/shared/inversify';
 import { TreeImpl, CompositeTreeNode, SelectableTreeNode } from '@theia/core/lib/browser';
 import { TerminalWidget } from './base/terminal-widget';
 
-export interface TerminalManagerTreeNode extends SelectableTreeNode {
-    widget: TerminalWidget;
-};
+export namespace TerminalManagerTreeTypes {
+    export interface TerminalTreeNode extends SelectableTreeNode, CompositeTreeNode {
+        widget: TerminalWidget;
+    };
+    export interface PageNode extends SelectableTreeNode, CompositeTreeNode {
+        children: TerminalTreeNode[];
+    }
+    export const isPageNode = (obj: unknown): obj is PageNode => !!obj && typeof obj === 'object' && 'page' in obj;
+}
 @injectable()
 export class TerminalManagerTree extends TreeImpl {
+    protected pages: Set<TerminalManagerTreeTypes.PageNode> = new Set();
+    protected activePage: TerminalManagerTreeTypes.PageNode;
+    protected pageNum = 0;
+
     @postConstruct()
     protected init(): void {
         this.root = { id: 'root', parent: undefined, children: [], visible: false } as CompositeTreeNode;
     }
 
-    addWidget(widget: TerminalWidget): void {
-        const widgetNode: TerminalManagerTreeNode = {
-            id: widget.id,
+    addWidget(widget: TerminalWidget, page: number): void {
+        const widgetNode = this.createWidgetNode(widget);
+        if (this.root && CompositeTreeNode.is(this.root)) {
+            CompositeTreeNode.addChild(this.activePage, widgetNode);
+            this.refresh();
+        }
+    }
+
+    protected createPageNode(): TerminalManagerTreeTypes.PageNode {
+        return {
+            id: `page ${this.pageNum++}`,
             parent: undefined,
+            selected: false,
+            children: [],
+        };
+    }
+
+    protected createWidgetNode(widget: TerminalWidget): TerminalManagerTreeTypes.TerminalTreeNode {
+        return {
+            id: `${widget.id}`,
+            parent: undefined,
+            children: [],
             widget,
             selected: false,
         };
+    }
+
+    addPage(): void {
+        const pageNode = this.createPageNode();
         if (this.root && CompositeTreeNode.is(this.root)) {
-            this.root = CompositeTreeNode.addChild(this.root, widgetNode);
+            this.root = CompositeTreeNode.addChild(this.root, pageNode);
+            this.activePage = pageNode;
         }
     }
 }

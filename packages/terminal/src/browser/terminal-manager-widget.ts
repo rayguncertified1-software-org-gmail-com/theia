@@ -53,10 +53,13 @@ export class TerminalManagerWidget extends BaseWidget {
 
     @inject(CommandService) protected readonly commandService: CommandService;
 
-    protected terminalLayout: ViewContainerLayout | undefined;
+    protected terminalPages: ViewContainerLayout[] = [];
+    protected activePageNumber = 0;
+    protected terminalLayout: ViewContainerLayout;
 
     @postConstruct()
     protected async init(): Promise<void> {
+        this.toDispose.push(this.treeWidget.onDidChange(() => this.updateView()));
         this.id = TerminalManagerWidget.ID;
         this.title.closable = false;
         this.title.label = TerminalManagerWidget.LABEL;
@@ -64,7 +67,6 @@ export class TerminalManagerWidget extends BaseWidget {
 
         const mainLayout = new PanelLayout({});
         this.layout = mainLayout;
-
         this.terminalLayout = new ViewContainerLayout({
             renderer: SplitPanel.defaultRenderer,
             orientation: 'horizontal',
@@ -77,24 +79,30 @@ export class TerminalManagerWidget extends BaseWidget {
         });
         this.panel.node.tabIndex = -1;
         mainLayout.addWidget(this.panel);
-        await this.initializeDefaultWidgets();
+        return this.initializeDefaultWidgets();
+    }
+
+    protected updateView(): void {
+        this.update();
     }
 
     protected async initializeDefaultWidgets(): Promise<void> {
         if (this.widgets.length === 0) {
-            await this.commandService.executeCommand(TerminalCommands.NEW_FROM_TOOLBAR.id);
+            await this.commandService.executeCommand(TerminalCommands.NEW_MANAGER_PAGE.id);
         }
-        this.terminalLayout?.addWidget(this.treeWidget);
+        this.terminalLayout.addWidget(this.treeWidget);
+    }
+
+    async addTerminalPage(): Promise<void> {
+        this.treeWidget.addPage();
+        // await this.commandService.executeCommand(TerminalCommands.NEW_IN_MANAGER.id);
+        this.update();
     }
 
     addWidget(widget: TerminalWidget): void {
-        const numWidgets = this.terminalLayout?.widgets.length;
+        const numWidgets = this.terminalLayout.widgets.length;
         const index = numWidgets ? numWidgets - 2 : 0;
-        this.terminalLayout?.insertWidget(index, widget);
-        this.treeWidget.addWidget(widget);
-    }
-
-    addPage(): void {
-
+        this.terminalLayout.insertWidget(index, widget);
+        this.treeWidget.addWidget(widget, this.activePageNumber);
     }
 }

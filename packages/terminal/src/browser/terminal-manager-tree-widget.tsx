@@ -14,11 +14,12 @@
 // SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
 // *****************************************************************************
 
-import { Container, inject, injectable, interfaces } from '@theia/core/shared/inversify';
-import { createTreeContainer, Tree, TreeModel, TreeWidget } from '@theia/core/lib/browser';
+import { Container, inject, injectable, interfaces, postConstruct } from '@theia/core/shared/inversify';
+import { createTreeContainer, Message, Tree, TreeModel, TreeWidget } from '@theia/core/lib/browser';
 import { TerminalWidget } from './base/terminal-widget';
-import { TerminalManagerTree, TerminalManagerTreeNode } from './terminal-manager-tree';
+import { TerminalManagerTree, TerminalManagerTreeTypes } from './terminal-manager-tree';
 import { TerminalManagerTreeModel } from './terminal-manager-tree-model';
+import { Emitter } from '@theia/core';
 
 @injectable()
 export class TerminalManagerTreeWidget extends TreeWidget {
@@ -34,19 +35,37 @@ export class TerminalManagerTreeWidget extends TreeWidget {
         return child;
     }
 
+    protected onDidChangeEmitter = new Emitter();
+    readonly onDidChange = this.onDidChangeEmitter.event;
+
     @inject(TreeModel) override readonly model: TerminalManagerTreeModel;
+
+    @postConstruct()
+    protected override init(): void {
+        super.init();
+        this.toDispose.push(this.onDidChangeEmitter);
+    }
 
     static createWidget(parent: interfaces.Container): TerminalManagerTreeWidget {
         return TerminalManagerTreeWidget.createContainer(parent).get(TerminalManagerTreeWidget);
     }
 
-    addWidget(widget: TerminalWidget): void {
-        this.model.addWidget(widget);
+    addWidget(widget: TerminalWidget, page: number): void {
+        this.model.addWidget(widget, page);
     }
 
-    protected override toNodeName(node: TerminalManagerTreeNode): string {
+    addPage(): void {
+        this.model.addPage();
+    }
+
+    protected override toNodeName(node: TerminalManagerTreeTypes.TerminalTreeNode): string {
         console.log('SENTINEL TREE NODE', node);
         return node.id ?? 'root';
+    }
+
+    protected override onUpdateRequest(msg: Message): void {
+        super.onUpdateRequest(msg);
+        this.onDidChangeEmitter.fire(undefined);
     }
 }
 
