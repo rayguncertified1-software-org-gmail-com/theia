@@ -54,6 +54,7 @@ import {
 import { nls } from '@theia/core/lib/common/nls';
 import { TerminalPreferences } from './terminal-preferences';
 import { TerminalManagerWidget } from './terminal-manager-widget';
+import { TerminalManagerTreeTypes } from './terminal-manager-tree-model';
 
 export namespace TerminalMenus {
     export const TERMINAL = [...MAIN_MENU_BAR, '7_terminal'];
@@ -63,6 +64,7 @@ export namespace TerminalMenus {
     export const TERMINAL_TASKS_CONFIG = [...TERMINAL_TASKS, '4_terminal'];
     export const TERMINAL_NAVIGATOR_CONTEXT_MENU = ['navigator-context-menu', 'navigation'];
     export const TERMINAL_OPEN_EDITORS_CONTEXT_MENU = ['open-editors-context-menu', 'navigation'];
+    export const TERMINAL_MANAGER_TREE_CONTEXT_MENU = ['terminal-manager-tree-context-menu'];
 }
 
 export namespace TerminalCommands {
@@ -147,6 +149,11 @@ export namespace TerminalCommands {
         id: 'terminal:new-manager-page',
         category: TERMINAL_CATEGORY,
         label: 'Create New Terminal Page',
+    });
+    export const DELETE_TERMINAL = Command.toDefaultLocalizedCommand({
+        id: 'terminal:delete-terminal',
+        category: TERMINAL_CATEGORY,
+        label: 'Delete Terminal',
     });
 }
 
@@ -374,6 +381,10 @@ export class TerminalFrontendContribution extends AbstractViewContribution<Termi
             execute: () => this.openTerminal({ area: 'terminal-manager-new-page' }),
             isVisible: widget => widget instanceof TerminalManagerWidget,
         });
+        commands.registerCommand(TerminalCommands.DELETE_TERMINAL, {
+            execute: (...args: TerminalManagerTreeTypes.ContextMenuArgs) => this.deleteTerminalFromManager(args[1]),
+            isVisible: (...args: TerminalManagerTreeTypes.ContextMenuArgs) => args[0] === 'terminal-manager-tree',
+        });
         commands.registerCommand(TerminalCommands.NEW_ACTIVE_WORKSPACE, {
             execute: () => this.openActiveWorkspaceTerminal()
         });
@@ -455,6 +466,11 @@ export class TerminalFrontendContribution extends AbstractViewContribution<Termi
         });
     }
 
+    protected async deleteTerminalFromManager(terminalNode: TerminalManagerTreeTypes.TerminalNode): Promise<void> {
+        const terminalManagerWidget = await this.widget;
+        terminalManagerWidget.deleteTerminal(terminalNode);
+    }
+
     async openInTerminal(uri: URI): Promise<void> {
         // Determine folder path of URI
         let stat: FileStat;
@@ -492,6 +508,11 @@ export class TerminalFrontendContribution extends AbstractViewContribution<Termi
         menus.registerMenuAction(TerminalMenus.TERMINAL_OPEN_EDITORS_CONTEXT_MENU, {
             commandId: TerminalCommands.TERMINAL_CONTEXT.id,
             order: 'z'
+        });
+
+        menus.registerMenuAction(TerminalMenus.TERMINAL_MANAGER_TREE_CONTEXT_MENU, {
+            commandId: TerminalCommands.DELETE_TERMINAL.id,
+            order: 'a',
         });
     }
 

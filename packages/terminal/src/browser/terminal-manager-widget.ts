@@ -90,7 +90,6 @@ export class TerminalManagerWidget extends BaseWidget {
     }
 
     protected handleSelectionChange(activePage: TerminalManagerTreeTypes.PageNode, _activeTerminal: TerminalManagerTreeTypes.TerminalNode): void {
-        console.log('SENTINEL SELECTION CHANGE', activePage);
         this.activePage = activePage;
         const { children } = activePage;
         const widgets = children.map(child => child.widget);
@@ -117,5 +116,9 @@ export class TerminalManagerWidget extends BaseWidget {
         const index = numWidgets ? numWidgets - 2 : 0;
         this.terminalLayout.insertWidget(index, widget);
         this.treeWidget.addWidget(widget, this.activePage);
+    }
+
+    deleteTerminal(terminalNode: TerminalManagerTreeTypes.TreeNode): void {
+        this.treeWidget.deleteTerminal(terminalNode);
     }
 }

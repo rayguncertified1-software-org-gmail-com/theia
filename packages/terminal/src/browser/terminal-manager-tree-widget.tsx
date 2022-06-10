@@ -19,6 +19,7 @@ import { createTreeContainer, Message, TreeModel, TreeWidget } from '@theia/core
 import { TerminalWidget } from './base/terminal-widget';
 import { TerminalManagerTreeModel, TerminalManagerTreeTypes } from './terminal-manager-tree-model';
 import { Emitter } from '@theia/core';
+// import { TerminalMenus } from './terminal-frontend-contribution';
 
 @injectable()
 export class TerminalManagerTreeWidget extends TreeWidget {
@@ -26,6 +27,7 @@ export class TerminalManagerTreeWidget extends TreeWidget {
 
     static createContainer(parent: interfaces.Container): Container {
         const child = createTreeContainer(parent);
+        // child.bind(ContextMenu).toConstantValue(TerminalMenus.TERMINAL_MANAGER_TREE_CONTEXT_MENU)
         child.bind(TerminalManagerTreeModel).toSelf().inSingletonScope();
         child.rebind(TreeModel).to(TerminalManagerTreeModel);
         child.bind(TerminalManagerTreeWidget).toSelf().inSingletonScope();
@@ -55,6 +57,10 @@ export class TerminalManagerTreeWidget extends TreeWidget {
 
     addPage(): void {
         this.model.addPage();
+    }
+
+    deleteTerminal(terminalNode: TerminalManagerTreeTypes.TreeNode): void {
+        this.model.deleteTerminal(terminalNode);
     }
 
     protected override toNodeName(node: TerminalManagerTreeTypes.TerminalNode): string {

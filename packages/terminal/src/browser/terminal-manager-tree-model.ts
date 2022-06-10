@@ -28,12 +28,15 @@ export namespace TerminalManagerTreeTypes {
         page: true;
         children: TerminalNode[];
     }
+
+    export type TreeNode = PageNode | TerminalNode;
     export const isPageNode = (obj: unknown): obj is PageNode => !!obj && typeof obj === 'object' && 'page' in obj;
     export const isTerminalNode = (obj: unknown): obj is TerminalNode => !!obj && typeof obj === 'object' && 'terminal' in obj;
     export interface SelectionChangedEvent {
         activePage: PageNode;
         activeTerminal: TerminalNode;
     }
+    export type ContextMenuArgs = ['terminal-manager-tree', TerminalNode];
 }
 @injectable()
 export class TerminalManagerTreeModel extends TreeModelImpl {
@@ -59,9 +62,15 @@ export class TerminalManagerTreeModel extends TreeModelImpl {
 
     handleSelectionChanged(selectedNode: SelectableTreeNode): void {
         if (TerminalManagerTreeTypes.isPageNode(selectedNode)) {
+            if (selectedNode === this.activePage) {
+                return;
+            }
             this.activePage = selectedNode;
         } else if (TerminalManagerTreeTypes.isTerminalNode(selectedNode)) {
             const activePage = selectedNode.parent;
+            if (activePage === this.activePage) {
+                return;
+            }
             if (TerminalManagerTreeTypes.isPageNode(activePage) && TerminalManagerTreeTypes.isTerminalNode(selectedNode)) {
                 this.activePage = activePage;
                 this.activeTerminal = selectedNode;
@@ -106,5 +115,9 @@ export class TerminalManagerTreeModel extends TreeModelImpl {
             selected: false,
             terminal: true,
         };
+    }
+
+    deleteTerminal(terminalNode: TerminalManagerTreeTypes.TreeNode): void {
+        console.log('SENTINEL DELETED NODE', terminalNode);
     }
 }
