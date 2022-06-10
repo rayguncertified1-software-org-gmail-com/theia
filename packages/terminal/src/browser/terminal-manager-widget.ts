@@ -21,7 +21,7 @@ import { TerminalManagerTreeWidget } from './terminal-manager-tree-widget';
 import { TerminalWidgetImpl } from './terminal-widget-impl';
 import { CommandService } from '@theia/core';
 import { TerminalCommands } from './terminal-frontend-contribution';
-import { TerminalManagerTreeTypes } from './terminal-manager-tree';
+import { TerminalManagerTreeTypes } from './terminal-manager-tree-model';
 
 @injectable()
 export class TerminalManagerWidget extends BaseWidget {
@@ -90,11 +90,14 @@ export class TerminalManagerWidget extends BaseWidget {
     }
 
     protected handleSelectionChange(activePage: TerminalManagerTreeTypes.PageNode, _activeTerminal: TerminalManagerTreeTypes.TerminalNode): void {
+        console.log('SENTINEL SELECTION CHANGE', activePage);
         this.activePage = activePage;
         const { children } = activePage;
         const widgets = children.map(child => child.widget);
         this.terminalLayout.widgets.forEach(widget => this.terminalLayout.removeWidget(widget));
         widgets.forEach(widget => this.terminalLayout.addWidget(widget));
+        this.terminalLayout.addWidget(this.treeWidget);
+        this.update();
     }
 
     protected async initializeDefaultWidgets(): Promise<void> {
@@ -106,7 +109,6 @@ export class TerminalManagerWidget extends BaseWidget {
 
     async addTerminalPage(): Promise<void> {
         this.treeWidget.addPage();
-        // await this.commandService.executeCommand(TerminalCommands.NEW_IN_MANAGER.id);
         this.update();
     }
 
