@@ -14,15 +14,11 @@
 // SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
 // *****************************************************************************
 
-import { Container, injectable, interfaces } from '@theia/core/shared/inversify';
-import { createTreeContainer, Tree, TreeWidget } from '@theia/core/lib/browser';
-// import { TerminalWidgetImpl } from './terminal-widget-impl';
+import { Container, inject, injectable, interfaces } from '@theia/core/shared/inversify';
+import { createTreeContainer, Tree, TreeModel, TreeWidget } from '@theia/core/lib/browser';
 import { TerminalWidget } from './base/terminal-widget';
-import { TerminalManagerTree } from './terminal-manager-tree';
-
-// export interface TerminalManagerTreeNode extends SelectableTreeNode {
-//     widget: TerminalWidgetImpl;
-// };
+import { TerminalManagerTree, TerminalManagerTreeNode } from './terminal-manager-tree';
+import { TerminalManagerTreeModel } from './terminal-manager-tree-model';
 
 @injectable()
 export class TerminalManagerTreeWidget extends TreeWidget {
@@ -32,20 +28,25 @@ export class TerminalManagerTreeWidget extends TreeWidget {
         const child = createTreeContainer(parent);
         child.bind(TerminalManagerTree).toSelf().inSingletonScope();
         child.rebind(Tree).to(TerminalManagerTree);
-        // child.bind(TerminalManagerTreeModel).toSelf().inSingletonScope();
-        // child.rebind(TreeModel).to(TerminalManagerTreeModel);
+        child.bind(TerminalManagerTreeModel).toSelf().inSingletonScope();
+        child.rebind(TreeModel).to(TerminalManagerTreeModel);
         child.bind(TerminalManagerTreeWidget).toSelf().inSingletonScope();
         return child;
     }
 
-    // @inject(TreeModel) override readonly model: TerminalManagerTreeModel;
+    @inject(TreeModel) override readonly model: TerminalManagerTreeModel;
 
     static createWidget(parent: interfaces.Container): TerminalManagerTreeWidget {
         return TerminalManagerTreeWidget.createContainer(parent).get(TerminalManagerTreeWidget);
     }
 
     addWidget(widget: TerminalWidget): void {
-        // this.model.addWidget(widget);
+        this.model.addWidget(widget);
+    }
+
+    protected override toNodeName(node: TerminalManagerTreeNode): string {
+        console.log('SENTINEL TREE NODE', node);
+        return node.id ?? 'root';
     }
 }
 

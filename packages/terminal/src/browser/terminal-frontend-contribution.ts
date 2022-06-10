@@ -145,6 +145,13 @@ export namespace TerminalCommands {
     });
 }
 
+export namespace TerminalManager {
+    export type Area = ApplicationShell.Area | 'terminal-manager';
+    export const isTerminalManagerArea = (obj: unknown): obj is Area => typeof obj === 'string' && obj === 'terminal-manager';
+    export type ExtendedWidgetOptions = Omit<ApplicationShell.WidgetOptions, 'area'> & { area?: Area };
+    export type ExtendedWidgetOpenerOptions = Omit<WidgetOpenerOptions, 'widgetOptions'> & { widgetOptions?: ExtendedWidgetOptions };
+}
+
 @injectable()
 export class TerminalFrontendContribution extends AbstractViewContribution<TerminalManagerWidget>
     implements FrontendApplicationContribution, TerminalService, TabBarToolbarContribution, ColorContribution {
@@ -224,7 +231,6 @@ export class TerminalFrontendContribution extends AbstractViewContribution<Termi
 
     async initializeLayout(app: FrontendApplication): Promise<void> {
         const terminalManagerWidget = await this.widgetManager.getOrCreateWidget(TerminalManagerWidget.ID);
-        // console.log('SENTINEL INITIALIZED LAYOUT');
         app.shell.bottomPanel.addWidget(terminalManagerWidget);
     }
 
@@ -356,7 +362,7 @@ export class TerminalFrontendContribution extends AbstractViewContribution<Termi
             execute: () => this.openTerminal()
         });
         commands.registerCommand(TerminalCommands.NEW_FROM_TOOLBAR, {
-            execute: () => this.openTerminal(),
+            execute: () => this.openTerminal({ area: 'terminal-manager' }),
             isVisible: widget => widget instanceof TerminalManagerWidget,
         });
         commands.registerCommand(TerminalCommands.NEW_ACTIVE_WORKSPACE, {
@@ -639,25 +645,45 @@ export class TerminalFrontendContribution extends AbstractViewContribution<Termi
         return widget;
     }
 
+    openInManager(widget: TerminalWidget, options?: WidgetOpenerOptions): void {
+        // const mergedOptions: WidgetOpenerOptions = {
+        //     mode: 'activate',
+        //     ...options,
+        //     widgetOptions: {
+        //         area: 'bottom',
+        //         ...(options && options.widgetOptions)
+        //     }
+        // };
+        const terminalManagerWidget = this.tryGetWidget();
+        if (terminalManagerWidget && !widget.isAttached) {
+            this.shell.revealWidget(TerminalManagerWidget.ID);
+            terminalManagerWidget?.addWidget(widget);
+            this.shell.activateWidget(widget.id);
+        }
+    }
+
     // TODO: reuse WidgetOpenHandler.open
-    open(widget: TerminalWidget, options?: WidgetOpenerOptions): void {
-        const op: WidgetOpenerOptions = {
+    open(widget: TerminalWidget, options?: TerminalManager.ExtendedWidgetOpenerOptions | WidgetOpenerOptions): void {
+        const area = options?.widgetOptions?.area ?? 'bottom';
+        const op: TerminalManager.ExtendedWidgetOpenerOptions = {
             mode: 'activate',
             ...options,
             widgetOptions: {
-                area: 'bottom',
+                area,
                 ...(options && options.widgetOptions)
             }
         };
-        const terminalManagerWidget = this.tryGetWidget();
+        if (TerminalManager.isTerminalManagerArea(area)) {
+            this.openInManager(widget, op);
+            return;
+        }
         if (!widget.isAttached) {
-            terminalManagerWidget?.addWidget(widget);
-            // this.shell.addWidget(widget, op.widgetOptions);
+            this.shell.addWidget(widget, op.widgetOptions as ApplicationShell.WidgetOptions | undefined);
         }
         if (op.mode === 'activate') {
-            this.shell.activateWidget(TerminalManagerWidget.ID);
+            this.shell.activateWidget(widget.id);
         } else if (op.mode === 'reveal') {
-            this.shell.revealWidget(TerminalManagerWidget.ID);
+            this.shell.revealWidget(widget.id);
         }
     }
 
@@ -694,7 +720,7 @@ export class TerminalFrontendContribution extends AbstractViewContribution<Termi
         return ref instanceof TerminalWidget ? ref : undefined;
     }
 
-    protected async openTerminal(options?: ApplicationShell.WidgetOptions): Promise<void> {
+    protected async openTerminal(options?: TerminalManager.ExtendedWidgetOptions): Promise<void> {
         const cwd = await this.selectTerminalCwd();
         const termWidget = await this.newTerminal({ cwd });
         termWidget.start();

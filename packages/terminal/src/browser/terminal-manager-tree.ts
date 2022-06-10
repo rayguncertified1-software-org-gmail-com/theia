@@ -15,24 +15,28 @@
 // *****************************************************************************
 
 import { injectable, postConstruct } from '@theia/core/shared/inversify';
-import { TreeImpl, CompositeTreeNode } from '@theia/core/lib/browser';
+import { TreeImpl, CompositeTreeNode, SelectableTreeNode } from '@theia/core/lib/browser';
 import { TerminalWidget } from './base/terminal-widget';
 
+export interface TerminalManagerTreeNode extends SelectableTreeNode {
+    widget: TerminalWidget;
+};
 @injectable()
 export class TerminalManagerTree extends TreeImpl {
     @postConstruct()
     protected init(): void {
-        const dummyRoot: CompositeTreeNode = { id: 'root', parent: undefined, children: [] };
-        this.root = dummyRoot;
-        // console.log('SENTINEL GOT CHANGES IN TREEMODEL');
-        CompositeTreeNode.addChild(this.root as CompositeTreeNode, { id: 'child1', parent: undefined });
+        this.root = { id: 'root', parent: undefined, children: [], visible: false } as CompositeTreeNode;
     }
 
     addWidget(widget: TerminalWidget): void {
-        // const widgetNode: TerminalManagerTreeNode = {
-        //     id: widget.id,
-        //     parent: undefined,
-        //     widget,
-        // };
+        const widgetNode: TerminalManagerTreeNode = {
+            id: widget.id,
+            parent: undefined,
+            widget,
+            selected: false,
+        };
+        if (this.root && CompositeTreeNode.is(this.root)) {
+            this.root = CompositeTreeNode.addChild(this.root, widgetNode);
+        }
     }
 }

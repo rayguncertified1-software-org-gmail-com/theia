@@ -53,7 +53,7 @@ export class TerminalManagerWidget extends BaseWidget {
 
     @inject(CommandService) protected readonly commandService: CommandService;
 
-    protected panelLayout: ViewContainerLayout | undefined;
+    protected terminalLayout: ViewContainerLayout | undefined;
 
     @postConstruct()
     protected async init(): Promise<void> {
@@ -62,35 +62,39 @@ export class TerminalManagerWidget extends BaseWidget {
         this.title.label = TerminalManagerWidget.LABEL;
         this.title.iconClass = codicon('terminal');
 
-        const layout = new PanelLayout();
-        this.layout = layout;
-        this.panelLayout = new ViewContainerLayout({
+        const mainLayout = new PanelLayout({});
+        this.layout = mainLayout;
+
+        this.terminalLayout = new ViewContainerLayout({
             renderer: SplitPanel.defaultRenderer,
             orientation: 'horizontal',
             spacing: 2,
             headerSize: 0,
             animationDuration: 200
         }, this.splitPositionHandler);
-
         this.panel = new SplitPanel({
-            layout: this.panelLayout,
+            layout: this.terminalLayout,
         });
         this.panel.node.tabIndex = -1;
-        layout.addWidget(this.panel);
+        mainLayout.addWidget(this.panel);
         await this.initializeDefaultWidgets();
     }
 
     protected async initializeDefaultWidgets(): Promise<void> {
         if (this.widgets.length === 0) {
-            await this.commandService.executeCommand(TerminalCommands.NEW_ACTIVE_WORKSPACE.id);
+            await this.commandService.executeCommand(TerminalCommands.NEW_FROM_TOOLBAR.id);
         }
-        this.panelLayout?.addWidget(this.treeWidget);
+        this.terminalLayout?.addWidget(this.treeWidget);
     }
 
     addWidget(widget: TerminalWidget): void {
-        const numWidgets = this.panelLayout?.widgets.length;
+        const numWidgets = this.terminalLayout?.widgets.length;
         const index = numWidgets ? numWidgets - 2 : 0;
-        this.panelLayout?.insertWidget(index, widget);
+        this.terminalLayout?.insertWidget(index, widget);
         this.treeWidget.addWidget(widget);
+    }
+
+    addPage(): void {
+
     }
 }
