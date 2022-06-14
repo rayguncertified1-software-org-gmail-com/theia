@@ -15,7 +15,7 @@
 // *****************************************************************************
 
 import { injectable, postConstruct } from '@theia/core/shared/inversify';
-import { TreeModelImpl, CompositeTreeNode, SelectableTreeNode, ContextMenu } from '@theia/core/lib/browser';
+import { TreeModelImpl, CompositeTreeNode, SelectableTreeNode } from '@theia/core/lib/browser';
 import { TerminalWidget } from './base/terminal-widget';
 import { Emitter } from '@theia/core';
 
@@ -23,15 +23,20 @@ export namespace TerminalManagerTreeTypes {
     export interface TerminalNode extends SelectableTreeNode, CompositeTreeNode {
         terminal: true;
         widget: TerminalWidget;
+        isEditing: boolean;
+        label: string;
     };
     export interface PageNode extends SelectableTreeNode, CompositeTreeNode {
         page: true;
         children: TerminalNode[];
+        isEditing: boolean;
+        label: string;
     }
 
     export type TreeNode = PageNode | TerminalNode;
     export const isPageNode = (obj: unknown): obj is PageNode => !!obj && typeof obj === 'object' && 'page' in obj;
     export const isTerminalNode = (obj: unknown): obj is TerminalNode => !!obj && typeof obj === 'object' && 'terminal' in obj;
+    export const isTerminalOrPageNode = (obj: unknown): obj is (PageNode | TerminalNode) => isPageNode(obj) || isTerminalNode(obj);
     export interface SelectionChangedEvent {
         activePage: PageNode;
         activeTerminal: TerminalNode;
@@ -44,7 +49,11 @@ export namespace TerminalManagerTreeTypes {
 @injectable()
 export class TerminalManagerTreeModel extends TreeModelImpl {
 
-    protected activePage: TerminalManagerTreeTypes.PageNode;
+    protected _activePage: TerminalManagerTreeTypes.PageNode;
+    get activePage(): TerminalManagerTreeTypes.PageNode {
+        return this._activePage;
+    }
+
     protected activeTerminal: TerminalManagerTreeTypes.TerminalNode;
     protected pageNum = 0;
 
@@ -68,59 +77,82 @@ export class TerminalManagerTreeModel extends TreeModelImpl {
             if (selectedNode === this.activePage) {
                 return;
             }
-            this.activePage = selectedNode;
+            this._activePage = selectedNode;
         } else if (TerminalManagerTreeTypes.isTerminalNode(selectedNode)) {
             const activePage = selectedNode.parent;
             if (activePage === this.activePage) {
                 return;
             }
             if (TerminalManagerTreeTypes.isPageNode(activePage) && TerminalManagerTreeTypes.isTerminalNode(selectedNode)) {
-                this.activePage = activePage;
+                this._activePage = activePage;
                 this.activeTerminal = selectedNode;
             }
         }
         this.onTreeSelectionChangedEmitter.fire({ activePage: this.activePage, activeTerminal: this.activeTerminal });
     }
 
-    addWidget(widget: TerminalWidget, _activePage: TerminalManagerTreeTypes.PageNode): void {
+    addWidget(widget: TerminalWidget, activePage?: TerminalManagerTreeTypes.PageNode): void {
         const widgetNode = this.createWidgetNode(widget);
         if (this.root && CompositeTreeNode.is(this.root)) {
-            CompositeTreeNode.addChild(this.activePage, widgetNode);
+            CompositeTreeNode.addChild(activePage ?? this.activePage, widgetNode);
             this.refresh();
         }
     }
 
-    addPage(): void {
+    addPage(): TerminalManagerTreeTypes.PageNode | undefined {
         const pageNode = this.createPageNode();
         if (this.root && CompositeTreeNode.is(this.root)) {
-            this.activePage = pageNode;
-            this.root = CompositeTreeNode.addChild(this.root, pageNode);
+            this._activePage = pageNode;
             this.selectionService.addSelection(this.activePage);
+            this.root = CompositeTreeNode.addChild(this.root, pageNode);
+            return pageNode;
         }
     }
 
     protected createPageNode(): TerminalManagerTreeTypes.PageNode {
+        // TODO this will reset
+        const defaultPageName = `page-${this.pageNum++}`;
         return {
-            id: `page ${this.pageNum++}`,
+            id: defaultPageName,
+            label: defaultPageName,
             parent: undefined,
             selected: false,
             children: [],
             page: true,
+            isEditing: false,
         };
     }
 
     protected createWidgetNode(widget: TerminalWidget): TerminalManagerTreeTypes.TerminalNode {
         return {
             id: `${widget.id}`,
+            label: `${widget.id}`,
             parent: undefined,
             children: [],
             widget,
             selected: false,
             terminal: true,
+            isEditing: false,
         };
     }
 
-    deleteTerminal(terminalNode: TerminalManagerTreeTypes.TreeNode): void {
-        console.log('SENTINEL DELETED NODE', terminalNode);
+    deleteTerminal(node: TerminalManagerTreeTypes.TreeNode): void {
+        console.log('SENTINEL DELETED NODE', node);
+    }
+
+    toggleRenameTerminal(node: TerminalManagerTreeTypes.TreeNode): void {
+        if (TerminalManagerTreeTypes.isTerminalNode(node)) {
+            node.isEditing = true;
+            this.root = this.root;
+        }
+    }
+
+    acceptRename(nodeId: string, newName: string): void {
+        const node = this.getNode(nodeId);
+        if (TerminalManagerTreeTypes.isTerminalOrPageNode(node)) {
+            node.label = newName.trim();
+            node.isEditing = false;
+            this.root = this.root;
+        }
     }
 }

@@ -14,8 +14,9 @@
 // SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
 // *****************************************************************************
 
+import * as React from '@theia/core/shared/react';
 import { Container, inject, injectable, interfaces, postConstruct } from '@theia/core/shared/inversify';
-import { createTreeContainer, Message, SelectableTreeNode, TreeModel, TreeWidget } from '@theia/core/lib/browser';
+import { codicon, createTreeContainer, Message, NodeProps, SelectableTreeNode, TreeModel, TreeNode, TreeWidget } from '@theia/core/lib/browser';
 import { TerminalWidget } from './base/terminal-widget';
 import { TerminalManagerTreeModel, TerminalManagerTreeTypes } from './terminal-manager-tree-model';
 import { Emitter } from '@theia/core';
@@ -47,12 +48,12 @@ export class TerminalManagerTreeWidget extends TreeWidget {
     @postConstruct()
     protected override init(): void {
         super.init();
-        console.log('SENTINEL SHOULD HAVE C MENU');
+        this.addClass(TerminalManagerTreeWidget.ID);
         this.toDispose.push(this.onDidChangeEmitter);
         this.toDispose.push(this.model.onTreeSelectionChanged(e => this.onTreeSelectionChangedEmitter.fire(e)));
     }
 
-    addWidget(widget: TerminalWidget, activePage: TerminalManagerTreeTypes.PageNode): void {
+    addWidget(widget: TerminalWidget, activePage?: TerminalManagerTreeTypes.PageNode): void {
         this.model.addWidget(widget, activePage);
     }
 
@@ -62,16 +63,66 @@ export class TerminalManagerTreeWidget extends TreeWidget {
         }
     }
 
-    addPage(): void {
-        this.model.addPage();
+    protected override renderCaption(node: TreeNode, props: NodeProps): React.ReactNode {
+        if (TerminalManagerTreeTypes.isTerminalOrPageNode(node) && !!node.isEditing) {
+            return (
+                <input
+                    type='text'
+                    className='theia-input rename-node-input'
+                    placeholder={this.toNodeName(node)}
+                    onBlur={this.handleRenameOnBlur}
+                    data-id={node.id}
+                    onKeyDown={this.handleRenameOnKeyDown}
+                    autoFocus={true}
+                />
+            );
+        }
+        return super.renderCaption(node, props);
     }
 
-    deleteTerminal(terminalNode: TerminalManagerTreeTypes.TreeNode): void {
-        this.model.deleteTerminal(terminalNode);
+    protected handleRenameOnBlur = (e: React.FocusEvent<HTMLInputElement>): void => this.doHandleRenameOnBlur(e);
+    protected doHandleRenameOnBlur(e: React.FocusEvent<HTMLInputElement>): void {
+        const { value } = e.currentTarget;
+        const id = e.currentTarget.getAttribute('data-id');
+        if (value && id) {
+            this.model.acceptRename(id, value);
+        }
     }
 
-    protected override toNodeName(node: TerminalManagerTreeTypes.TerminalNode): string {
-        return node.id ?? 'root';
+    protected handleRenameOnKeyDown = (e: React.KeyboardEvent<HTMLInputElement>): void => this.doHandleRenameOnKeyDown(e);
+    protected doHandleRenameOnKeyDown(e: React.KeyboardEvent<HTMLInputElement>): void {
+        // TODO escape and enter might not be handled well
+        if (e.key === 'Enter' || e.key === 'Tab') {
+            const { value } = e.currentTarget;
+            const id = e.currentTarget.getAttribute('data-id');
+            if (value && id) {
+                this.model.acceptRename(id, value);
+            }
+        }
+    }
+
+    protected override renderIcon(node: TreeNode, props: NodeProps): React.ReactNode {
+        if (TerminalManagerTreeTypes.isTerminalNode(node)) {
+            return <span className={`${codicon('terminal')}`} />;
+        } else if (TerminalManagerTreeTypes.isPageNode(node)) {
+            return <span className={`${codicon('terminal-tmux')}`} />;
+        }
+    }
+
+    addPage(): TerminalManagerTreeTypes.PageNode | undefined {
+        return this.model.addPage();
+    }
+
+    deleteTerminal(node: TerminalManagerTreeTypes.TreeNode): void {
+        this.model.deleteTerminal(node);
+    }
+
+    toggleRenameTerminal(node: TerminalManagerTreeTypes.TreeNode): void {
+        this.model.toggleRenameTerminal(node);
+    }
+
+    protected override toNodeName(node: TerminalManagerTreeTypes.TreeNode): string {
+        return node.label ?? 'node.id';
     }
 
     protected override onUpdateRequest(msg: Message): void {

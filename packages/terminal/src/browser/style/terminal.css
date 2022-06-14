@@ -40,3 +40,11 @@
   width: 1px !important;
   background-color: var(--theia-sideBarSectionHeader-border);
 }
+
+.terminal-manager-tree-widget .rename-node-input {
+  width: 100%;
+}
+
+.terminal-manager-tree-widget .codicon {
+  margin-right: 3px;
+}

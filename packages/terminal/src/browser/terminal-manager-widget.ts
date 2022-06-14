@@ -55,18 +55,17 @@ export class TerminalManagerWidget extends BaseWidget {
     @inject(CommandService) protected readonly commandService: CommandService;
 
     protected terminalPages: ViewContainerLayout[] = [];
-    protected activePage: TerminalManagerTreeTypes.PageNode;
+    protected activePage: TerminalManagerTreeTypes.PageNode | undefined;
     protected terminalLayout: ViewContainerLayout;
 
     @postConstruct()
     protected async init(): Promise<void> {
         this.toDispose.push(this.treeWidget.onDidChange(() => this.updateView()));
         this.toDispose.push(this.treeWidget.onTreeSelectionChanged(({ activePage, activeTerminal }) => this.handleSelectionChange(activePage, activeTerminal)));
-
+        this.title.iconClass = codicon('terminal-tmux');
         this.id = TerminalManagerWidget.ID;
         this.title.closable = false;
         this.title.label = TerminalManagerWidget.LABEL;
-        this.title.iconClass = codicon('terminal');
 
         const mainLayout = new PanelLayout({});
         this.layout = mainLayout;
@@ -85,18 +84,20 @@ export class TerminalManagerWidget extends BaseWidget {
         return this.initializeDefaultWidgets();
     }
 
-    protected updateView(): void {
-        this.update();
+    protected async updateView(): Promise<void> {
+        this.activePage = this.activePage ?? this.treeWidget.model.activePage;
+        if (this.activePage) {
+            // const terminalsInView = this.activePage.children.map(child => child.widget);
+            // this.terminalLayout.widgets.forEach(widget => this.terminalLayout.removeWidget(widget));
+            // terminalsInView.forEach(terminal => this.terminalLayout.addWidget(terminal));
+            // this.terminalLayout.addWidget(this.treeWidget);
+            // this.update();
+        }
     }
 
     protected handleSelectionChange(activePage: TerminalManagerTreeTypes.PageNode, _activeTerminal: TerminalManagerTreeTypes.TerminalNode): void {
         this.activePage = activePage;
-        const { children } = activePage;
-        const widgets = children.map(child => child.widget);
-        this.terminalLayout.widgets.forEach(widget => this.terminalLayout.removeWidget(widget));
-        widgets.forEach(widget => this.terminalLayout.addWidget(widget));
-        this.terminalLayout.addWidget(this.treeWidget);
-        this.update();
+        this.updateView();
     }
 
     protected async initializeDefaultWidgets(): Promise<void> {
@@ -106,19 +107,22 @@ export class TerminalManagerWidget extends BaseWidget {
         this.terminalLayout.addWidget(this.treeWidget);
     }
 
-    async addTerminalPage(): Promise<void> {
-        this.treeWidget.addPage();
-        this.update();
+    addTerminalPage(): TerminalManagerTreeTypes.PageNode | undefined {
+        return this.treeWidget.addPage();
     }
 
-    addWidget(widget: TerminalWidget): void {
-        const numWidgets = this.terminalLayout.widgets.length;
-        const index = numWidgets ? numWidgets - 2 : 0;
-        this.terminalLayout.insertWidget(index, widget);
-        this.treeWidget.addWidget(widget, this.activePage);
+    addWidget(widget: TerminalWidget, page?: TerminalManagerTreeTypes.PageNode): void {
+        const pageToAddTo = page ?? this.activePage;
+        if (pageToAddTo) {
+            this.treeWidget.addWidget(widget, pageToAddTo);
+        }
     }
 
     deleteTerminal(terminalNode: TerminalManagerTreeTypes.TreeNode): void {
         this.treeWidget.deleteTerminal(terminalNode);
+    }
+
+    toggleRenameTerminal(terminalNode: TerminalManagerTreeTypes.TreeNode): void {
+        this.treeWidget.toggleRenameTerminal(terminalNode);
     }
 }

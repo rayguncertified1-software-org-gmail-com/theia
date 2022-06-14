@@ -160,6 +160,11 @@ export namespace TerminalCommands {
         category: TERMINAL_CATEGORY,
         label: 'Delete Terminal',
     });
+    export const RENAME_TERMINAL = Command.toDefaultLocalizedCommand({
+        id: 'terminal: rename-terminal',
+        category: TERMINAL_CATEGORY,
+        label: 'Rename...',
+    });
 }
 
 export namespace TerminalManager {
@@ -393,6 +398,10 @@ export class TerminalFrontendContribution extends AbstractViewContribution<Termi
             execute: (...args: TerminalManagerTreeTypes.ContextMenuArgs) => this.deleteTerminalFromManager(args[1]),
             isVisible: (...args: TerminalManagerTreeTypes.ContextMenuArgs) => args[0] === 'terminal-manager-tree',
         });
+        commands.registerCommand(TerminalCommands.RENAME_TERMINAL, {
+            execute: (...args: TerminalManagerTreeTypes.ContextMenuArgs) => this.toggleRenameTerminalFromManager(args[1]),
+            isVisible: (...args: TerminalManagerTreeTypes.ContextMenuArgs) => args[0] === 'terminal-manager-tree',
+        });
         commands.registerCommand(TerminalCommands.NEW_ACTIVE_WORKSPACE, {
             execute: () => this.openActiveWorkspaceTerminal()
         });
@@ -479,6 +488,11 @@ export class TerminalFrontendContribution extends AbstractViewContribution<Termi
         terminalManagerWidget.deleteTerminal(terminalNode);
     }
 
+    protected async toggleRenameTerminalFromManager(terminalNode: TerminalManagerTreeTypes.TreeNode): Promise<void> {
+        const terminalManagerWidget = await this.widget;
+        terminalManagerWidget.toggleRenameTerminal(terminalNode);
+    }
+
     async openInTerminal(uri: URI): Promise<void> {
         // Determine folder path of URI
         let stat: FileStat;
@@ -519,8 +533,12 @@ export class TerminalFrontendContribution extends AbstractViewContribution<Termi
         });
 
         menus.registerMenuAction(TerminalMenus.TERMINAL_MANAGER_TREE_CONTEXT_MENU, {
-            commandId: TerminalCommands.DELETE_TERMINAL.id,
+            commandId: TerminalCommands.RENAME_TERMINAL.id,
             order: 'a',
+        });
+        menus.registerMenuAction(TerminalMenus.TERMINAL_MANAGER_TREE_CONTEXT_MENU, {
+            commandId: TerminalCommands.DELETE_TERMINAL.id,
+            order: 'b',
         });
     }
 
@@ -704,8 +722,8 @@ export class TerminalFrontendContribution extends AbstractViewContribution<Termi
                 if (area === 'terminal-manager-current') {
                     terminalManagerWidget.addWidget(widget);
                 } else if (area === 'terminal-manager-new-page') {
-                    await terminalManagerWidget.addTerminalPage();
-                    terminalManagerWidget.addWidget(widget);
+                    const pageNode = terminalManagerWidget.addTerminalPage();
+                    terminalManagerWidget.addWidget(widget, pageNode);
                 }
             }
             // this.shell.activateWidget(widget.id);
