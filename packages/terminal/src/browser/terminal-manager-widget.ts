@@ -87,11 +87,39 @@ export class TerminalManagerWidget extends BaseWidget {
     protected async updateView(): Promise<void> {
         this.activePage = this.activePage ?? this.treeWidget.model.activePage;
         if (this.activePage) {
-            // const terminalsInView = this.activePage.children.map(child => child.widget);
-            // this.terminalLayout.widgets.forEach(widget => this.terminalLayout.removeWidget(widget));
-            // terminalsInView.forEach(terminal => this.terminalLayout.addWidget(terminal));
-            // this.terminalLayout.addWidget(this.treeWidget);
-            // this.update();
+            const terminalsInView = this.activePage.children.map(child => child.widget);
+            if (terminalsInView.length) {
+
+
+                this.terminalLayout.widgets.forEach(part => {
+                    const widget = part.title.owner;
+                    if (widget instanceof TerminalWidgetImpl) {
+                        if (terminalsInView.includes(widget)) {
+                            widget.show();
+                        } else {
+                            widget.hide();
+                        }
+                    }
+                });
+            }
+            // const newLayout = new ViewContainerLayout({
+            //     renderer: SplitPanel.defaultRenderer,
+            //     orientation: 'horizontal',
+            //     spacing: 2,
+            //     headerSize: 0,
+            //     animationDuration: 200
+            // }, this.splitPositionHandler);
+            // this.panel.layout = newLayout;
+            // terminalsInView.forEach(terminal => newLayout.addWidget(terminal));
+            // newLayout.addWidget(this.treeWidget);
+            this.update();
+        }
+    }
+
+    protected addWidgetToLayout(widget: TerminalWidget): void {
+        const currentlyAddedWidgets = this.terminalLayout.widgets.map(part => part.title.owner);
+        if (!currentlyAddedWidgets.includes(widget)) {
+            this.terminalLayout.addWidget(widget);
         }
     }
 
