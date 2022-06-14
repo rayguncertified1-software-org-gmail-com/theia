@@ -143,9 +143,14 @@ export namespace TerminalCommands {
     export const NEW_IN_MANAGER = Command.toDefaultLocalizedCommand({
         id: 'terminal:new-in-manager',
         category: TERMINAL_CATEGORY,
-        label: 'Create New Terminal',
+        label: 'Create New Terminal in Manager',
     });
-    export const NEW_MANAGER_PAGE = Command.toDefaultLocalizedCommand({
+    export const NEW_IN_MANAGER_TOOLBAR = Command.toDefaultLocalizedCommand({
+        id: 'terminal:new-in-manager',
+        category: TERMINAL_CATEGORY,
+        label: 'Create New Terminal in Manager',
+    });
+    export const NEW_MANAGER_PAGE_TOOLBAR = Command.toDefaultLocalizedCommand({
         id: 'terminal:new-manager-page',
         category: TERMINAL_CATEGORY,
         label: 'Create New Terminal Page',
@@ -373,11 +378,14 @@ export class TerminalFrontendContribution extends AbstractViewContribution<Termi
         commands.registerCommand(TerminalCommands.NEW, {
             execute: () => this.openTerminal()
         });
-        commands.registerCommand(TerminalCommands.NEW_IN_MANAGER, {
+        commands.registerCommand(TerminalCommands.NEW_IN_MANAGER_TOOLBAR, {
             execute: () => this.openTerminal({ area: 'terminal-manager-current' }),
             isVisible: widget => widget instanceof TerminalManagerWidget,
         });
-        commands.registerCommand(TerminalCommands.NEW_MANAGER_PAGE, {
+        commands.registerCommand(TerminalCommands.NEW_IN_MANAGER, {
+            execute: () => this.openTerminal({ area: 'terminal-manager-current' }),
+        });
+        commands.registerCommand(TerminalCommands.NEW_MANAGER_PAGE_TOOLBAR, {
             execute: () => this.openTerminal({ area: 'terminal-manager-new-page' }),
             isVisible: widget => widget instanceof TerminalManagerWidget,
         });
@@ -466,7 +474,7 @@ export class TerminalFrontendContribution extends AbstractViewContribution<Termi
         });
     }
 
-    protected async deleteTerminalFromManager(terminalNode: TerminalManagerTreeTypes.TerminalNode): Promise<void> {
+    protected async deleteTerminalFromManager(terminalNode: TerminalManagerTreeTypes.TreeNode): Promise<void> {
         const terminalManagerWidget = await this.widget;
         terminalManagerWidget.deleteTerminal(terminalNode);
     }
@@ -523,16 +531,15 @@ export class TerminalFrontendContribution extends AbstractViewContribution<Termi
             icon: codicon('split-horizontal'),
             tooltip: TerminalCommands.SPLIT.label
         });
-
         toolbar.registerItem({
-            id: TerminalCommands.NEW_IN_MANAGER.id,
-            command: TerminalCommands.NEW_IN_MANAGER.id,
+            id: TerminalCommands.NEW_IN_MANAGER_TOOLBAR.id,
+            command: TerminalCommands.NEW_IN_MANAGER_TOOLBAR.id,
             icon: codicon('add'),
-            tooltip: TerminalCommands.NEW_IN_MANAGER.label,
+            tooltip: TerminalCommands.NEW_IN_MANAGER_TOOLBAR.label,
         });
         toolbar.registerItem({
-            id: TerminalCommands.NEW_MANAGER_PAGE.id,
-            command: TerminalCommands.NEW_MANAGER_PAGE.id,
+            id: TerminalCommands.NEW_MANAGER_PAGE_TOOLBAR.id,
+            command: TerminalCommands.NEW_MANAGER_PAGE_TOOLBAR.id,
             icon: codicon('new-file'),
         });
     }

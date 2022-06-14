@@ -15,10 +15,11 @@
 // *****************************************************************************
 
 import { Container, inject, injectable, interfaces, postConstruct } from '@theia/core/shared/inversify';
-import { createTreeContainer, Message, TreeModel, TreeWidget } from '@theia/core/lib/browser';
+import { createTreeContainer, Message, SelectableTreeNode, TreeModel, TreeWidget } from '@theia/core/lib/browser';
 import { TerminalWidget } from './base/terminal-widget';
 import { TerminalManagerTreeModel, TerminalManagerTreeTypes } from './terminal-manager-tree-model';
 import { Emitter } from '@theia/core';
+import { TerminalMenus } from './terminal-frontend-contribution';
 // import { TerminalMenus } from './terminal-frontend-contribution';
 
 @injectable()
@@ -26,8 +27,7 @@ export class TerminalManagerTreeWidget extends TreeWidget {
     static ID = 'terminal-manager-tree-widget';
 
     static createContainer(parent: interfaces.Container): Container {
-        const child = createTreeContainer(parent);
-        // child.bind(ContextMenu).toConstantValue(TerminalMenus.TERMINAL_MANAGER_TREE_CONTEXT_MENU)
+        const child = createTreeContainer(parent, { props: { contextMenuPath: TerminalMenus.TERMINAL_MANAGER_TREE_CONTEXT_MENU } });
         child.bind(TerminalManagerTreeModel).toSelf().inSingletonScope();
         child.rebind(TreeModel).to(TerminalManagerTreeModel);
         child.bind(TerminalManagerTreeWidget).toSelf().inSingletonScope();
@@ -47,12 +47,19 @@ export class TerminalManagerTreeWidget extends TreeWidget {
     @postConstruct()
     protected override init(): void {
         super.init();
+        console.log('SENTINEL SHOULD HAVE C MENU');
         this.toDispose.push(this.onDidChangeEmitter);
         this.toDispose.push(this.model.onTreeSelectionChanged(e => this.onTreeSelectionChangedEmitter.fire(e)));
     }
 
     addWidget(widget: TerminalWidget, activePage: TerminalManagerTreeTypes.PageNode): void {
         this.model.addWidget(widget, activePage);
+    }
+
+    protected override toContextMenuArgs(node: SelectableTreeNode): TerminalManagerTreeTypes.ContextMenuArgs | undefined {
+        if (TerminalManagerTreeTypes.isPageNode(node) || TerminalManagerTreeTypes.isTerminalNode(node)) {
+            return TerminalManagerTreeTypes.toContextMenuArgs(node);
+        }
     }
 
     addPage(): void {

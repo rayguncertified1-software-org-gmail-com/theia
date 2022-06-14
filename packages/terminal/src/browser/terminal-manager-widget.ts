@@ -101,7 +101,7 @@ export class TerminalManagerWidget extends BaseWidget {
 
     protected async initializeDefaultWidgets(): Promise<void> {
         if (this.widgets.length === 0) {
-            await this.commandService.executeCommand(TerminalCommands.NEW_MANAGER_PAGE.id);
+            await this.commandService.executeCommand(TerminalCommands.NEW_MANAGER_PAGE_TOOLBAR.id);
         }
         this.terminalLayout.addWidget(this.treeWidget);
     }

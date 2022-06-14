@@ -15,7 +15,7 @@
 // *****************************************************************************
 
 import { injectable, postConstruct } from '@theia/core/shared/inversify';
-import { TreeModelImpl, CompositeTreeNode, SelectableTreeNode } from '@theia/core/lib/browser';
+import { TreeModelImpl, CompositeTreeNode, SelectableTreeNode, ContextMenu } from '@theia/core/lib/browser';
 import { TerminalWidget } from './base/terminal-widget';
 import { Emitter } from '@theia/core';
 
@@ -36,7 +36,10 @@ export namespace TerminalManagerTreeTypes {
         activePage: PageNode;
         activeTerminal: TerminalNode;
     }
-    export type ContextMenuArgs = ['terminal-manager-tree', TerminalNode];
+
+    export const TerminalContextMenuID = 'terminal-manager-tree';
+    export type ContextMenuArgs = [typeof TerminalContextMenuID, TreeNode];
+    export const toContextMenuArgs = (node: TreeNode): ContextMenuArgs => ([TerminalContextMenuID, node]);
 }
 @injectable()
 export class TerminalManagerTreeModel extends TreeModelImpl {
