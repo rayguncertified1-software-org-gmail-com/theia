@@ -108,7 +108,7 @@ export class TerminalManagerTreeWidget extends TreeWidget {
         return this.model.addPage();
     }
 
-    deleteTerminal(node: TerminalManagerTreeTypes.TreeNode): void {
+    deleteTerminal(node: TerminalManagerTreeTypes.TerminalNode): void {
         this.model.deleteTerminal(node);
     }
 

@@ -165,6 +165,11 @@ export namespace TerminalCommands {
         category: TERMINAL_CATEGORY,
         label: 'Rename...',
     });
+    export const DELETE_PAGE = Command.toDefaultLocalizedCommand({
+        id: 'terminal:delete-page',
+        category: TERMINAL_CATEGORY,
+        label: 'Delete Page',
+    });
 }
 
 export namespace TerminalManager {
@@ -395,8 +400,12 @@ export class TerminalFrontendContribution extends AbstractViewContribution<Termi
             isVisible: widget => widget instanceof TerminalManagerWidget,
         });
         commands.registerCommand(TerminalCommands.DELETE_TERMINAL, {
-            execute: (...args: TerminalManagerTreeTypes.ContextMenuArgs) => this.deleteTerminalFromManager(args[1]),
-            isVisible: (...args: TerminalManagerTreeTypes.ContextMenuArgs) => args[0] === 'terminal-manager-tree',
+            execute: (...args: TerminalManagerTreeTypes.ContextMenuArgs) => TerminalManagerTreeTypes.isTerminalNode(args[1]) && this.deleteTerminalFromManager(args[1]),
+            isVisible: (...args: TerminalManagerTreeTypes.ContextMenuArgs) => args[0] === 'terminal-manager-tree' && TerminalManagerTreeTypes.isTerminalNode(args[1]),
+        });
+        commands.registerCommand(TerminalCommands.DELETE_PAGE, {
+            execute: (...args: TerminalManagerTreeTypes.ContextMenuArgs) => TerminalManagerTreeTypes.isPageNode(args[1]) && this.deletePageFromManager(args[1]),
+            isVisible: (...args: TerminalManagerTreeTypes.ContextMenuArgs) => args[0] === 'terminal-manager-tree' && TerminalManagerTreeTypes.isPageNode(args[1]),
         });
         commands.registerCommand(TerminalCommands.RENAME_TERMINAL, {
             execute: (...args: TerminalManagerTreeTypes.ContextMenuArgs) => this.toggleRenameTerminalFromManager(args[1]),
@@ -483,9 +492,14 @@ export class TerminalFrontendContribution extends AbstractViewContribution<Termi
         });
     }
 
-    protected async deleteTerminalFromManager(terminalNode: TerminalManagerTreeTypes.TreeNode): Promise<void> {
+    protected async deleteTerminalFromManager(terminalNode: TerminalManagerTreeTypes.TerminalNode): Promise<void> {
         const terminalManagerWidget = await this.widget;
         terminalManagerWidget.deleteTerminal(terminalNode);
+    }
+
+    protected async deletePageFromManager(pageNode: TerminalManagerTreeTypes.PageNode): Promise<void> {
+        const terminalManagerWidget = await this.widget;
+        terminalManagerWidget.deletePage(pageNode);
     }
 
     protected async toggleRenameTerminalFromManager(terminalNode: TerminalManagerTreeTypes.TreeNode): Promise<void> {
@@ -538,6 +552,10 @@ export class TerminalFrontendContribution extends AbstractViewContribution<Termi
         });
         menus.registerMenuAction(TerminalMenus.TERMINAL_MANAGER_TREE_CONTEXT_MENU, {
             commandId: TerminalCommands.DELETE_TERMINAL.id,
+            order: 'b',
+        });
+        menus.registerMenuAction(TerminalMenus.TERMINAL_MANAGER_TREE_CONTEXT_MENU, {
+            commandId: TerminalCommands.DELETE_PAGE.id,
             order: 'b',
         });
     }

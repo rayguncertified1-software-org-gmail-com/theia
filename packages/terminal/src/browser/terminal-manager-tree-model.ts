@@ -59,8 +59,13 @@ export class TerminalManagerTreeModel extends TreeModelImpl {
 
     protected onPageAddedEmitter = new Emitter<TerminalManagerTreeTypes.PageNode>();
     readonly onPageAdded = this.onPageAddedEmitter.event;
+    protected onPageRemovedEmitter = new Emitter<TerminalManagerTreeTypes.PageNode>();
+    readonly onPageRemoved = this.onPageRemovedEmitter.event;
+
     protected onTerminalAddedEmitter = new Emitter<TerminalManagerTreeTypes.TerminalNode>();
     readonly onTerminalAdded = this.onTerminalAddedEmitter.event;
+    protected onTerminalRemovedEmitter = new Emitter<TerminalManagerTreeTypes.TerminalNode>();
+    readonly onTerminalRemoved = this.onTerminalRemovedEmitter.event;
 
     @postConstruct()
     protected override init(): void {
@@ -143,8 +148,25 @@ export class TerminalManagerTreeModel extends TreeModelImpl {
         };
     }
 
-    deleteTerminal(node: TerminalManagerTreeTypes.TreeNode): void {
-        console.log('SENTINEL DELETED NODE', node);
+    deleteTerminal(node: TerminalManagerTreeTypes.TerminalNode): void {
+        if (TerminalManagerTreeTypes.isTerminalNode(node) && TerminalManagerTreeTypes.isPageNode(node.parent)) {
+            CompositeTreeNode.removeChild(node.parent, node);
+            this.onTerminalRemovedEmitter.fire(node);
+            this.refresh();
+        }
+    }
+
+    deletePage(pageNode: TerminalManagerTreeTypes.PageNode): void {
+        if (TerminalManagerTreeTypes.isPageNode(pageNode)) {
+            while (pageNode.children.length > 0) {
+                this.deleteTerminal(pageNode.children[0]);
+            }
+            if (this.root && CompositeTreeNode.is(this.root)) {
+                CompositeTreeNode.removeChild(this.root, pageNode);
+                this.onPageRemovedEmitter.fire(pageNode);
+                this.refresh();
+            }
+        }
     }
 
     toggleRenameTerminal(node: TerminalManagerTreeTypes.TreeNode): void {
