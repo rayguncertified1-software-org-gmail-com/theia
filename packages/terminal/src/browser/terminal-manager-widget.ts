@@ -81,11 +81,10 @@ export class TerminalManagerWidget extends BaseWidget {
         }, this.splitPositionHandler);
         // this.terminalLayout = new GridLayout();
         this.addTerminalPage();
-        await this.commandService.executeCommand(TerminalCommands.NEW_IN_MANAGER.id);
-        this.layout.addWidget(this.treeWidget);
+        // this.layout.addWidget(this.treeWidget);
     }
 
-    protected handlePageAdded(pageNode: TerminalManagerTreeTypes.PageNode): SplitPanel {
+    protected async handlePageAdded(pageNode: TerminalManagerTreeTypes.PageNode): Promise<SplitPanel> {
         const terminalLayout = new ViewContainerLayout({
             renderer: SplitPanel.defaultRenderer,
             orientation: 'horizontal',
@@ -100,6 +99,8 @@ export class TerminalManagerWidget extends BaseWidget {
         panel.node.tabIndex = -1;
         this.pageNodeToPanelMap.set(pageNode, panel);
         this.updateViewPage(pageNode, panel);
+        await this.commandService.executeCommand(TerminalCommands.NEW_IN_MANAGER.id);
+        (panel.layout as ViewContainerLayout).addWidget(this.treeWidget);
         return panel;
     }
 
@@ -112,7 +113,10 @@ export class TerminalManagerWidget extends BaseWidget {
 
     protected handleTerminalAdded(terminalNode: TerminalManagerTreeTypes.TerminalNode): void {
         const activePanel = this.pageNodeToPanelMap.get(this.treeWidget.model.activePage);
-        activePanel?.addWidget(terminalNode.widget);
+        if (activePanel) {
+            activePanel.insertWidget(activePanel.widgets.length - 1, terminalNode.widget);
+            // activePanel.addWidget(this.treeWidget);
+        }
     }
 
     protected handleTerminalRemoved(terminalNode: TerminalManagerTreeTypes.TerminalNode): void {
