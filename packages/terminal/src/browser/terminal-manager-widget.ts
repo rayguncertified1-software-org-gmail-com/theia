@@ -20,8 +20,8 @@ import { TerminalWidget } from './base/terminal-widget';
 import { TerminalManagerTreeWidget } from './terminal-manager-tree-widget';
 import { TerminalWidgetImpl } from './terminal-widget-impl';
 import { CommandService } from '@theia/core';
-import { TerminalCommands } from './terminal-frontend-contribution';
 import { TerminalManagerTreeTypes } from './terminal-manager-tree-model';
+import { TerminalCommands } from './terminal-frontend-contribution';
 
 @injectable()
 export class TerminalManagerWidget extends BaseWidget {
@@ -54,96 +54,138 @@ export class TerminalManagerWidget extends BaseWidget {
 
     @inject(CommandService) protected readonly commandService: CommandService;
 
-    protected terminalPages: ViewContainerLayout[] = [];
+    protected terminalPanels: SplitPanel[] = [];
     protected activePage: TerminalManagerTreeTypes.PageNode | undefined;
-    protected terminalLayout: ViewContainerLayout;
+    // protected terminalLayout: ViewContainerLayout;
+    // protected terminalLayout: GridLayout;
+    protected pageToPanelMap = new Map<TerminalManagerTreeTypes.PageNode, SplitPanel>();
+    override layout: PanelLayout;
 
     @postConstruct()
     protected async init(): Promise<void> {
-        this.toDispose.push(this.treeWidget.onDidChange(() => this.updateView()));
+        // this.toDispose.push(this.treeWidget.onDidChange(() => this.updateViewPage()));
         this.toDispose.push(this.treeWidget.onTreeSelectionChanged(({ activePage, activeTerminal }) => this.handleSelectionChange(activePage, activeTerminal)));
+        this.toDispose.push(this.treeWidget.model.onPageAdded(pageNode => this.createNewTerminalPanel(pageNode)));
+        this.toDispose.push(this.treeWidget.model.onTerminalAdded(terminalNode => this.addWidgetToActivePanel(terminalNode)));
         this.title.iconClass = codicon('terminal-tmux');
         this.id = TerminalManagerWidget.ID;
         this.title.closable = false;
         this.title.label = TerminalManagerWidget.LABEL;
 
-        const mainLayout = new PanelLayout({});
-        this.layout = mainLayout;
-        this.terminalLayout = new ViewContainerLayout({
+        // this.layout = new PanelLayout({});
+        this.layout = new ViewContainerLayout({
             renderer: SplitPanel.defaultRenderer,
             orientation: 'horizontal',
             spacing: 2,
             headerSize: 0,
             animationDuration: 200
         }, this.splitPositionHandler);
-        this.panel = new SplitPanel({
-            layout: this.terminalLayout,
-        });
-        this.panel.node.tabIndex = -1;
-        mainLayout.addWidget(this.panel);
-        return this.initializeDefaultWidgets();
-    }
-
-    protected async updateView(): Promise<void> {
-        this.activePage = this.activePage ?? this.treeWidget.model.activePage;
-        if (this.activePage) {
-            const terminalsInView = this.activePage.children.map(child => child.widget);
-            if (terminalsInView.length) {
-
-
-                this.terminalLayout.widgets.forEach(part => {
-                    const widget = part.title.owner;
-                    if (widget instanceof TerminalWidgetImpl) {
-                        if (terminalsInView.includes(widget)) {
-                            widget.show();
-                        } else {
-                            widget.hide();
-                        }
-                    }
-                });
-            }
-            // const newLayout = new ViewContainerLayout({
-            //     renderer: SplitPanel.defaultRenderer,
-            //     orientation: 'horizontal',
-            //     spacing: 2,
-            //     headerSize: 0,
-            //     animationDuration: 200
-            // }, this.splitPositionHandler);
-            // this.panel.layout = newLayout;
-            // terminalsInView.forEach(terminal => newLayout.addWidget(terminal));
-            // newLayout.addWidget(this.treeWidget);
-            this.update();
-        }
-    }
-
-    protected addWidgetToLayout(widget: TerminalWidget): void {
-        const currentlyAddedWidgets = this.terminalLayout.widgets.map(part => part.title.owner);
-        if (!currentlyAddedWidgets.includes(widget)) {
-            this.terminalLayout.addWidget(widget);
-        }
-    }
-
-    protected handleSelectionChange(activePage: TerminalManagerTreeTypes.PageNode, _activeTerminal: TerminalManagerTreeTypes.TerminalNode): void {
-        this.activePage = activePage;
-        this.updateView();
+        // this.terminalLayout = new GridLayout();
+        // const firstPanel = this.createNewTerminalPanel();
+        // this.terminalLayout = new ViewContainerLayout({
+        //     renderer: SplitPanel.defaultRenderer,
+        //     orientation: 'horizontal',
+        //     spacing: 2,
+        //     headerSize: 0,
+        //     animationDuration: 200
+        // }, this.splitPositionHandler);
+        // this.panel = new SplitPanel({
+        //     layout: this.terminalLayout,
+        // });
+        // this.panel.node.tabIndex = -1;
+        // mainLayout.addWidget(firstPanel);
+        this.addTerminalPage();
+        await this.commandService.executeCommand(TerminalCommands.NEW_IN_MANAGER.id);
+        this.layout.addWidget(this.treeWidget);
+        // return this.initializeDefaultWidgets();
     }
 
     protected async initializeDefaultWidgets(): Promise<void> {
-        if (this.widgets.length === 0) {
-            await this.commandService.executeCommand(TerminalCommands.NEW_MANAGER_PAGE_TOOLBAR.id);
+        // this.layout.addWidget(this.treeWidget);
+        // await this.commandService.executeCommand(TerminalCommands.NEW_MANAGER_PAGE_TOOLBAR.id);
+        // this.terminalLayout.addWidget(this.treeWidget);
+    }
+
+    protected createNewTerminalPanel(pageNode: TerminalManagerTreeTypes.PageNode): SplitPanel {
+        const terminalLayout = new ViewContainerLayout({
+            renderer: SplitPanel.defaultRenderer,
+            orientation: 'horizontal',
+            spacing: 2,
+            headerSize: 0,
+            animationDuration: 200
+        }, this.splitPositionHandler);
+        const panel = new SplitPanel({
+            layout: terminalLayout,
+        });
+        panel.id = pageNode.id;
+        panel.node.tabIndex = -1;
+        // this.layout.widgets.forEach(widget => this.layout.removeWidget(widget));
+        // this.layout.addWidget(panel);
+        // this.layout.addWidget(this.treeWidget);
+        this.pageToPanelMap.set(pageNode, panel);
+        this.updateViewPage(pageNode, panel);
+        // this.update();
+        return panel;
+    }
+
+    protected addWidgetToActivePanel(terminalNode: TerminalManagerTreeTypes.TerminalNode): void {
+        const activePanel = this.pageToPanelMap.get(this.treeWidget.model.activePage);
+        activePanel?.addWidget(terminalNode.widget);
+    }
+
+    protected async updateViewPage(activePage: TerminalManagerTreeTypes.PageNode, panel?: SplitPanel): Promise<void> {
+        const activePanel = panel ?? this.pageToPanelMap.get(activePage);
+        if (activePanel) {
+            console.log('SENTINEL LAYOUTS WIDGETS BEFORE', this.layout.widgets);
+            this.layout.widgets.forEach(widget => this.layout.removeWidget(widget));
+            console.log('SENTINEL WIDGETS AFTER REMOVAL', this.layout.widgets);
+            this.layout.addWidget(activePanel);
+            // re-adding treewidget will just move it to end
+            this.layout.addWidget(this.treeWidget);
+            console.log('SENTINEL WIDGETS AFTER ADDING NEW PANEL', this.layout.widgets);
+            console.log('SENTINEL ADDING NEW WIDGET TO ACTIVE PANEL', this.layout.widgets);
+            console.log('SENTINEL ACTIVE PANEL', activePanel);
+            this.update();
         }
-        this.terminalLayout.addWidget(this.treeWidget);
+        // if (this.activePage) {
+        //     const terminalsInView = this.activePage.children.map(child => child.widget);
+        //     if (terminalsInView.length) {
+        //         this.terminalLayout.widgets.forEach(part => {
+        //             const widget = part.title.owner;
+        //             if (widget instanceof TerminalWidgetImpl) {
+        //                 if (terminalsInView.includes(widget)) {
+        //                     widget.show();
+        //                 } else {
+        //                     widget.hide();
+        //                 }
+        //             }
+        //         });
+        //     }
+        //     this.update();
+        // }
+    }
+
+    protected addWidgetToLayout(widget: TerminalWidget): void {
+        // const currentlyAddedWidgets = this.treeWi.widgets.map(part => part.title.owner);
+        this.treeWidget.model.addWidget(widget);
+        // if (!currentlyAddedWidgets.includes(widget)) {
+        //     this.terminalLayout.addWidget(widget);
+        // }
+    }
+
+    protected handleSelectionChange(activePage: TerminalManagerTreeTypes.PageNode, _activeTerminal: TerminalManagerTreeTypes.TerminalNode): void {
+        if (activePage !== this.activePage) {
+            this.activePage = activePage;
+            this.updateViewPage(activePage);
+        }
     }
 
     addTerminalPage(): TerminalManagerTreeTypes.PageNode | undefined {
-        return this.treeWidget.addPage();
+        return this.treeWidget.model.addPage();
     }
 
-    addWidget(widget: TerminalWidget, page?: TerminalManagerTreeTypes.PageNode): void {
-        const pageToAddTo = page ?? this.activePage;
-        if (pageToAddTo) {
-            this.treeWidget.addWidget(widget, pageToAddTo);
-        }
+    addWidget(widget: TerminalWidget): void {
+        this.treeWidget.model.addWidget(widget);
     }
 
     deleteTerminal(terminalNode: TerminalManagerTreeTypes.TreeNode): void {

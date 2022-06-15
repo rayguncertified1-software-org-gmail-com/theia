@@ -722,8 +722,10 @@ export class TerminalFrontendContribution extends AbstractViewContribution<Termi
                 if (area === 'terminal-manager-current') {
                     terminalManagerWidget.addWidget(widget);
                 } else if (area === 'terminal-manager-new-page') {
-                    const pageNode = terminalManagerWidget.addTerminalPage();
-                    terminalManagerWidget.addWidget(widget, pageNode);
+                    terminalManagerWidget.addTerminalPage();
+                    terminalManagerWidget.addWidget(widget);
+                    // const pageNode = terminalManagerWidget.addTerminalPage();
+                    // terminalManagerWidget.addWidget(widget, pageNode);
                 }
             }
             // this.shell.activateWidget(widget.id);

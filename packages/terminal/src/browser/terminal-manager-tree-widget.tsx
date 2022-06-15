@@ -17,7 +17,6 @@
 import * as React from '@theia/core/shared/react';
 import { Container, inject, injectable, interfaces, postConstruct } from '@theia/core/shared/inversify';
 import { codicon, createTreeContainer, Message, NodeProps, SelectableTreeNode, TreeModel, TreeNode, TreeWidget } from '@theia/core/lib/browser';
-import { TerminalWidget } from './base/terminal-widget';
 import { TerminalManagerTreeModel, TerminalManagerTreeTypes } from './terminal-manager-tree-model';
 import { Emitter } from '@theia/core';
 import { TerminalMenus } from './terminal-frontend-contribution';
@@ -51,10 +50,6 @@ export class TerminalManagerTreeWidget extends TreeWidget {
         this.addClass(TerminalManagerTreeWidget.ID);
         this.toDispose.push(this.onDidChangeEmitter);
         this.toDispose.push(this.model.onTreeSelectionChanged(e => this.onTreeSelectionChangedEmitter.fire(e)));
-    }
-
-    addWidget(widget: TerminalWidget, activePage?: TerminalManagerTreeTypes.PageNode): void {
-        this.model.addWidget(widget, activePage);
     }
 
     protected override toContextMenuArgs(node: SelectableTreeNode): TerminalManagerTreeTypes.ContextMenuArgs | undefined {

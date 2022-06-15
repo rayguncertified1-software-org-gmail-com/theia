@@ -49,16 +49,18 @@ export namespace TerminalManagerTreeTypes {
 @injectable()
 export class TerminalManagerTreeModel extends TreeModelImpl {
 
-    protected _activePage: TerminalManagerTreeTypes.PageNode;
-    get activePage(): TerminalManagerTreeTypes.PageNode {
-        return this._activePage;
-    }
+    activePage: TerminalManagerTreeTypes.PageNode;
+    activeTerminal: TerminalManagerTreeTypes.TerminalNode;
 
-    protected activeTerminal: TerminalManagerTreeTypes.TerminalNode;
     protected pageNum = 0;
 
     protected onTreeSelectionChangedEmitter = new Emitter<TerminalManagerTreeTypes.SelectionChangedEvent>();
     readonly onTreeSelectionChanged = this.onTreeSelectionChangedEmitter.event;
+
+    protected onPageAddedEmitter = new Emitter<TerminalManagerTreeTypes.PageNode>();
+    readonly onPageAdded = this.onPageAddedEmitter.event;
+    protected onTerminalAddedEmitter = new Emitter<TerminalManagerTreeTypes.TerminalNode>();
+    readonly onTerminalAdded = this.onTerminalAddedEmitter.event;
 
     @postConstruct()
     protected override init(): void {
@@ -77,24 +79,27 @@ export class TerminalManagerTreeModel extends TreeModelImpl {
             if (selectedNode === this.activePage) {
                 return;
             }
-            this._activePage = selectedNode;
+            this.activePage = selectedNode;
         } else if (TerminalManagerTreeTypes.isTerminalNode(selectedNode)) {
             const activePage = selectedNode.parent;
             if (activePage === this.activePage) {
                 return;
             }
             if (TerminalManagerTreeTypes.isPageNode(activePage) && TerminalManagerTreeTypes.isTerminalNode(selectedNode)) {
-                this._activePage = activePage;
+                this.activePage = activePage;
                 this.activeTerminal = selectedNode;
             }
         }
         this.onTreeSelectionChangedEmitter.fire({ activePage: this.activePage, activeTerminal: this.activeTerminal });
     }
 
-    addWidget(widget: TerminalWidget, activePage?: TerminalManagerTreeTypes.PageNode): void {
+    addWidget(widget: TerminalWidget): void {
         const widgetNode = this.createWidgetNode(widget);
         if (this.root && CompositeTreeNode.is(this.root)) {
-            CompositeTreeNode.addChild(activePage ?? this.activePage, widgetNode);
+            this.activeTerminal = widgetNode;
+            this.selectionService.addSelection(this.activeTerminal);
+            CompositeTreeNode.addChild(this.activePage, widgetNode);
+            this.onTerminalAddedEmitter.fire(widgetNode);
             this.refresh();
         }
     }
@@ -102,9 +107,11 @@ export class TerminalManagerTreeModel extends TreeModelImpl {
     addPage(): TerminalManagerTreeTypes.PageNode | undefined {
         const pageNode = this.createPageNode();
         if (this.root && CompositeTreeNode.is(this.root)) {
-            this._activePage = pageNode;
+            // set this immediately and also set in event handler
+            this.activePage = pageNode;
             this.selectionService.addSelection(this.activePage);
             this.root = CompositeTreeNode.addChild(this.root, pageNode);
+            this.onPageAddedEmitter.fire(pageNode);
             return pageNode;
         }
     }
