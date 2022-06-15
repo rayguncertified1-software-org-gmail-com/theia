@@ -15,7 +15,17 @@
 // *****************************************************************************
 
 import { inject, injectable, interfaces, postConstruct } from '@theia/core/shared/inversify';
-import { BaseWidget, codicon, PanelLayout, SplitLayout, SplitPanel, SplitPositionHandler, ViewContainerLayout } from '@theia/core/lib/browser';
+import {
+    BaseWidget,
+    codicon,
+    DockPanelRenderer,
+    DockPanelRendererFactory,
+    PanelLayout,
+    SplitLayout,
+    SplitPanel,
+    SplitPositionHandler,
+    ViewContainerLayout,
+} from '@theia/core/lib/browser';
 import { TerminalWidget } from './base/terminal-widget';
 import { TerminalManagerTreeWidget } from './terminal-manager-tree-widget';
 import { TerminalWidgetImpl } from './terminal-widget-impl';
@@ -51,6 +61,7 @@ export class TerminalManagerWidget extends BaseWidget {
     protected readonly splitPositionHandler: SplitPositionHandler;
 
     @inject(TerminalManagerTreeWidget) protected readonly treeWidget: TerminalManagerTreeWidget;
+    @inject(DockPanelRendererFactory) protected dockPanelRendererFactory: () => DockPanelRenderer;
 
     @inject(CommandService) protected readonly commandService: CommandService;
 
@@ -72,13 +83,14 @@ export class TerminalManagerWidget extends BaseWidget {
         this.title.closable = false;
         this.title.label = TerminalManagerWidget.LABEL;
 
-        this.layout = new ViewContainerLayout({
-            renderer: SplitPanel.defaultRenderer,
-            orientation: 'horizontal',
-            spacing: 2,
-            headerSize: 0,
-            animationDuration: 200
-        }, this.splitPositionHandler);
+        this.layout = new PanelLayout();
+        // ({
+        //     renderer: SplitPanel.defaultRenderer,
+        //     orientation: 'horizontal',
+        //     spacing: 2,
+        //     headerSize: 0,
+        //     animationDuration: 200
+        // }, this.splitPositionHandler);
         // this.terminalLayout = new GridLayout();
         this.addTerminalPage();
         // this.layout.addWidget(this.treeWidget);
@@ -97,6 +109,7 @@ export class TerminalManagerWidget extends BaseWidget {
         });
         panel.id = pageNode.id;
         panel.node.tabIndex = -1;
+
         this.pageNodeToPanelMap.set(pageNode, panel);
         this.updateViewPage(pageNode, panel);
         await this.commandService.executeCommand(TerminalCommands.NEW_IN_MANAGER.id);
@@ -115,7 +128,6 @@ export class TerminalManagerWidget extends BaseWidget {
         const activePanel = this.pageNodeToPanelMap.get(this.treeWidget.model.activePage);
         if (activePanel) {
             activePanel.insertWidget(activePanel.widgets.length - 1, terminalNode.widget);
-            // activePanel.addWidget(this.treeWidget);
         }
     }
 
@@ -130,7 +142,6 @@ export class TerminalManagerWidget extends BaseWidget {
         if (activePanel) {
             this.layout.widgets.forEach(widget => this.layout.removeWidget(widget));
             this.layout.addWidget(activePanel);
-            this.layout.addWidget(this.treeWidget);
             this.update();
         }
     }
