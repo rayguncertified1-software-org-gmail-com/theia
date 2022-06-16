@@ -68,7 +68,7 @@ export class TerminalManagerWidget extends BaseWidget {
 
     protected terminalPanels: SplitPanel[] = [];
     protected activePage: TerminalManagerTreeTypes.PageNode | undefined;
-    protected pageNodeToPanelMap = new Map<TerminalManagerTreeTypes.PageNode, SplitPanel>();
+    // protected pageNodeToPanelMap = new Map<TerminalManagerTreeTypes.PageNode, SplitPanel>();
     override layout: PanelLayout;
 
     // serves as an empty container so that different view containers can be swapped out
@@ -84,6 +84,7 @@ export class TerminalManagerWidget extends BaseWidget {
         this.toDispose.push(this.treeWidget.model.onPageRemoved(pageNode => this.handlePageRemoved(pageNode)));
         this.toDispose.push(this.treeWidget.model.onTerminalAdded(terminalNode => this.handleTerminalAdded(terminalNode)));
         this.toDispose.push(this.treeWidget.model.onTerminalRemoved(terminalNode => this.handleTerminalRemoved(terminalNode)));
+        this.toDispose.push(this.treeWidget.model.onTerminalSplit(groupNode => this.handleTerminalSplit(groupNode)));
         this.title.iconClass = codicon('terminal-tmux');
         this.id = TerminalManagerWidget.ID;
         this.title.closable = false;
@@ -128,25 +129,50 @@ export class TerminalManagerWidget extends BaseWidget {
         });
         newPagePanel.id = pageNode.id;
         newPagePanel.node.tabIndex = -1;
-
-        this.pageNodeToPanelMap.set(pageNode, newPagePanel);
+        pageNode.panel = newPagePanel;
+        // this.pageNodeToPanelMap.set(pageNode, newPagePanel);
         this.updateViewPage(pageNode, newPagePanel);
         await this.commandService.executeCommand(TerminalCommands.MANAGER_NEW_TERMINAL.id);
         return newPagePanel;
     }
 
     protected handlePageRemoved(pageNode: TerminalManagerTreeTypes.PageNode): void {
-        const panel = this.pageNodeToPanelMap.get(pageNode);
-        if (panel) {
-            panel.dispose();
-        }
+        pageNode.panel?.dispose();
+        // const panel = this.pageNodeToPanelMap.get(pageNode);
+        // if (panel) {
+        //     panel.dispose();
+        // }
     }
 
     protected handleTerminalAdded(terminalNode: TerminalManagerTreeTypes.TerminalNode): void {
-        const activePanel = this.pageNodeToPanelMap.get(this.treeWidget.model.activePage);
-        if (activePanel) {
-            activePanel.addWidget(terminalNode.widget);
+        const { panel } = this.treeWidget.model.activePage;
+        // const activePanel = this.pageNodeToPanelMap.get(this.treeWidget.model.activePage);
+        if (panel) {
+            panel.addWidget(terminalNode.widget);
         }
+    }
+
+    // protected createNewTerminalColumn(terminalNode: TerminalManagerTreeTypes.TerminalNode): void {
+    //     const terminalColumnLayout = new ViewContainerLayout({
+    //         renderer: SplitPanel.defaultRenderer,
+    //         orientation: 'horizontal',
+    //         spacing: 2,
+    //         headerSize: 0,
+    //         animationDuration: 200
+    //     }, this.splitPositionHandler);
+    //     // necessary because a panel extends Widget
+    //     const terminalColumnPanel = new SplitPanel({
+    //         layout: terminalColumnLayout,
+    //     });
+    //     terminalColumnPanel.id = terminalNode.id;
+    //     terminalColumnPanel.node.tabIndex = -1;
+
+    //     this.pageNodeToPanelMap.set(terminalNode, terminalColumnPanel);
+    //     this.updateViewPage(pageNode, terminalColumnPanel);
+    // }
+
+    protected handleTerminalSplit(groupNode: TerminalManagerTreeTypes.TerminalGroupNode): void {
+
     }
 
     protected handleTerminalRemoved(terminalNode: TerminalManagerTreeTypes.TerminalNode): void {
@@ -155,11 +181,10 @@ export class TerminalManagerWidget extends BaseWidget {
     }
 
     protected async updateViewPage(activePage: TerminalManagerTreeTypes.PageNode, panel?: SplitPanel): Promise<void> {
-        const activePanel = panel ?? this.pageNodeToPanelMap.get(activePage);
+        // const activePanel = panel ?? this.pageNodeToPanelMap.get(activePage);
+        const activePanel = panel ?? activePage.panel;
         if (activePanel) {
             (this.terminalPanelWrapper.layout as PanelLayout).widgets.forEach(widget => this.terminalPanelWrapper.layout?.removeWidget(widget));
-            // this.layout.widgets.forEach(widget => this.layout.removeWidget(widget));
-
             (this.terminalPanelWrapper.layout as PanelLayout).addWidget(activePanel);
             this.update();
         }

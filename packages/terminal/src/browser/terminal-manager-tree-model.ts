@@ -41,6 +41,8 @@ export class TerminalManagerTreeModel extends TreeModelImpl {
     readonly onTerminalAdded = this.onTerminalAddedEmitter.event;
     protected onTerminalRemovedEmitter = new Emitter<TerminalManagerTreeTypes.TerminalNode>();
     readonly onTerminalRemoved = this.onTerminalRemovedEmitter.event;
+    protected onTerminalSplitEmitter = new Emitter<TerminalManagerTreeTypes.TerminalGroupNode>();
+    readonly onTerminalSplit = this.onTerminalSplitEmitter.event;
 
     @postConstruct()
     protected override init(): void {
@@ -106,6 +108,7 @@ export class TerminalManagerTreeModel extends TreeModelImpl {
             children: [],
             page: true,
             isEditing: false,
+            panel: undefined,
         };
     }
 
@@ -158,6 +161,11 @@ export class TerminalManagerTreeModel extends TreeModelImpl {
                 CompositeTreeNode.removeChild(this.root, pageNode);
                 this.onPageRemovedEmitter.fire(pageNode);
                 this.refresh();
+                setTimeout(() => {
+                    if (CompositeTreeNode.is(this.root) && SelectableTreeNode.is(this.root?.children[0])) {
+                        this.selectionService.addSelection(this.root.children[0]);
+                    }
+                });
             }
         }
     }
@@ -176,6 +184,7 @@ export class TerminalManagerTreeModel extends TreeModelImpl {
                 CompositeTreeNode.addChild(page, newGroupNode);
                 CompositeTreeNode.addChild(newGroupNode, parentTerminal);
                 this.addWidget(terminalWidget, newGroupNode);
+                this.onTerminalSplitEmitter.fire(newGroupNode);
             }
         }
     }

@@ -14,7 +14,7 @@
 // SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
 // *****************************************************************************
 
-import { ApplicationShell, WidgetOpenerOptions, SelectableTreeNode, CompositeTreeNode } from '@theia/core/lib/browser';
+import { ApplicationShell, WidgetOpenerOptions, SelectableTreeNode, CompositeTreeNode, SplitPanel } from '@theia/core/lib/browser';
 import { TerminalWidget } from './base/terminal-widget';
 
 export namespace TerminalManager {
@@ -44,6 +44,7 @@ export namespace TerminalManagerTreeTypes {
         children: Array<TerminalNode | TerminalGroupNode>;
         isEditing: boolean;
         label: string;
+        panel: SplitPanel | undefined;
     }
 
     export type TreeNode = PageNode | TerminalNode;
