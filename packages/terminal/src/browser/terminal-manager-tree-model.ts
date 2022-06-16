@@ -18,42 +18,8 @@ import { injectable, postConstruct } from '@theia/core/shared/inversify';
 import { TreeModelImpl, CompositeTreeNode, SelectableTreeNode } from '@theia/core/lib/browser';
 import { TerminalWidget } from './base/terminal-widget';
 import { Emitter } from '@theia/core';
+import { TerminalManager, TerminalManagerTreeTypes } from './terminal-manager-types';
 
-export namespace TerminalManagerTreeTypes {
-    export interface TerminalNode extends SelectableTreeNode, CompositeTreeNode {
-        terminal: true;
-        widget: TerminalWidget;
-        isEditing: boolean;
-        label: string;
-    };
-
-    export interface TerminalGroupNode extends SelectableTreeNode, CompositeTreeNode {
-        terminalGroup: true;
-        widgets: TerminalWidget[];
-        isEditing: boolean;
-        label: string;
-    };
-    export interface PageNode extends SelectableTreeNode, CompositeTreeNode {
-        page: true;
-        children: Array<TerminalNode | TerminalGroupNode>;
-        isEditing: boolean;
-        label: string;
-    }
-
-    export type TreeNode = PageNode | TerminalNode;
-    export const isPageNode = (obj: unknown): obj is PageNode => !!obj && typeof obj === 'object' && 'page' in obj;
-    export const isTerminalNode = (obj: unknown): obj is TerminalNode => !!obj && typeof obj === 'object' && 'terminal' in obj;
-    export const isTerminalGroupNode = (obj: unknown): obj is TerminalNode => !!obj && typeof obj === 'object' && 'terminalGroup' in obj;
-    export const isTerminalOrPageNode = (obj: unknown): obj is (PageNode | TerminalNode) => isPageNode(obj) || isTerminalNode(obj);
-    export interface SelectionChangedEvent {
-        activePage: PageNode;
-        activeTerminal: TerminalNode;
-    }
-
-    export const TerminalContextMenuID = 'terminal-manager-tree';
-    export type ContextMenuArgs = [typeof TerminalContextMenuID, TreeNode];
-    export const toContextMenuArgs = (node: TreeNode): ContextMenuArgs => ([TerminalContextMenuID, node]);
-}
 @injectable()
 export class TerminalManagerTreeModel extends TreeModelImpl {
 
@@ -200,14 +166,16 @@ export class TerminalManagerTreeModel extends TreeModelImpl {
         // TODO
     }
 
-    splitTerminalHorizontally(terminalNode: TerminalManagerTreeTypes.TerminalNode): void {
-        if (TerminalManagerTreeTypes.isTerminalNode(terminalNode)) {
-            const page = terminalNode.parent;
+    splitTerminalHorizontally(terminalWidget: TerminalWidget, parentId: TerminalManager.TerminalID): void {
+        const parentTerminal = this.getNode(parentId);
+        if (TerminalManagerTreeTypes.isTerminalNode(parentTerminal)) {
+            const page = parentTerminal.parent;
             if (TerminalManagerTreeTypes.isPageNode(page)) {
-                CompositeTreeNode.removeChild(page, terminalNode);
+                CompositeTreeNode.removeChild(page, parentTerminal);
                 const newGroupNode = this.createGroupNode();
                 CompositeTreeNode.addChild(page, newGroupNode);
-                CompositeTreeNode.addChild(newGroupNode, terminalNode);
+                CompositeTreeNode.addChild(newGroupNode, parentTerminal);
+                this.addWidget(terminalWidget, newGroupNode);
             }
         }
     }

@@ -31,8 +31,8 @@ import { TerminalWidget } from './base/terminal-widget';
 import { TerminalManagerTreeWidget } from './terminal-manager-tree-widget';
 import { TerminalWidgetImpl } from './terminal-widget-impl';
 import { CommandService } from '@theia/core';
-import { TerminalManagerTreeTypes } from './terminal-manager-tree-model';
-import { TerminalCommands, TerminalManager } from './terminal-frontend-contribution';
+import { TerminalCommands } from './terminal-frontend-contribution';
+import { TerminalManagerTreeTypes, TerminalManager } from './terminal-manager-types';
 
 @injectable()
 export class TerminalManagerWidget extends BaseWidget {
@@ -190,6 +190,7 @@ export class TerminalManagerWidget extends BaseWidget {
     }
 
     splitWidget(terminalWidget: TerminalWidget, parentId: TerminalManager.TerminalID): void {
+        this.treeWidget.model.splitTerminalHorizontally(terminalWidget, parentId);
         console.log('SENTINEL TERMINAL WIDGET', terminalWidget, parentId);
     }
 

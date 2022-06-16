@@ -54,7 +54,7 @@ import {
 import { nls } from '@theia/core/lib/common/nls';
 import { TerminalPreferences } from './terminal-preferences';
 import { TerminalManagerWidget } from './terminal-manager-widget';
-import { TerminalManagerTreeTypes } from './terminal-manager-tree-model';
+import { TerminalManagerTreeTypes, TerminalManager } from './terminal-manager-types';
 
 export namespace TerminalMenus {
     export const TERMINAL = [...MAIN_MENU_BAR, '7_terminal'];
@@ -173,17 +173,9 @@ export namespace TerminalCommands {
     export const MANAGER_SPLIT_TERMINAL_HORIZONTAL = Command.toDefaultLocalizedCommand({
         id: 'terminal:manager-split-horizontal',
         category: TERMINAL_CATEGORY,
-        label: 'Split Active Terminal Horizontally',
+        label: 'Split Active Terminal Vertically',
+        iconClass: codicon('split-vertical'),
     });
-}
-
-export namespace TerminalManager {
-    export type TerminalID = `terminal-${number}`;
-    export const isTerminalID = (obj: unknown): obj is TerminalID => typeof obj === 'string' && obj.startsWith('terminal-');
-    export type Area = ApplicationShell.Area | 'terminal-manager-current' | 'terminal-manager-new-page' | TerminalID;
-    export const isTerminalManagerArea = (obj: unknown): obj is Area => typeof obj === 'string' && obj.startsWith('terminal');
-    export type ExtendedWidgetOptions = Omit<ApplicationShell.WidgetOptions, 'area'> & { area?: Area };
-    export type ExtendedWidgetOpenerOptions = Omit<WidgetOpenerOptions, 'widgetOptions'> & { widgetOptions?: ExtendedWidgetOptions };
 }
 
 @injectable()

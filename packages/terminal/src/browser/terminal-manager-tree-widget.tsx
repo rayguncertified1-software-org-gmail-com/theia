@@ -17,9 +17,10 @@
 import * as React from '@theia/core/shared/react';
 import { Container, inject, injectable, interfaces, postConstruct } from '@theia/core/shared/inversify';
 import { codicon, createTreeContainer, Message, NodeProps, SelectableTreeNode, TreeModel, TreeNode, TreeWidget } from '@theia/core/lib/browser';
-import { TerminalManagerTreeModel, TerminalManagerTreeTypes } from './terminal-manager-tree-model';
+import { TerminalManagerTreeModel } from './terminal-manager-tree-model';
 import { Emitter } from '@theia/core';
 import { TerminalMenus } from './terminal-frontend-contribution';
+import { TerminalManagerTreeTypes } from './terminal-manager-types';
 // import { TerminalMenus } from './terminal-frontend-contribution';
 
 @injectable()
@@ -98,6 +99,8 @@ export class TerminalManagerTreeWidget extends TreeWidget {
             return <span className={`${codicon('terminal')}`} />;
         } else if (TerminalManagerTreeTypes.isPageNode(node)) {
             return <span className={`${codicon('terminal-tmux')}`} />;
+        } else if (TerminalManagerTreeTypes.isTerminalGroupNode(node)) {
+            return <span className={`${codicon('split-vertical')}`} />;
         }
     }
 
