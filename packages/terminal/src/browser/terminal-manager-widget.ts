@@ -20,6 +20,7 @@ import {
     codicon,
     DockPanelRenderer,
     DockPanelRendererFactory,
+    Panel,
     PanelLayout,
     SplitLayout,
     SplitPanel,
@@ -70,10 +71,15 @@ export class TerminalManagerWidget extends BaseWidget {
     protected pageNodeToPanelMap = new Map<TerminalManagerTreeTypes.PageNode, SplitPanel>();
     override layout: PanelLayout;
 
+    // serves as an empty container so that different view containers can be swapped out
+    protected terminalPanelWrapper = new Panel({
+        layout: new PanelLayout(),
+    });
+
     @postConstruct()
     protected async init(): Promise<void> {
         // this.toDispose.push(this.treeWidget.onDidChange(() => this.updateViewPage()));
-        this.toDispose.push(this.treeWidget.onTreeSelectionChanged(({ activePage, activeTerminal }) => this.handleSelectionChange(activePage, activeTerminal)));
+        this.toDispose.push(this.treeWidget.model.onTreeSelectionChanged(({ activePage, activeTerminal }) => this.handleSelectionChange(activePage, activeTerminal)));
         this.toDispose.push(this.treeWidget.model.onPageAdded(pageNode => this.handlePageAdded(pageNode)));
         this.toDispose.push(this.treeWidget.model.onPageRemoved(pageNode => this.handlePageRemoved(pageNode)));
         this.toDispose.push(this.treeWidget.model.onTerminalAdded(terminalNode => this.handleTerminalAdded(terminalNode)));
@@ -84,6 +90,18 @@ export class TerminalManagerWidget extends BaseWidget {
         this.title.label = TerminalManagerWidget.LABEL;
 
         this.layout = new PanelLayout();
+        this.panel = new SplitPanel({
+            layout: new ViewContainerLayout({
+                renderer: SplitPanel.defaultRenderer,
+                orientation: 'horizontal',
+                spacing: 2,
+                headerSize: 0,
+                animationDuration: 200
+            }, this.splitPositionHandler),
+        });
+        this.layout.addWidget(this.panel);
+        (this.panel.layout as ViewContainerLayout).addWidget(this.terminalPanelWrapper);
+        (this.panel.layout as ViewContainerLayout).addWidget(this.treeWidget);
         // ({
         //     renderer: SplitPanel.defaultRenderer,
         //     orientation: 'horizontal',
@@ -97,51 +115,52 @@ export class TerminalManagerWidget extends BaseWidget {
     }
 
     protected async handlePageAdded(pageNode: TerminalManagerTreeTypes.PageNode): Promise<SplitPanel> {
-        const terminalLayout = new ViewContainerLayout({
+        const newPageLayout = new ViewContainerLayout({
             renderer: SplitPanel.defaultRenderer,
             orientation: 'horizontal',
             spacing: 2,
             headerSize: 0,
             animationDuration: 200
         }, this.splitPositionHandler);
-        const panel = new SplitPanel({
-            layout: terminalLayout,
+        // necessary because a panel extends Widget
+        const newPagePanel = new SplitPanel({
+            layout: newPageLayout,
         });
-        panel.id = pageNode.id;
-        panel.node.tabIndex = -1;
+        newPagePanel.id = pageNode.id;
+        newPagePanel.node.tabIndex = -1;
 
-        this.pageNodeToPanelMap.set(pageNode, panel);
-        this.updateViewPage(pageNode, panel);
-        await this.commandService.executeCommand(TerminalCommands.NEW_IN_MANAGER.id);
-        (panel.layout as ViewContainerLayout).addWidget(this.treeWidget);
-        return panel;
+        this.pageNodeToPanelMap.set(pageNode, newPagePanel);
+        this.updateViewPage(pageNode, newPagePanel);
+        await this.commandService.executeCommand(TerminalCommands.MANAGER_NEW_TERMINAL.id);
+        return newPagePanel;
     }
 
     protected handlePageRemoved(pageNode: TerminalManagerTreeTypes.PageNode): void {
         const panel = this.pageNodeToPanelMap.get(pageNode);
         if (panel) {
-            this.panel.dispose();
+            panel.dispose();
         }
     }
 
     protected handleTerminalAdded(terminalNode: TerminalManagerTreeTypes.TerminalNode): void {
         const activePanel = this.pageNodeToPanelMap.get(this.treeWidget.model.activePage);
         if (activePanel) {
-            activePanel.insertWidget(activePanel.widgets.length - 1, terminalNode.widget);
+            activePanel.addWidget(terminalNode.widget);
         }
     }
 
     protected handleTerminalRemoved(terminalNode: TerminalManagerTreeTypes.TerminalNode): void {
         const { widget } = terminalNode;
         widget.dispose();
-        console.log('SENTINEL TERMINAL WIDGET TO DELETE', terminalNode);
     }
 
     protected async updateViewPage(activePage: TerminalManagerTreeTypes.PageNode, panel?: SplitPanel): Promise<void> {
         const activePanel = panel ?? this.pageNodeToPanelMap.get(activePage);
         if (activePanel) {
-            this.layout.widgets.forEach(widget => this.layout.removeWidget(widget));
-            this.layout.addWidget(activePanel);
+            (this.terminalPanelWrapper.layout as PanelLayout).widgets.forEach(widget => this.terminalPanelWrapper.layout?.removeWidget(widget));
+            // this.layout.widgets.forEach(widget => this.layout.removeWidget(widget));
+
+            (this.terminalPanelWrapper.layout as PanelLayout).addWidget(activePanel);
             this.update();
         }
     }
@@ -149,6 +168,7 @@ export class TerminalManagerWidget extends BaseWidget {
     protected handleSelectionChange(activePage: TerminalManagerTreeTypes.PageNode, _activeTerminal: TerminalManagerTreeTypes.TerminalNode): void {
         if (activePage !== this.activePage) {
             this.activePage = activePage;
+            this.title.label = `Emux: ${this.activePage.label}`;
             this.updateViewPage(activePage);
         }
     }
@@ -167,6 +187,10 @@ export class TerminalManagerWidget extends BaseWidget {
 
     deletePage(pageNode: TerminalManagerTreeTypes.PageNode): void {
         this.treeWidget.model.deletePage(pageNode);
+    }
+
+    splitTerminalHorizontally(terminalNode: TerminalManagerTreeTypes.TerminalNode): void {
+        this.treeWidget.model.splitTerminalHorizontally(terminalNode);
     }
 
     toggleRenameTerminal(terminalNode: TerminalManagerTreeTypes.TreeNode): void {

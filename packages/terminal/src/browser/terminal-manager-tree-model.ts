@@ -102,7 +102,10 @@ export class TerminalManagerTreeModel extends TreeModelImpl {
         const widgetNode = this.createWidgetNode(widget);
         if (this.root && CompositeTreeNode.is(this.root)) {
             this.activeTerminal = widgetNode;
-            this.selectionService.addSelection(this.activeTerminal);
+            this.onTreeSelectionChangedEmitter.fire({ activePage: this.activePage, activeTerminal: this.activeTerminal });
+            setTimeout(() => {
+                this.selectionService.addSelection(this.activeTerminal);
+            });
             CompositeTreeNode.addChild(this.activePage, widgetNode);
             this.onTerminalAddedEmitter.fire(widgetNode);
             this.refresh();
@@ -112,9 +115,7 @@ export class TerminalManagerTreeModel extends TreeModelImpl {
     addPage(): TerminalManagerTreeTypes.PageNode | undefined {
         const pageNode = this.createPageNode();
         if (this.root && CompositeTreeNode.is(this.root)) {
-            // set this immediately and also set in event handler
             this.activePage = pageNode;
-            this.selectionService.addSelection(this.activePage);
             this.root = CompositeTreeNode.addChild(this.root, pageNode);
             this.onPageAddedEmitter.fire(pageNode);
             return pageNode;
@@ -169,8 +170,14 @@ export class TerminalManagerTreeModel extends TreeModelImpl {
         }
     }
 
+    splitTerminalHorizontally(terminalNode: TerminalManagerTreeTypes.TerminalNode): void {
+        if (TerminalManagerTreeTypes.isTerminalNode(terminalNode)) {
+            // const
+        }
+    }
+
     toggleRenameTerminal(node: TerminalManagerTreeTypes.TreeNode): void {
-        if (TerminalManagerTreeTypes.isTerminalNode(node)) {
+        if (TerminalManagerTreeTypes.isTerminalOrPageNode(node)) {
             node.isEditing = true;
             this.root = this.root;
         }

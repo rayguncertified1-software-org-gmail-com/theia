@@ -39,8 +39,6 @@ export class TerminalManagerTreeWidget extends TreeWidget {
     }
     protected onDidChangeEmitter = new Emitter();
     readonly onDidChange = this.onDidChangeEmitter.event;
-    protected onTreeSelectionChangedEmitter = new Emitter<TerminalManagerTreeTypes.SelectionChangedEvent>();
-    readonly onTreeSelectionChanged = this.onTreeSelectionChangedEmitter.event;
 
     @inject(TreeModel) override readonly model: TerminalManagerTreeModel;
 
@@ -49,7 +47,6 @@ export class TerminalManagerTreeWidget extends TreeWidget {
         super.init();
         this.addClass(TerminalManagerTreeWidget.ID);
         this.toDispose.push(this.onDidChangeEmitter);
-        this.toDispose.push(this.model.onTreeSelectionChanged(e => this.onTreeSelectionChangedEmitter.fire(e)));
     }
 
     protected override toContextMenuArgs(node: SelectableTreeNode): TerminalManagerTreeTypes.ContextMenuArgs | undefined {
