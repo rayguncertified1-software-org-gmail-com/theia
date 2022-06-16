@@ -32,7 +32,7 @@ import { TerminalManagerTreeWidget } from './terminal-manager-tree-widget';
 import { TerminalWidgetImpl } from './terminal-widget-impl';
 import { CommandService } from '@theia/core';
 import { TerminalManagerTreeTypes } from './terminal-manager-tree-model';
-import { TerminalCommands } from './terminal-frontend-contribution';
+import { TerminalCommands, TerminalManager } from './terminal-frontend-contribution';
 
 @injectable()
 export class TerminalManagerWidget extends BaseWidget {
@@ -182,15 +182,15 @@ export class TerminalManagerWidget extends BaseWidget {
     }
 
     deleteTerminal(terminalNode: TerminalManagerTreeTypes.TerminalNode): void {
-        this.treeWidget.model.deleteTerminal(terminalNode);
+        this.treeWidget.model.deleteTerminalNode(terminalNode);
     }
 
     deletePage(pageNode: TerminalManagerTreeTypes.PageNode): void {
-        this.treeWidget.model.deletePage(pageNode);
+        this.treeWidget.model.deletePageNode(pageNode);
     }
 
-    splitTerminalHorizontally(terminalNode: TerminalManagerTreeTypes.TerminalNode): void {
-        this.treeWidget.model.splitTerminalHorizontally(terminalNode);
+    splitWidget(terminalWidget: TerminalWidget, parentId: TerminalManager.TerminalID): void {
+        console.log('SENTINEL TERMINAL WIDGET', terminalWidget, parentId);
     }
 
     toggleRenameTerminal(terminalNode: TerminalManagerTreeTypes.TreeNode): void {

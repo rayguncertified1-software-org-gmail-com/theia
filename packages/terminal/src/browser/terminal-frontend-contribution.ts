@@ -55,7 +55,6 @@ import { nls } from '@theia/core/lib/common/nls';
 import { TerminalPreferences } from './terminal-preferences';
 import { TerminalManagerWidget } from './terminal-manager-widget';
 import { TerminalManagerTreeTypes } from './terminal-manager-tree-model';
-import { Terminal } from 'xterm';
 
 export namespace TerminalMenus {
     export const TERMINAL = [...MAIN_MENU_BAR, '7_terminal'];
@@ -179,8 +178,10 @@ export namespace TerminalCommands {
 }
 
 export namespace TerminalManager {
-    export type Area = ApplicationShell.Area | 'terminal-manager-current' | 'terminal-manager-new-page';
-    export const isTerminalManagerArea = (obj: unknown): obj is Area => typeof obj === 'string' && (obj === 'terminal-manager-current' || obj === 'terminal-manager-new-page');
+    export type TerminalID = `terminal-${number}`;
+    export const isTerminalID = (obj: unknown): obj is TerminalID => typeof obj === 'string' && obj.startsWith('terminal-');
+    export type Area = ApplicationShell.Area | 'terminal-manager-current' | 'terminal-manager-new-page' | TerminalID;
+    export const isTerminalManagerArea = (obj: unknown): obj is Area => typeof obj === 'string' && obj.startsWith('terminal');
     export type ExtendedWidgetOptions = Omit<ApplicationShell.WidgetOptions, 'area'> & { area?: Area };
     export type ExtendedWidgetOpenerOptions = Omit<WidgetOpenerOptions, 'widgetOptions'> & { widgetOptions?: ExtendedWidgetOptions };
 }
@@ -418,8 +419,13 @@ export class TerminalFrontendContribution extends AbstractViewContribution<Termi
             isVisible: (...args: TerminalManagerTreeTypes.ContextMenuArgs) => args[0] === 'terminal-manager-tree',
         });
         commands.registerCommand(TerminalCommands.MANAGER_SPLIT_TERMINAL_HORIZONTAL, {
-            execute: (...args: TerminalManagerTreeTypes.ContextMenuArgs) => TerminalManagerTreeTypes.isTerminalNode(args[1] && this.splitTerminalHorizontallyManager(args[1])),
-            isVisible: (...args: TerminalManagerTreeTypes.ContextMenuArgs) => args[0] === 'terminal-manager-tree',
+            execute: (...args: TerminalManagerTreeTypes.ContextMenuArgs) => {
+                const { id } = args[1];
+                if (TerminalManager.isTerminalID(id)) {
+                    this.openTerminal({ area: id });
+                }
+            },
+            isVisible: (...args: TerminalManagerTreeTypes.ContextMenuArgs) => args[0] === 'terminal-manager-tree' && TerminalManagerTreeTypes.isTerminalNode(args[1]),
         });
         commands.registerCommand(TerminalCommands.NEW_ACTIVE_WORKSPACE, {
             execute: () => this.openActiveWorkspaceTerminal()
@@ -511,10 +517,6 @@ export class TerminalFrontendContribution extends AbstractViewContribution<Termi
         const terminalManagerWidget = await this.widget;
         terminalManagerWidget.deletePage(pageNode);
     }
-    protected splitTerminalHorizontallyManager(terminalNode: TerminalManagerTreeTypes.TerminalNode): Promise<void> {
-        const terminalManagerWidget = await this.widget;
-        terminalManagerWidget.splitTerminalHorizontally(terminalNode);
-    }
 
     protected async toggleRenameTerminalFromManager(terminalNode: TerminalManagerTreeTypes.TreeNode): Promise<void> {
         const terminalManagerWidget = await this.widget;
@@ -561,16 +563,20 @@ export class TerminalFrontendContribution extends AbstractViewContribution<Termi
         });
 
         menus.registerMenuAction(TerminalMenus.TERMINAL_MANAGER_TREE_CONTEXT_MENU, {
-            commandId: TerminalCommands.MANAGER_RENAME_TERMINAL.id,
+            commandId: TerminalCommands.MANAGER_SPLIT_TERMINAL_HORIZONTAL.id,
             order: 'a',
         });
         menus.registerMenuAction(TerminalMenus.TERMINAL_MANAGER_TREE_CONTEXT_MENU, {
-            commandId: TerminalCommands.MANAGER_DELETE_TERMINAL.id,
+            commandId: TerminalCommands.MANAGER_RENAME_TERMINAL.id,
             order: 'b',
         });
         menus.registerMenuAction(TerminalMenus.TERMINAL_MANAGER_TREE_CONTEXT_MENU, {
+            commandId: TerminalCommands.MANAGER_DELETE_TERMINAL.id,
+            order: 'c',
+        });
+        menus.registerMenuAction(TerminalMenus.TERMINAL_MANAGER_TREE_CONTEXT_MENU, {
             commandId: TerminalCommands.MANAGER_DELETE_PAGE.id,
-            order: 'b',
+            order: 'c',
         });
     }
 
@@ -756,8 +762,8 @@ export class TerminalFrontendContribution extends AbstractViewContribution<Termi
                 } else if (area === 'terminal-manager-new-page') {
                     terminalManagerWidget.addTerminalPage();
                     terminalManagerWidget.addWidget(widget);
-                    // const pageNode = terminalManagerWidget.addTerminalPage();
-                    // terminalManagerWidget.addWidget(widget, pageNode);
+                } else if (TerminalManager.isTerminalID(area)) {
+                    terminalManagerWidget.splitWidget(widget, area);
                 }
             }
             // this.shell.activateWidget(widget.id);

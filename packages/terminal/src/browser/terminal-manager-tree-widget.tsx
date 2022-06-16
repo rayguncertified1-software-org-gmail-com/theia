@@ -106,7 +106,7 @@ export class TerminalManagerTreeWidget extends TreeWidget {
     }
 
     deleteTerminal(node: TerminalManagerTreeTypes.TerminalNode): void {
-        this.model.deleteTerminal(node);
+        this.model.deleteTerminalNode(node);
     }
 
     toggleRenameTerminal(node: TerminalManagerTreeTypes.TreeNode): void {
