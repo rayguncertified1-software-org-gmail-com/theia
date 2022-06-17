@@ -224,7 +224,7 @@ export class TerminalManagerWidget extends BaseWidget {
         console.log('SENTINEL TERMINAL WIDGET', terminalWidget, parentId);
     }
 
-    toggleRenameTerminal(terminalNode: TerminalManagerTreeTypes.TreeNode): void {
-        this.treeWidget.toggleRenameTerminal(terminalNode);
+    toggleRenameTerminal(node: TerminalManagerTreeTypes.TerminalManagerTreeNode): void {
+        this.treeWidget.toggleRenameTerminal(node);
     }
 }

@@ -170,6 +170,7 @@ export namespace TerminalCommands {
         id: 'terminal:delete-page',
         category: TERMINAL_CATEGORY,
         label: 'Delete Page',
+        iconClass: codicon('trash'),
     });
 
     export const MANAGER_SPLIT_TERMINAL_HORIZONTAL = Command.toDefaultLocalizedCommand({
@@ -526,7 +527,7 @@ export class TerminalFrontendContribution extends AbstractViewContribution<Termi
         terminalManagerWidget.deletePage(pageNode);
     }
 
-    protected async toggleRenameTerminalFromManager(terminalNode: TerminalManagerTreeTypes.TreeNode): Promise<void> {
+    protected async toggleRenameTerminalFromManager(terminalNode: TerminalManagerTreeTypes.TerminalManagerTreeNode): Promise<void> {
         const terminalManagerWidget = await this.widget;
         terminalManagerWidget.toggleRenameTerminal(terminalNode);
     }
@@ -589,6 +590,11 @@ export class TerminalFrontendContribution extends AbstractViewContribution<Termi
         menus.registerMenuAction(TerminalMenus.TERMINAL_MANAGER_TREE_CONTEXT_MENU, {
             commandId: TerminalCommands.MANAGER_DELETE_GROUP.id,
             order: 'c',
+        });
+
+        menus.registerMenuAction(TerminalManagerTreeTypes.PAGE_NODE_MENU, {
+            commandId: TerminalCommands.MANAGER_DELETE_PAGE.id,
+            order: 'c'
         });
     }
 

@@ -14,6 +14,7 @@
 // SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
 // *****************************************************************************
 
+import { MenuPath } from '@theia/core';
 import { ApplicationShell, WidgetOpenerOptions, SelectableTreeNode, CompositeTreeNode, SplitPanel } from '@theia/core/lib/browser';
 import { TerminalWidget } from './base/terminal-widget';
 
@@ -47,17 +48,25 @@ export namespace TerminalManagerTreeTypes {
         panel: SplitPanel | undefined;
     }
 
-    export type TreeNode = PageNode | TerminalNode | TerminalGroupNode;
+    export type TerminalManagerTreeNode = PageNode | TerminalNode | TerminalGroupNode;
     export const isPageNode = (obj: unknown): obj is PageNode => !!obj && typeof obj === 'object' && 'page' in obj;
     export const isTerminalNode = (obj: unknown): obj is TerminalNode => !!obj && typeof obj === 'object' && 'terminal' in obj;
     export const isTerminalGroupNode = (obj: unknown): obj is TerminalGroupNode => !!obj && typeof obj === 'object' && 'terminalGroup' in obj;
-    export const isTerminalOrPageNode = (obj: unknown): obj is (PageNode | TerminalNode) => isPageNode(obj) || isTerminalNode(obj);
+    export const isTerminalManagerTreeNode = (obj: unknown): obj is (PageNode | TerminalNode) => isPageNode(obj) || isTerminalNode(obj) || isTerminalGroupNode(obj);
     export interface SelectionChangedEvent {
         activePage: PageNode;
         activeTerminal: TerminalNode;
     }
 
     export const TerminalContextMenuID = 'terminal-manager-tree';
-    export type ContextMenuArgs = [typeof TerminalContextMenuID, TreeNode];
-    export const toContextMenuArgs = (node: TreeNode): ContextMenuArgs => ([TerminalContextMenuID, node]);
+    export type ContextMenuArgs = [typeof TerminalContextMenuID, TerminalManagerTreeNode];
+    export const toContextMenuArgs = (node: TerminalManagerTreeNode): ContextMenuArgs => ([TerminalContextMenuID, node]);
+
+    export const PAGE_NODE_MENU: MenuPath = ['terminal-manager-page-node'];
+
+    export interface InlineActionProps {
+        commandId: string;
+        iconClass: string;
+        tooltip: string;
+    }
 }

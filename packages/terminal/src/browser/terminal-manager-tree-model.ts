@@ -204,8 +204,8 @@ export class TerminalManagerTreeModel extends TreeModelImpl {
         }
     }
 
-    toggleRenameTerminal(node: TerminalManagerTreeTypes.TreeNode): void {
-        if (TerminalManagerTreeTypes.isTerminalOrPageNode(node)) {
+    toggleRenameTerminal(node: TerminalManagerTreeTypes.TerminalManagerTreeNode): void {
+        if (TerminalManagerTreeTypes.isTerminalManagerTreeNode(node)) {
             node.isEditing = true;
             this.root = this.root;
         }
@@ -213,8 +213,9 @@ export class TerminalManagerTreeModel extends TreeModelImpl {
 
     acceptRename(nodeId: string, newName: string): void {
         const node = this.getNode(nodeId);
-        if (TerminalManagerTreeTypes.isTerminalOrPageNode(node)) {
-            node.label = newName.trim();
+        if (TerminalManagerTreeTypes.isTerminalManagerTreeNode(node)) {
+            const trimmedName = newName.trim();
+            node.label = trimmedName === '' ? node.label : newName;
             node.isEditing = false;
             this.root = this.root;
         }

@@ -18,7 +18,7 @@ import * as React from '@theia/core/shared/react';
 import { Container, inject, injectable, interfaces, postConstruct } from '@theia/core/shared/inversify';
 import { codicon, createTreeContainer, Message, NodeProps, SelectableTreeNode, TreeModel, TreeNode, TreeWidget } from '@theia/core/lib/browser';
 import { TerminalManagerTreeModel } from './terminal-manager-tree-model';
-import { Emitter } from '@theia/core';
+import { CommandRegistry, CompositeMenuNode, Emitter, MenuModelRegistry } from '@theia/core';
 import { TerminalMenus } from './terminal-frontend-contribution';
 import { TerminalManagerTreeTypes } from './terminal-manager-types';
 // import { TerminalMenus } from './terminal-frontend-contribution';
@@ -42,6 +42,8 @@ export class TerminalManagerTreeWidget extends TreeWidget {
     readonly onDidChange = this.onDidChangeEmitter.event;
 
     @inject(TreeModel) override readonly model: TerminalManagerTreeModel;
+    @inject(MenuModelRegistry) protected menuRegistry: MenuModelRegistry;
+    @inject(CommandRegistry) protected commandRegistry: CommandRegistry;
 
     @postConstruct()
     protected override init(): void {
@@ -57,7 +59,7 @@ export class TerminalManagerTreeWidget extends TreeWidget {
     }
 
     protected override renderCaption(node: TreeNode, props: NodeProps): React.ReactNode {
-        if (TerminalManagerTreeTypes.isTerminalOrPageNode(node) && !!node.isEditing) {
+        if (TerminalManagerTreeTypes.isTerminalManagerTreeNode(node) && !!node.isEditing) {
             return (
                 <input
                     type='text'
@@ -77,7 +79,8 @@ export class TerminalManagerTreeWidget extends TreeWidget {
     protected doHandleRenameOnBlur(e: React.FocusEvent<HTMLInputElement>): void {
         const { value } = e.currentTarget;
         const id = e.currentTarget.getAttribute('data-id');
-        if (value && id) {
+        // eslint-disable-next-line no-null/no-null
+        if (id) {
             this.model.acceptRename(id, value);
         }
     }
@@ -85,6 +88,11 @@ export class TerminalManagerTreeWidget extends TreeWidget {
     protected handleRenameOnKeyDown = (e: React.KeyboardEvent<HTMLInputElement>): void => this.doHandleRenameOnKeyDown(e);
     protected doHandleRenameOnKeyDown(e: React.KeyboardEvent<HTMLInputElement>): void {
         // TODO escape and enter might not be handled well
+        if (e.key === 'Escape') {
+            e.preventDefault();
+            e.stopPropagation();
+            return;
+        }
         if (e.key === 'Enter' || e.key === 'Tab') {
             const { value } = e.currentTarget;
             const id = e.currentTarget.getAttribute('data-id');
@@ -92,6 +100,56 @@ export class TerminalManagerTreeWidget extends TreeWidget {
                 this.model.acceptRename(id, value);
             }
         }
+    }
+
+    protected override renderTailDecorations(node: TreeNode, _props: NodeProps): React.ReactNode {
+        if (TerminalManagerTreeTypes.isTerminalManagerTreeNode(node)) {
+            const inlineActionsForNode = this.resolveInlineActionForNode(node);
+            return (
+                <div className='terminal-manager-inline-actions-container'>
+                    <div className='terminal-manager-inline-actions'>
+                        {inlineActionsForNode.map(({ iconClass, commandId }) => (
+                            <span
+                                data-command-id={commandId}
+                                data-node-id={node.id}
+                                className={iconClass}
+                                onClick={this.handleActionItemOnClick}
+                            />
+                        ))}
+                    </div>
+                </div>
+            );
+        }
+    }
+
+    protected handleActionItemOnClick = (e: React.MouseEvent<HTMLSpanElement>): void => this.doHandleActionItemOnClick(e);
+    protected doHandleActionItemOnClick(e: React.MouseEvent<HTMLSpanElement>): void {
+        const commandId = e.currentTarget.getAttribute('data-command-id');
+        const nodeId = e.currentTarget.getAttribute('data-node-id');
+        if (commandId && nodeId) {
+            const node = this.model.getNode(nodeId);
+            if (TerminalManagerTreeTypes.isTerminalManagerTreeNode(node)) {
+                const args = TerminalManagerTreeTypes.toContextMenuArgs(node);
+                this.commandRegistry.executeCommand(commandId, ...args);
+            }
+        }
+    }
+
+    protected resolveInlineActionForNode(node: TerminalManagerTreeTypes.TerminalManagerTreeNode): TerminalManagerTreeTypes.InlineActionProps[] {
+        let menuNode: CompositeMenuNode;
+        const inlineActionProps: TerminalManagerTreeTypes.InlineActionProps[] = [];
+        if (TerminalManagerTreeTypes.isPageNode(node)) {
+            menuNode = this.menuRegistry.getMenu(TerminalManagerTreeTypes.PAGE_NODE_MENU);
+            const menuItems = menuNode.children;
+            menuItems.forEach(item => {
+                const commandId = item.id;
+                const command = this.commandRegistry.getCommand(commandId);
+                const iconClass = command?.iconClass ? command.iconClass : '';
+                const tooltip = command?.label ? command.label : '';
+                inlineActionProps.push({ iconClass, tooltip, commandId });
+            });
+        }
+        return inlineActionProps;
     }
 
     protected override renderIcon(node: TreeNode, props: NodeProps): React.ReactNode {
@@ -112,11 +170,11 @@ export class TerminalManagerTreeWidget extends TreeWidget {
         this.model.deleteTerminalNode(node);
     }
 
-    toggleRenameTerminal(node: TerminalManagerTreeTypes.TreeNode): void {
+    toggleRenameTerminal(node: TerminalManagerTreeTypes.TerminalManagerTreeNode): void {
         this.model.toggleRenameTerminal(node);
     }
 
-    protected override toNodeName(node: TerminalManagerTreeTypes.TreeNode): string {
+    protected override toNodeName(node: TerminalManagerTreeTypes.TerminalManagerTreeNode): string {
         return node.label ?? 'node.id';
     }
 

@@ -50,6 +50,19 @@
   width: 100%;
 }
 
+.terminal-manager-tree-widget .theia-CompositeTreeNode .terminal-manager-inline-actions-container {
+  visibility: hidden;
+}
+
+.terminal-manager-tree-widget .theia-CompositeTreeNode:hover .terminal-manager-inline-actions-container {
+  visibility: unset;
+}
+
 .terminal-manager-tree-widget .codicon {
   margin-right: 3px;
+}
+
+.terminal-manager-inline-actions {
+  display: flex;
+  align-items: center;
 }
