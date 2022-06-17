@@ -162,6 +162,7 @@ export namespace TerminalCommands {
         id: 'terminal: rename-terminal',
         category: TERMINAL_CATEGORY,
         label: 'Rename...',
+        iconClass: codicon('edit'),
     });
     export const MANAGER_NEW_PAGE_TOOLBAR = Command.toDefaultLocalizedCommand({
         id: 'terminal:new-manager-page',
