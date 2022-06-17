@@ -211,6 +211,10 @@ export class TerminalManagerWidget extends BaseWidget {
         this.treeWidget.model.deleteTerminalNode(terminalNode);
     }
 
+    deleteGroup(groupNode: TerminalManagerTreeTypes.TerminalGroupNode): void {
+        this.treeWidget.model.deleteGroupNode(groupNode);
+    }
+
     deletePage(pageNode: TerminalManagerTreeTypes.PageNode): void {
         this.treeWidget.model.deletePageNode(pageNode);
     }

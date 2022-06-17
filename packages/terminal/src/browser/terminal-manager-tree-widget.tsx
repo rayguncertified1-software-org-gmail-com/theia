@@ -51,7 +51,7 @@ export class TerminalManagerTreeWidget extends TreeWidget {
     }
 
     protected override toContextMenuArgs(node: SelectableTreeNode): TerminalManagerTreeTypes.ContextMenuArgs | undefined {
-        if (TerminalManagerTreeTypes.isPageNode(node) || TerminalManagerTreeTypes.isTerminalNode(node)) {
+        if (TerminalManagerTreeTypes.isPageNode(node) || TerminalManagerTreeTypes.isTerminalNode(node) || TerminalManagerTreeTypes.isTerminalGroupNode(node)) {
             return TerminalManagerTreeTypes.toContextMenuArgs(node);
         }
     }

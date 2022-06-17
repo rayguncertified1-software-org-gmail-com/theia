@@ -150,11 +150,6 @@ export namespace TerminalCommands {
         category: TERMINAL_CATEGORY,
         label: 'Create New Terminal in Manager',
     });
-    export const MANAGER_NEW_PAGE_TOOLBAR = Command.toDefaultLocalizedCommand({
-        id: 'terminal:new-manager-page',
-        category: TERMINAL_CATEGORY,
-        label: 'Create New Terminal Page',
-    });
     export const MANAGER_DELETE_TERMINAL = Command.toDefaultLocalizedCommand({
         id: 'terminal:delete-terminal',
         category: TERMINAL_CATEGORY,
@@ -165,16 +160,28 @@ export namespace TerminalCommands {
         category: TERMINAL_CATEGORY,
         label: 'Rename...',
     });
+
+    export const MANAGER_NEW_PAGE_TOOLBAR = Command.toDefaultLocalizedCommand({
+        id: 'terminal:new-manager-page',
+        category: TERMINAL_CATEGORY,
+        label: 'Create New Terminal Page',
+    });
     export const MANAGER_DELETE_PAGE = Command.toDefaultLocalizedCommand({
         id: 'terminal:delete-page',
         category: TERMINAL_CATEGORY,
         label: 'Delete Page',
     });
+
     export const MANAGER_SPLIT_TERMINAL_HORIZONTAL = Command.toDefaultLocalizedCommand({
         id: 'terminal:manager-split-horizontal',
         category: TERMINAL_CATEGORY,
         label: 'Split Active Terminal Vertically',
         iconClass: codicon('split-vertical'),
+    });
+    export const MANAGER_DELETE_GROUP = Command.toDefaultLocalizedCommand({
+        id: 'terminal:manager-delete-group',
+        category: TERMINAL_CATEGORY,
+        label: 'Delete Group...',
     });
 }
 
@@ -419,6 +426,10 @@ export class TerminalFrontendContribution extends AbstractViewContribution<Termi
             },
             isVisible: (...args: TerminalManagerTreeTypes.ContextMenuArgs) => args[0] === 'terminal-manager-tree' && TerminalManagerTreeTypes.isTerminalNode(args[1]),
         });
+        commands.registerCommand(TerminalCommands.MANAGER_DELETE_GROUP, {
+            execute: (...args: TerminalManagerTreeTypes.ContextMenuArgs) => TerminalManagerTreeTypes.isTerminalGroupNode(args[1]) && this.deleteGroupFromManager(args[1]),
+            isVisible: (...args: TerminalManagerTreeTypes.ContextMenuArgs) => 'terminal-manager-tree' && TerminalManagerTreeTypes.isTerminalGroupNode(args[1]),
+        });
         commands.registerCommand(TerminalCommands.NEW_ACTIVE_WORKSPACE, {
             execute: () => this.openActiveWorkspaceTerminal()
         });
@@ -505,6 +516,11 @@ export class TerminalFrontendContribution extends AbstractViewContribution<Termi
         terminalManagerWidget.deleteTerminal(terminalNode);
     }
 
+    protected async deleteGroupFromManager(groupNode: TerminalManagerTreeTypes.TerminalGroupNode): Promise<void> {
+        const terminalManagerWidget = await this.widget;
+        terminalManagerWidget.deleteGroup(groupNode);
+    }
+
     protected async deletePageFromManager(pageNode: TerminalManagerTreeTypes.PageNode): Promise<void> {
         const terminalManagerWidget = await this.widget;
         terminalManagerWidget.deletePage(pageNode);
@@ -568,6 +584,10 @@ export class TerminalFrontendContribution extends AbstractViewContribution<Termi
         });
         menus.registerMenuAction(TerminalMenus.TERMINAL_MANAGER_TREE_CONTEXT_MENU, {
             commandId: TerminalCommands.MANAGER_DELETE_PAGE.id,
+            order: 'c',
+        });
+        menus.registerMenuAction(TerminalMenus.TERMINAL_MANAGER_TREE_CONTEXT_MENU, {
+            commandId: TerminalCommands.MANAGER_DELETE_GROUP.id,
             order: 'c',
         });
     }

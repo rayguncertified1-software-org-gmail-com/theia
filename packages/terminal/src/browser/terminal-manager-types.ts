@@ -47,7 +47,7 @@ export namespace TerminalManagerTreeTypes {
         panel: SplitPanel | undefined;
     }
 
-    export type TreeNode = PageNode | TerminalNode;
+    export type TreeNode = PageNode | TerminalNode | TerminalGroupNode;
     export const isPageNode = (obj: unknown): obj is PageNode => !!obj && typeof obj === 'object' && 'page' in obj;
     export const isTerminalNode = (obj: unknown): obj is TerminalNode => !!obj && typeof obj === 'object' && 'terminal' in obj;
     export const isTerminalGroupNode = (obj: unknown): obj is TerminalGroupNode => !!obj && typeof obj === 'object' && 'terminalGroup' in obj;
