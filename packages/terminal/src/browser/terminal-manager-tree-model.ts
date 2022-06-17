@@ -169,6 +169,8 @@ export class TerminalManagerTreeModel extends TreeModelImpl {
             const child = pageNode.children[0];
             if (TerminalManagerTreeTypes.isTerminalNode(child)) {
                 this.deleteTerminalNode(child);
+            } if (TerminalManagerTreeTypes.isTerminalGroupNode(child)) {
+                this.deleteGroupNode(child);
             }
         }
         if (this.root && CompositeTreeNode.is(this.root)) {
