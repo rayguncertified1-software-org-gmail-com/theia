@@ -57,6 +57,7 @@
 }
 
 
+.p-DockPanel-widget[data-orientation='vertical']>.p-SplitPanel-handle::after,
 .p-SplitPanel[data-orientation='vertical']>.p-SplitPanel-handle::after {
     min-height: var(--theia-sash-width);
 }

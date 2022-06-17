@@ -28,14 +28,14 @@ export namespace TerminalManager {
 export namespace TerminalManagerTreeTypes {
     export interface TerminalNode extends SelectableTreeNode, CompositeTreeNode {
         terminal: true;
-        widget: TerminalWidget;
+        widget: SplitPanel | TerminalWidget;
         isEditing: boolean;
         label: string;
     };
 
     export interface TerminalGroupNode extends SelectableTreeNode, CompositeTreeNode {
         terminalGroup: true;
-        widgets: TerminalWidget[];
+        widget: SplitPanel;
         isEditing: boolean;
         label: string;
     };

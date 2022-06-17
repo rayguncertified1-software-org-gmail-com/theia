@@ -15,7 +15,7 @@
 // *****************************************************************************
 
 import { injectable, postConstruct } from '@theia/core/shared/inversify';
-import { TreeModelImpl, CompositeTreeNode, SelectableTreeNode } from '@theia/core/lib/browser';
+import { TreeModelImpl, CompositeTreeNode, SelectableTreeNode, SplitPanel } from '@theia/core/lib/browser';
 import { TerminalWidget } from './base/terminal-widget';
 import { Emitter } from '@theia/core';
 import { TerminalManager, TerminalManagerTreeTypes } from './terminal-manager-types';
@@ -37,11 +37,11 @@ export class TerminalManagerTreeModel extends TreeModelImpl {
     protected onPageRemovedEmitter = new Emitter<TerminalManagerTreeTypes.PageNode>();
     readonly onPageRemoved = this.onPageRemovedEmitter.event;
 
-    protected onTerminalAddedEmitter = new Emitter<TerminalManagerTreeTypes.TerminalNode>();
-    readonly onTerminalAdded = this.onTerminalAddedEmitter.event;
+    protected onTerminalColumnAddedEmitter = new Emitter<TerminalManagerTreeTypes.TerminalNode>();
+    readonly onTerminalColumnAdded = this.onTerminalColumnAddedEmitter.event;
     protected onTerminalRemovedEmitter = new Emitter<TerminalManagerTreeTypes.TerminalNode>();
     readonly onTerminalRemoved = this.onTerminalRemovedEmitter.event;
-    protected onTerminalSplitEmitter = new Emitter<TerminalManagerTreeTypes.TerminalGroupNode>();
+    protected onTerminalSplitEmitter = new Emitter<{ groupNode: TerminalManagerTreeTypes.TerminalGroupNode, terminalWidget: TerminalWidget }>();
     readonly onTerminalSplit = this.onTerminalSplitEmitter.event;
 
     @postConstruct()
@@ -75,7 +75,7 @@ export class TerminalManagerTreeModel extends TreeModelImpl {
         this.onTreeSelectionChangedEmitter.fire({ activePage: this.activePage, activeTerminal: this.activeTerminal });
     }
 
-    addWidget(widget: TerminalWidget, parent?: TerminalManagerTreeTypes.PageNode | TerminalManagerTreeTypes.TerminalGroupNode): void {
+    addWidget(widget: SplitPanel | TerminalWidget, parent?: TerminalManagerTreeTypes.PageNode | TerminalManagerTreeTypes.TerminalGroupNode): void {
         const widgetNode = this.createWidgetNode(widget);
         this.activeTerminal = widgetNode;
         this.onTreeSelectionChangedEmitter.fire({ activePage: this.activePage, activeTerminal: this.activeTerminal });
@@ -83,8 +83,10 @@ export class TerminalManagerTreeModel extends TreeModelImpl {
             this.selectionService.addSelection(this.activeTerminal);
         });
         CompositeTreeNode.addChild(parent ?? this.activePage, widgetNode);
-        this.onTerminalAddedEmitter.fire(widgetNode);
-        this.refresh();
+        if (widget instanceof SplitPanel) {
+            this.onTerminalColumnAddedEmitter.fire(widgetNode);
+            this.refresh();
+        }
     }
 
     addPage(): TerminalManagerTreeTypes.PageNode | undefined {
@@ -112,21 +114,21 @@ export class TerminalManagerTreeModel extends TreeModelImpl {
         };
     }
 
-    protected createGroupNode(): TerminalManagerTreeTypes.TerminalGroupNode {
+    protected createGroupNode(widget: SplitPanel): TerminalManagerTreeTypes.TerminalGroupNode {
         const defaultGroupName = `group-${this.groupNum++}`;
         return {
             id: defaultGroupName,
             label: defaultGroupName,
             parent: undefined,
             selected: false,
-            widgets: [],
+            widget,
             children: [],
             terminalGroup: true,
             isEditing: false,
         };
     }
 
-    protected createWidgetNode(widget: TerminalWidget): TerminalManagerTreeTypes.TerminalNode {
+    protected createWidgetNode(widget: SplitPanel | TerminalWidget): TerminalManagerTreeTypes.TerminalNode {
         return {
             id: `${widget.id}`,
             label: `${widget.id}`,
@@ -175,16 +177,17 @@ export class TerminalManagerTreeModel extends TreeModelImpl {
     }
 
     splitTerminalHorizontally(terminalWidget: TerminalWidget, parentId: TerminalManager.TerminalID): void {
-        const parentTerminal = this.getNode(parentId);
-        if (TerminalManagerTreeTypes.isTerminalNode(parentTerminal)) {
-            const page = parentTerminal.parent;
-            if (TerminalManagerTreeTypes.isPageNode(page)) {
-                CompositeTreeNode.removeChild(page, parentTerminal);
-                const newGroupNode = this.createGroupNode();
+        const parentTerminalColumn = this.getNode(parentId);
+        if (TerminalManagerTreeTypes.isTerminalNode(parentTerminalColumn)) {
+            const page = parentTerminalColumn.parent;
+            if (TerminalManagerTreeTypes.isPageNode(page) && parentTerminalColumn.widget instanceof SplitPanel) {
+                CompositeTreeNode.removeChild(page, parentTerminalColumn);
+                const newGroupNode = this.createGroupNode(parentTerminalColumn.widget);
                 CompositeTreeNode.addChild(page, newGroupNode);
-                CompositeTreeNode.addChild(newGroupNode, parentTerminal);
+                CompositeTreeNode.addChild(newGroupNode, parentTerminalColumn);
                 this.addWidget(terminalWidget, newGroupNode);
-                this.onTerminalSplitEmitter.fire(newGroupNode);
+                this.onTerminalSplitEmitter.fire({ groupNode: newGroupNode, terminalWidget });
+                this.refresh();
             }
         }
     }
