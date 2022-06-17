@@ -63,6 +63,8 @@ export namespace TerminalManagerTreeTypes {
     export const toContextMenuArgs = (node: TerminalManagerTreeNode): ContextMenuArgs => ([TerminalContextMenuID, node]);
 
     export const PAGE_NODE_MENU: MenuPath = ['terminal-manager-page-node'];
+    export const GROUP_NODE_MENU: MenuPath = ['terminal-manager-group-node'];
+    export const TERMINAL_NODE_MENU: MenuPath = ['terminal-manager-terminal-node'];
 
     export interface InlineActionProps {
         commandId: string;

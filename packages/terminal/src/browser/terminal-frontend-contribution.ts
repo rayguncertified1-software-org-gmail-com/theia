@@ -144,23 +144,25 @@ export namespace TerminalCommands {
         id: 'terminal:new-in-manager',
         category: TERMINAL_CATEGORY,
         label: 'Create New Terminal in Manager',
+        iconClass: codicon('add'),
     });
     export const MANAGER_NEW_TERMINAL_TOOLBAR = Command.toDefaultLocalizedCommand({
         id: 'terminal:new-in-manager',
         category: TERMINAL_CATEGORY,
         label: 'Create New Terminal in Manager',
+        iconClass: codicon('add'),
     });
     export const MANAGER_DELETE_TERMINAL = Command.toDefaultLocalizedCommand({
         id: 'terminal:delete-terminal',
         category: TERMINAL_CATEGORY,
         label: 'Delete Terminal',
+        iconClass: codicon('trash'),
     });
     export const MANAGER_RENAME_TERMINAL = Command.toDefaultLocalizedCommand({
         id: 'terminal: rename-terminal',
         category: TERMINAL_CATEGORY,
         label: 'Rename...',
     });
-
     export const MANAGER_NEW_PAGE_TOOLBAR = Command.toDefaultLocalizedCommand({
         id: 'terminal:new-manager-page',
         category: TERMINAL_CATEGORY,
@@ -172,7 +174,6 @@ export namespace TerminalCommands {
         label: 'Delete Page',
         iconClass: codicon('trash'),
     });
-
     export const MANAGER_SPLIT_TERMINAL_HORIZONTAL = Command.toDefaultLocalizedCommand({
         id: 'terminal:manager-split-horizontal',
         category: TERMINAL_CATEGORY,
@@ -183,6 +184,7 @@ export namespace TerminalCommands {
         id: 'terminal:manager-delete-group',
         category: TERMINAL_CATEGORY,
         label: 'Delete Group...',
+        iconClass: codicon('trash'),
     });
 }
 
@@ -397,7 +399,10 @@ export class TerminalFrontendContribution extends AbstractViewContribution<Termi
         });
         commands.registerCommand(TerminalCommands.MANAGER_NEW_TERMINAL_TOOLBAR, {
             execute: () => this.openTerminal({ area: 'terminal-manager-current' }),
-            isVisible: widget => widget instanceof TerminalManagerWidget,
+            isVisible: (
+                widgetOrID: Widget | string,
+                node?: TerminalManagerTreeTypes.TerminalManagerTreeNode,
+            ) => widgetOrID instanceof TerminalManagerWidget || (widgetOrID === 'terminal-manager-tree' && TerminalManagerTreeTypes.isPageNode(node)),
         });
         commands.registerCommand(TerminalCommands.MANAGER_NEW_TERMINAL, {
             execute: () => this.openTerminal({ area: 'terminal-manager-current' }),
@@ -570,7 +575,6 @@ export class TerminalFrontendContribution extends AbstractViewContribution<Termi
             commandId: TerminalCommands.TERMINAL_CONTEXT.id,
             order: 'z'
         });
-
         menus.registerMenuAction(TerminalMenus.TERMINAL_MANAGER_TREE_CONTEXT_MENU, {
             commandId: TerminalCommands.MANAGER_SPLIT_TERMINAL_HORIZONTAL.id,
             order: 'a',
@@ -593,8 +597,25 @@ export class TerminalFrontendContribution extends AbstractViewContribution<Termi
         });
 
         menus.registerMenuAction(TerminalManagerTreeTypes.PAGE_NODE_MENU, {
+            commandId: TerminalCommands.MANAGER_NEW_TERMINAL_TOOLBAR.id,
+            order: 'a',
+        });
+        menus.registerMenuAction(TerminalManagerTreeTypes.PAGE_NODE_MENU, {
             commandId: TerminalCommands.MANAGER_DELETE_PAGE.id,
             order: 'c'
+        });
+
+        menus.registerMenuAction(TerminalManagerTreeTypes.TERMINAL_NODE_MENU, {
+            commandId: TerminalCommands.MANAGER_DELETE_TERMINAL.id,
+            order: 'c'
+        });
+        menus.registerMenuAction(TerminalManagerTreeTypes.TERMINAL_NODE_MENU, {
+            commandId: TerminalCommands.MANAGER_SPLIT_TERMINAL_HORIZONTAL.id,
+            order: 'b'
+        });
+        menus.registerMenuAction(TerminalManagerTreeTypes.GROUP_NODE_MENU, {
+            commandId: TerminalCommands.MANAGER_DELETE_GROUP.id,
+            order: 'c',
         });
     }
 

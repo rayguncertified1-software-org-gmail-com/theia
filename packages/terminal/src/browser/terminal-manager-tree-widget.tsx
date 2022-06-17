@@ -21,7 +21,6 @@ import { TerminalManagerTreeModel } from './terminal-manager-tree-model';
 import { CommandRegistry, CompositeMenuNode, Emitter, MenuModelRegistry } from '@theia/core';
 import { TerminalMenus } from './terminal-frontend-contribution';
 import { TerminalManagerTreeTypes } from './terminal-manager-types';
-// import { TerminalMenus } from './terminal-frontend-contribution';
 
 @injectable()
 export class TerminalManagerTreeWidget extends TreeWidget {
@@ -108,12 +107,13 @@ export class TerminalManagerTreeWidget extends TreeWidget {
             return (
                 <div className='terminal-manager-inline-actions-container'>
                     <div className='terminal-manager-inline-actions'>
-                        {inlineActionsForNode.map(({ iconClass, commandId }) => (
+                        {inlineActionsForNode.map(({ iconClass, commandId, tooltip }) => (
                             <span
                                 data-command-id={commandId}
                                 data-node-id={node.id}
                                 className={iconClass}
                                 onClick={this.handleActionItemOnClick}
+                                title={tooltip}
                             />
                         ))}
                     </div>
@@ -136,19 +136,26 @@ export class TerminalManagerTreeWidget extends TreeWidget {
     }
 
     protected resolveInlineActionForNode(node: TerminalManagerTreeTypes.TerminalManagerTreeNode): TerminalManagerTreeTypes.InlineActionProps[] {
-        let menuNode: CompositeMenuNode;
+        let menuNode: CompositeMenuNode | undefined = undefined;
         const inlineActionProps: TerminalManagerTreeTypes.InlineActionProps[] = [];
         if (TerminalManagerTreeTypes.isPageNode(node)) {
             menuNode = this.menuRegistry.getMenu(TerminalManagerTreeTypes.PAGE_NODE_MENU);
-            const menuItems = menuNode.children;
-            menuItems.forEach(item => {
-                const commandId = item.id;
-                const command = this.commandRegistry.getCommand(commandId);
-                const iconClass = command?.iconClass ? command.iconClass : '';
-                const tooltip = command?.label ? command.label : '';
-                inlineActionProps.push({ iconClass, tooltip, commandId });
-            });
+        } else if (TerminalManagerTreeTypes.isTerminalGroupNode(node)) {
+            menuNode = this.menuRegistry.getMenu(TerminalManagerTreeTypes.GROUP_NODE_MENU);
+        } else if (TerminalManagerTreeTypes.isTerminalNode(node)) {
+            menuNode = this.menuRegistry.getMenu(TerminalManagerTreeTypes.TERMINAL_NODE_MENU);
         }
+        if (!menuNode) {
+            return [];
+        }
+        const menuItems = menuNode.children;
+        menuItems.forEach(item => {
+            const commandId = item.id;
+            const command = this.commandRegistry.getCommand(commandId);
+            const iconClass = command?.iconClass ? command.iconClass : '';
+            const tooltip = command?.label ? command.label : '';
+            inlineActionProps.push({ iconClass, tooltip, commandId });
+        });
         return inlineActionProps;
     }
 
