@@ -50,7 +50,7 @@ export namespace TerminalManagerTreeTypes {
     export type TreeNode = PageNode | TerminalNode;
     export const isPageNode = (obj: unknown): obj is PageNode => !!obj && typeof obj === 'object' && 'page' in obj;
     export const isTerminalNode = (obj: unknown): obj is TerminalNode => !!obj && typeof obj === 'object' && 'terminal' in obj;
-    export const isTerminalGroupNode = (obj: unknown): obj is TerminalNode => !!obj && typeof obj === 'object' && 'terminalGroup' in obj;
+    export const isTerminalGroupNode = (obj: unknown): obj is TerminalGroupNode => !!obj && typeof obj === 'object' && 'terminalGroup' in obj;
     export const isTerminalOrPageNode = (obj: unknown): obj is (PageNode | TerminalNode) => isPageNode(obj) || isTerminalNode(obj);
     export interface SelectionChangedEvent {
         activePage: PageNode;

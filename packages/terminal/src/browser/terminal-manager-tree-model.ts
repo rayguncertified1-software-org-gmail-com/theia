@@ -85,8 +85,8 @@ export class TerminalManagerTreeModel extends TreeModelImpl {
         CompositeTreeNode.addChild(parent ?? this.activePage, widgetNode);
         if (widget instanceof SplitPanel) {
             this.onTerminalColumnAddedEmitter.fire(widgetNode);
-            this.refresh();
         }
+        this.refresh();
     }
 
     addPage(): TerminalManagerTreeTypes.PageNode | undefined {
@@ -179,16 +179,19 @@ export class TerminalManagerTreeModel extends TreeModelImpl {
     splitTerminalHorizontally(terminalWidget: TerminalWidget, parentId: TerminalManager.TerminalID): void {
         const parentTerminalColumn = this.getNode(parentId);
         if (TerminalManagerTreeTypes.isTerminalNode(parentTerminalColumn)) {
-            const page = parentTerminalColumn.parent;
-            if (TerminalManagerTreeTypes.isPageNode(page) && parentTerminalColumn.widget instanceof SplitPanel) {
-                CompositeTreeNode.removeChild(page, parentTerminalColumn);
+            const pageOrGroup = parentTerminalColumn.parent;
+            if (TerminalManagerTreeTypes.isPageNode(pageOrGroup) && parentTerminalColumn.widget instanceof SplitPanel) {
+                CompositeTreeNode.removeChild(pageOrGroup, parentTerminalColumn);
                 const newGroupNode = this.createGroupNode(parentTerminalColumn.widget);
-                CompositeTreeNode.addChild(page, newGroupNode);
+                CompositeTreeNode.addChild(pageOrGroup, newGroupNode);
                 CompositeTreeNode.addChild(newGroupNode, parentTerminalColumn);
                 this.addWidget(terminalWidget, newGroupNode);
                 this.onTerminalSplitEmitter.fire({ groupNode: newGroupNode, terminalWidget });
-                this.refresh();
+            } else if (TerminalManagerTreeTypes.isTerminalGroupNode(pageOrGroup)) {
+                this.addWidget(terminalWidget, pageOrGroup);
+                this.onTerminalSplitEmitter.fire({ groupNode: pageOrGroup, terminalWidget });
             }
+            this.refresh();
         }
     }
 

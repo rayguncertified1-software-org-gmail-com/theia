@@ -100,22 +100,14 @@ export class TerminalManagerWidget extends BaseWidget {
                 animationDuration: 200
             }, this.splitPositionHandler),
         });
-        this.layout.addWidget(this.panel);
 
-        SplitPanel.setStretch(this.terminalPanelWrapper, 2);
-        SplitPanel.setStretch(this.treeWidget, 1);
+        this.layout.addWidget(this.panel);
         (this.panel.layout as ViewContainerLayout).addWidget(this.terminalPanelWrapper);
         (this.panel.layout as ViewContainerLayout).addWidget(this.treeWidget);
-        // ({
-        //     renderer: SplitPanel.defaultRenderer,
-        //     orientation: 'horizontal',
-        //     spacing: 2,
-        //     headerSize: 0,
-        //     animationDuration: 200
-        // }, this.splitPositionHandler);
-        // this.terminalLayout = new GridLayout();
+        setTimeout(() => {
+            (this.panel.layout as ViewContainerLayout).setPartSizes([60, 15]);
+        });
         this.addTerminalPage();
-        // this.layout.addWidget(this.treeWidget);
     }
 
     protected async handlePageAdded(pageNode: TerminalManagerTreeTypes.PageNode): Promise<SplitPanel> {
