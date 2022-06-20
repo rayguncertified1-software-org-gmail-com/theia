@@ -23,12 +23,16 @@ import {
     isOSX,
     SelectionService,
     Emitter,
-    Event
+    Event,
+    MenuContribution,
+    CommandContribution
 } from '@theia/core/lib/common';
 import {
     ApplicationShell, KeyCode, Key,
     KeybindingRegistry, Widget, LabelProvider, WidgetOpenerOptions, StorageService,
-    QuickInputService, codicon, CommonCommands, FrontendApplicationContribution, OnWillStopAction, Dialog, ConfirmDialog, FrontendApplication, AbstractViewContribution
+    QuickInputService,
+    codicon, CommonCommands, FrontendApplicationContribution, OnWillStopAction, Dialog, ConfirmDialog, FrontendApplication,
+    KeybindingContribution, WidgetManager
 } from '@theia/core/lib/browser';
 import { TabBarToolbarContribution, TabBarToolbarRegistry } from '@theia/core/lib/browser/shell/tab-bar-toolbar';
 import { TERMINAL_WIDGET_FACTORY_ID, TerminalWidgetFactoryOptions, TerminalWidgetImpl } from './terminal-widget-impl';
@@ -55,6 +59,7 @@ import { nls } from '@theia/core/lib/common/nls';
 import { TerminalPreferences } from './terminal-preferences';
 import { TerminalManagerWidget } from './terminal-manager-widget';
 import { TerminalManagerTreeTypes, TerminalManager } from './terminal-manager-types';
+import { ApplicationShellWithTerminalManagerOverride } from './application-shell-with-terminal-manager-override';
 
 export namespace TerminalMenus {
     export const TERMINAL = [...MAIN_MENU_BAR, '7_terminal'];
@@ -190,9 +195,11 @@ export namespace TerminalCommands {
 }
 
 @injectable()
-export class TerminalFrontendContribution extends AbstractViewContribution<TerminalManagerWidget>
-    implements FrontendApplicationContribution, TerminalService, TabBarToolbarContribution, ColorContribution {
+export class TerminalFrontendContribution implements FrontendApplicationContribution,
+    CommandContribution, MenuContribution, KeybindingContribution, TerminalService, TabBarToolbarContribution, ColorContribution {
 
+    @inject(ApplicationShell) protected readonly shell: ApplicationShellWithTerminalManagerOverride;
+    @inject(WidgetManager) protected readonly widgetManager: WidgetManager;
     @inject(ShellTerminalServerProxy) protected readonly shellTerminalServer: ShellTerminalServerProxy;
     @inject(FileService) protected readonly fileService: FileService;
     @inject(SelectionService) protected readonly selectionService: SelectionService;
@@ -224,18 +231,18 @@ export class TerminalFrontendContribution extends AbstractViewContribution<Termi
     @inject(ContextKeyService)
     protected readonly contextKeyService: ContextKeyService;
 
-    constructor() {
-        super({
-            widgetId: TerminalManagerWidget.ID,
-            widgetName: nls.localizeByDefault('Terminal'),
-            defaultWidgetOptions: {
-                area: 'bottom',
-                rank: 0,
-            },
-            toggleCommandId: 'terminalView:toggle',
-            toggleKeybinding: 'ctrlcmd+~',
-        });
-    }
+    // constructor() {
+    //     super({
+    //         widgetId: TerminalManagerWidget.ID,
+    //         widgetName: nls.localizeByDefault('Terminal'),
+    //         defaultWidgetOptions: {
+    //             area: 'bottom',
+    //             rank: 0,
+    //         },
+    //         toggleCommandId: 'terminalView:toggle',
+    //         toggleKeybinding: 'ctrlcmd+~',
+    //     });
+    // }
 
     @postConstruct()
     protected init(): void {
@@ -393,8 +400,7 @@ export class TerminalFrontendContribution extends AbstractViewContribution<Termi
         return this.shellTerminalServer.getDefaultShell();
     }
 
-    override registerCommands(commands: CommandRegistry): void {
-        super.registerCommands(commands);
+    registerCommands(commands: CommandRegistry): void {
         commands.registerCommand(TerminalCommands.NEW, {
             execute: () => this.openTerminal()
         });
@@ -518,23 +524,23 @@ export class TerminalFrontendContribution extends AbstractViewContribution<Termi
         });
     }
 
-    protected async deleteTerminalFromManager(terminalNode: TerminalManagerTreeTypes.TerminalNode): Promise<void> {
-        const terminalManagerWidget = await this.widget;
+    protected deleteTerminalFromManager(terminalNode: TerminalManagerTreeTypes.TerminalNode): void {
+        const terminalManagerWidget = this.shell.terminalManager;
         terminalManagerWidget.deleteTerminal(terminalNode);
     }
 
-    protected async deleteGroupFromManager(groupNode: TerminalManagerTreeTypes.TerminalGroupNode): Promise<void> {
-        const terminalManagerWidget = await this.widget;
+    protected deleteGroupFromManager(groupNode: TerminalManagerTreeTypes.TerminalGroupNode): void {
+        const terminalManagerWidget = this.shell.terminalManager;
         terminalManagerWidget.deleteGroup(groupNode);
     }
 
-    protected async deletePageFromManager(pageNode: TerminalManagerTreeTypes.PageNode): Promise<void> {
-        const terminalManagerWidget = await this.widget;
+    protected deletePageFromManager(pageNode: TerminalManagerTreeTypes.PageNode): void {
+        const terminalManagerWidget = this.shell.terminalManager;
         terminalManagerWidget.deletePage(pageNode);
     }
 
-    protected async toggleRenameTerminalFromManager(terminalNode: TerminalManagerTreeTypes.TerminalManagerTreeNode): Promise<void> {
-        const terminalManagerWidget = await this.widget;
+    protected toggleRenameTerminalFromManager(terminalNode: TerminalManagerTreeTypes.TerminalManagerTreeNode): void {
+        const terminalManagerWidget = this.shell.terminalManager;
         terminalManagerWidget.toggleRenameTerminal(terminalNode);
     }
 
@@ -556,8 +562,7 @@ export class TerminalFrontendContribution extends AbstractViewContribution<Termi
         this.open(termWidget);
     }
 
-    override registerMenus(menus: MenuModelRegistry): void {
-        super.registerMenus(menus);
+    registerMenus(menus: MenuModelRegistry): void {
         menus.registerSubmenu(TerminalMenus.TERMINAL, TerminalWidgetImpl.LABEL);
         menus.registerMenuAction(TerminalMenus.TERMINAL_NEW, {
             commandId: TerminalCommands.NEW.id,
@@ -640,8 +645,7 @@ export class TerminalFrontendContribution extends AbstractViewContribution<Termi
         });
     }
 
-    override registerKeybindings(keybindings: KeybindingRegistry): void {
-        super.registerKeybindings(keybindings);
+    registerKeybindings(keybindings: KeybindingRegistry): void {
         /* Register passthrough keybindings for combinations recognized by
            xterm.js and converted to control characters.
              See: https://github.com/xtermjs/xterm.js/blob/v3/src/Terminal.ts#L1684 */
@@ -792,7 +796,7 @@ export class TerminalFrontendContribution extends AbstractViewContribution<Termi
         //         ...(options && options.widgetOptions)
         //     }
         // };
-        const terminalManagerWidget = this.tryGetWidget();
+        const terminalManagerWidget = this.shell.terminalManager;
         if (terminalManagerWidget && !widget.isAttached) {
             this.shell.revealWidget(TerminalManagerWidget.ID);
             const area = options?.widgetOptions?.area;
@@ -821,10 +825,10 @@ export class TerminalFrontendContribution extends AbstractViewContribution<Termi
                 ...(options && options.widgetOptions)
             }
         };
-        if (TerminalManager.isTerminalManagerArea(area)) {
-            this.openInManager(widget, op);
-            return;
-        }
+        // if (TerminalManager.isTerminalManagerArea(area)) {
+        //     this.openInManager(widget, op);
+        //     return;
+        // }
         if (!widget.isAttached) {
             this.shell.addWidget(widget, op.widgetOptions as ApplicationShell.WidgetOptions | undefined);
         }

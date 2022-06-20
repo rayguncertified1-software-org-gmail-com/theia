@@ -16,6 +16,7 @@
 
 import { inject, injectable, interfaces, postConstruct } from '@theia/core/shared/inversify';
 import {
+    ApplicationShell,
     BaseWidget,
     codicon,
     DockPanelRenderer,
@@ -63,7 +64,7 @@ export class TerminalManagerWidget extends BaseWidget {
 
     @inject(TerminalManagerTreeWidget) protected readonly treeWidget: TerminalManagerTreeWidget;
     @inject(DockPanelRendererFactory) protected dockPanelRendererFactory: () => DockPanelRenderer;
-
+    @inject(ApplicationShell) protected readonly shell: ApplicationShell;
     @inject(CommandService) protected readonly commandService: CommandService;
 
     protected terminalPanels: SplitPanel[] = [];
@@ -85,6 +86,7 @@ export class TerminalManagerWidget extends BaseWidget {
         this.toDispose.push(this.treeWidget.model.onTerminalColumnAdded(terminalNode => this.handleTerminalAdded(terminalNode)));
         this.toDispose.push(this.treeWidget.model.onTerminalRemoved(terminalNode => this.handleTerminalRemoved(terminalNode)));
         this.toDispose.push(this.treeWidget.model.onTerminalSplit(event => this.handleTerminalSplit(event)));
+        this.toDispose.push(this.shell.onDidChangeActiveWidget(w => console.log('SENTINEL', w.newValue)));
         this.title.iconClass = codicon('terminal-tmux');
         this.id = TerminalManagerWidget.ID;
         this.title.closable = false;
