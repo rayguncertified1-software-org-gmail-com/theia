@@ -38,8 +38,8 @@ export class TerminalManagerTreeModel extends TreeModelImpl {
     protected onPageRemovedEmitter = new Emitter<TerminalManagerTreeTypes.PageNode>();
     readonly onPageRemoved = this.onPageRemovedEmitter.event;
 
-    protected onTerminalColumnAddedEmitter = new Emitter<TerminalManagerTreeTypes.TerminalNode>();
-    readonly onTerminalColumnAdded = this.onTerminalColumnAddedEmitter.event;
+    protected onTerminalGroupAddedEmitter = new Emitter<TerminalManagerTreeTypes.TerminalGroupNode>();
+    readonly onTerminalGroupAdded = this.onTerminalGroupAddedEmitter.event;
     protected onTerminalRemovedEmitter = new Emitter<TerminalManagerTreeTypes.TerminalNode>();
     readonly onTerminalRemoved = this.onTerminalRemovedEmitter.event;
     protected onTerminalSplitEmitter = new Emitter<{ groupNode: TerminalManagerTreeTypes.TerminalGroupNode, terminalWidget: Widget }>();
@@ -89,33 +89,38 @@ export class TerminalManagerTreeModel extends TreeModelImpl {
         this.onTreeSelectionChangedEmitter.fire({ activePage, activeTerminal, activeGroup });
     }
 
-    addNewWidgetColumn(widgetNode: TerminalManagerTreeTypes.TerminalNode, parentGroup: TerminalManagerTreeTypes.TerminalGroupNode): void {
-        if (this.root && CompositeTreeNode.is(this.root)) {
-            const groupNode = CompositeTreeNode.addChild(parentGroup, widgetNode);
-            CompositeTreeNode.addChild(this.root, groupNode);
+    addTerminalGroup(widget: TerminalWidget, groupPanel: SplitPanel): void {
+        const groupNode = this.createGroupNode(groupPanel);
+        const terminalNode = this.createTerminalWidgetNode(widget);
+        if (this.root && this.activePage && CompositeTreeNode.is(this.root)) {
+            CompositeTreeNode.addChild(groupNode, terminalNode);
+            CompositeTreeNode.addChild(this.activePage, groupNode);
+            this.onTerminalGroupAddedEmitter.fire(groupNode);
+            this.refresh();
+            // CompositeTreeNode.addChild(this.root, groupNode);
         }
     }
 
     addWidget(widget: TerminalWidget, parent?: TerminalManagerTreeTypes.PageNode | TerminalManagerTreeTypes.TerminalGroupNode): void {
-        const parentNode = parent ?? this.activePage;
-        if (parentNode) {
-            const widgetNode = this.createTerminalWidgetNode(widget);
-            this.activeTerminal = widgetNode;
-            this.onTreeSelectionChangedEmitter.fire({ activePage: this.activePage, activeTerminal: this.activeTerminal, activeGroup: this.activeGroup });
-            setTimeout(() => {
-                if (this.activeTerminal) {
-                    this.selectionService.addSelection(this.activeTerminal);
-                }
-            });
-            CompositeTreeNode.addChild(parentNode ?? this.activePage, widgetNode);
-            if (widget instanceof SplitPanel) {
-                this.onTerminalColumnAddedEmitter.fire(widgetNode);
-            }
-            this.refresh();
-        }
+        // const parentNode = parent ?? this.activePage;
+        // if (parentNode) {
+        //     const widgetNode = this.createTerminalWidgetNode(widget);
+        //     this.activeTerminal = widgetNode;
+        //     this.onTreeSelectionChangedEmitter.fire({ activePage: this.activePage, activeTerminal: this.activeTerminal, activeGroup: this.activeGroup });
+        //     setTimeout(() => {
+        //         if (this.activeTerminal) {
+        //             this.selectionService.addSelection(this.activeTerminal);
+        //         }
+        //     });
+        //     CompositeTreeNode.addChild(parentNode ?? this.activePage, widgetNode);
+        //     if (widget instanceof SplitPanel) {
+        //         this.onTerminalGroupAddedEmitter.fire(widgetNode);
+        //     }
+        //     this.refresh();
+        // }
     }
 
-    addPage(widget: TerminalWidget, groupPanel: SplitPanel, pagePanel: SplitPanel): void {
+    addTerminalPage(widget: TerminalWidget, groupPanel: SplitPanel, pagePanel: SplitPanel): void {
         const pageNode = this.createPageNode(pagePanel);
         const groupNode = this.createGroupNode(groupPanel);
         const terminalNode = this.createTerminalWidgetNode(widget);

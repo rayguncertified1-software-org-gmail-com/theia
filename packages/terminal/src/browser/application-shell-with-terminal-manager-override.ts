@@ -64,7 +64,7 @@ export class ApplicationShellWithTerminalManagerOverride extends ApplicationShel
             const area = options?.area;
             if (area) {
                 if (area === 'terminal-manager-current') {
-                    terminalManagerWidget.addNewWidgetColumn(widget);
+                    terminalManagerWidget.addTerminalGroup(widget);
                 } else if (area === 'terminal-manager-new-page') {
                     terminalManagerWidget.addTerminalPage(widget);
                     // terminalManagerWidget.addNewWidgetColumn(widget);

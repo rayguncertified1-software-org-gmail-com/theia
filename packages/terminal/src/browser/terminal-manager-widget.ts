@@ -84,7 +84,7 @@ export class TerminalManagerWidget extends BaseWidget {
         this.toDispose.push(this.treeWidget.model.onTreeSelectionChanged(changeEvent => this.handleSelectionChange(changeEvent)));
         this.toDispose.push(this.treeWidget.model.onPageAdded(pageNode => this.handlePageAdded(pageNode)));
         this.toDispose.push(this.treeWidget.model.onPageRemoved(pageNode => this.handlePageRemoved(pageNode)));
-        this.toDispose.push(this.treeWidget.model.onTerminalColumnAdded(terminalNode => this.handleTerminalAdded(terminalNode)));
+        this.toDispose.push(this.treeWidget.model.onTerminalGroupAdded(groupNode => this.handleTerminalGroupAdded(groupNode)));
         this.toDispose.push(this.treeWidget.model.onTerminalRemoved(terminalNode => this.handleTerminalRemoved(terminalNode)));
         this.toDispose.push(this.treeWidget.model.onTerminalSplit(event => this.handleTerminalSplit(event)));
         this.toDispose.push(this.shell.onDidChangeActiveWidget(({ newValue }) => this.handleOnDidChangeActiveWidget(newValue)));
@@ -108,42 +108,49 @@ export class TerminalManagerWidget extends BaseWidget {
         (this.panel.layout as ViewContainerLayout).addWidget(this.terminalPanelWrapper);
         (this.panel.layout as ViewContainerLayout).addWidget(this.treeWidget);
         await this.commandService.executeCommand(TerminalCommands.MANAGER_NEW_PAGE_TOOLBAR.id);
-        // this.addTerminalPage();
     }
 
     initializePanelSizes(): void {
         (this.panel.layout as ViewContainerLayout).setPartSizes([60, 15]);
     }
 
-    protected handleOnDidChangeActiveWidget(widget: Widget | null): void {
-        if (!(widget instanceof TerminalWidgetImpl)) {
-            return;
-        }
-        const node = this.treeWidget.model.getNode(widget.id);
-        if (node && TerminalManagerTreeTypes.isTerminalNode(node)) {
-            this.treeWidget.model.selectNode(node);
+    addTerminalPage(widget: Widget): void {
+        if (widget instanceof TerminalWidgetImpl) {
+            const groupPanel = this.createTerminalGroupPanel(widget);
+            const pagePanel = this.createPagePanel(groupPanel);
+            return this.treeWidget.model.addTerminalPage(widget, groupPanel, pagePanel);
         }
     }
 
-    protected handlePageRemoved(pageNode: TerminalManagerTreeTypes.PageNode): void {
-        pageNode.panel?.dispose();
-        // const panel = this.pageNodeToPanelMap.get(pageNode);
-        // if (panel) {
-        //     panel.dispose();
-        // }
+    protected createPagePanel(groupPanel: SplitPanel): SplitPanel {
+        const newPageLayout = new ViewContainerLayout({
+            renderer: SplitPanel.defaultRenderer,
+            orientation: 'horizontal',
+            spacing: 2,
+            headerSize: 0,
+            animationDuration: 200
+        }, this.splitPositionHandler);
+        // necessary because a panel extends Widget
+        const newPagePanel = new SplitPanel({
+            layout: newPageLayout,
+        });
+        newPagePanel.id = `page-${groupPanel.id}`;
+        newPagePanel.node.tabIndex = -1;
+        newPageLayout.addWidget(groupPanel);
+        return newPagePanel;
     }
 
-    protected handleTerminalAdded(terminalNode: TerminalManagerTreeTypes.TerminalNode): void {
-        const { activePage } = this.treeWidget.model;
-        if (!activePage) {
-            return;
-        }
-        const { panel } = activePage;
-        // const activePanel = this.pageNodeToPanelMap.get(this.treeWidget.model.activePage);
-        if (panel) {
-            // const newTerminalColumn = this.createNewTerminalColumn(terminalNode);
-            // activePagePanel.addWidget(terminalNode.widget);
-            panel.addWidget(terminalNode.widget);
+    protected handlePageAdded(pageNode: TerminalManagerTreeTypes.PageNode): void {
+        const { panel } = pageNode;
+        (this.terminalPanelWrapper.layout as PanelLayout).addWidget(panel);
+        this.update();
+    }
+
+    addTerminalGroup(widget: Widget): void {
+        if (widget instanceof TerminalWidgetImpl) {
+            const groupPanel = this.createTerminalGroupPanel(widget);
+            this.treeWidget.model.addTerminalGroup(widget, groupPanel);
+            // this.treeWidget.model.addWidget(widget, groupNode);
         }
     }
 
@@ -163,6 +170,49 @@ export class TerminalManagerWidget extends BaseWidget {
         terminalColumnPanel.node.tabIndex = -1;
         terminalColumnLayout.addWidget(terminalWidget);
         return terminalColumnPanel;
+    }
+
+    protected handleTerminalGroupAdded(groupNode: TerminalManagerTreeTypes.TerminalGroupNode): void {
+        const { panel } = groupNode;
+        const activePage = this.treeWidget.model.activePage?.panel;
+        if (activePage) {
+            activePage.addWidget(panel);
+            this.update();
+        }
+        // const { activePage } = this.treeWidget.model;
+        // if (!activePage) {
+        //     return;
+        // }
+        // const { panel } = activePage;
+        // // const activePanel = this.pageNodeToPanelMap.get(this.treeWidget.model.activePage);
+        // if (panel) {
+        //     // const newTerminalColumn = this.createNewTerminalColumn(terminalNode);
+        //     // activePagePanel.addWidget(terminalNode.widget);
+        //     panel.addWidget(terminalNode.widget);
+        // }
+    }
+
+    splitWidget(terminalWidget: Widget, parentId: TerminalManager.TerminalID): void {
+        // this.treeWidget.model.splitTerminalHorizontally(terminalWidget, parentId);
+        console.log('SENTINEL TERMINAL WIDGET', terminalWidget, parentId);
+    }
+
+    protected handleOnDidChangeActiveWidget(widget: Widget | null): void {
+        if (!(widget instanceof TerminalWidgetImpl)) {
+            return;
+        }
+        const node = this.treeWidget.model.getNode(widget.id);
+        if (node && TerminalManagerTreeTypes.isTerminalNode(node)) {
+            this.treeWidget.model.selectNode(node);
+        }
+    }
+
+    protected handlePageRemoved(pageNode: TerminalManagerTreeTypes.PageNode): void {
+        pageNode.panel?.dispose();
+        // const panel = this.pageNodeToPanelMap.get(pageNode);
+        // if (panel) {
+        //     panel.dispose();
+        // }
     }
 
     protected handleTerminalSplit(event: { groupNode: TerminalManagerTreeTypes.TerminalGroupNode, terminalWidget: Widget }): void {
@@ -196,38 +246,6 @@ export class TerminalManagerWidget extends BaseWidget {
         setTimeout(() => terminal.removeClass('attention'), 250);
     }
 
-    addTerminalPage(widget: Widget): void {
-        if (widget instanceof TerminalWidgetImpl) {
-            const groupPanel = this.createTerminalGroupPanel(widget);
-            const pagePanel = this.createPagePanel(groupPanel);
-            return this.treeWidget.model.addPage(widget, groupPanel, pagePanel);
-        }
-    }
-
-    protected createPagePanel(groupPanel: SplitPanel): SplitPanel {
-        const newPageLayout = new ViewContainerLayout({
-            renderer: SplitPanel.defaultRenderer,
-            orientation: 'horizontal',
-            spacing: 2,
-            headerSize: 0,
-            animationDuration: 200
-        }, this.splitPositionHandler);
-        // necessary because a panel extends Widget
-        const newPagePanel = new SplitPanel({
-            layout: newPageLayout,
-        });
-        newPagePanel.id = `page-${groupPanel.id}`;
-        newPagePanel.node.tabIndex = -1;
-        newPageLayout.addWidget(groupPanel);
-        return newPagePanel;
-    }
-
-    protected handlePageAdded(pageNode: TerminalManagerTreeTypes.PageNode): void {
-        const { panel } = pageNode;
-        (this.terminalPanelWrapper.layout as PanelLayout).addWidget(panel);
-        this.update();
-    }
-
     protected async updateViewPage(activePage: TerminalManagerTreeTypes.PageNode, panel?: SplitPanel): Promise<void> {
         // const activePanel = panel ?? this.pageNodeToPanelMap.get(activePage);
         const activePanel = panel ?? activePage.panel;
@@ -235,16 +253,6 @@ export class TerminalManagerWidget extends BaseWidget {
             (this.terminalPanelWrapper.layout as PanelLayout).widgets.forEach(widget => this.terminalPanelWrapper.layout?.removeWidget(widget));
             (this.terminalPanelWrapper.layout as PanelLayout).addWidget(activePanel);
             this.update();
-        }
-    }
-
-    addNewWidgetColumn(widget: Widget): void {
-        if (widget instanceof TerminalWidgetImpl) {
-            const newWidgetColumn = this.createTerminalGroupPanel(widget);
-            const groupNode = this.treeWidget.model.createGroupNode(newWidgetColumn);
-            const widgetNode = this.treeWidget.model.createTerminalWidgetNode(widget);
-            this.treeWidget.model.addNewWidgetColumn(widgetNode, groupNode);
-            // this.treeWidget.model.addWidget(widget, groupNode);
         }
     }
 
@@ -258,11 +266,6 @@ export class TerminalManagerWidget extends BaseWidget {
 
     deletePage(pageNode: TerminalManagerTreeTypes.PageNode): void {
         this.treeWidget.model.deletePageNode(pageNode);
-    }
-
-    splitWidget(terminalWidget: Widget, parentId: TerminalManager.TerminalID): void {
-        // this.treeWidget.model.splitTerminalHorizontally(terminalWidget, parentId);
-        console.log('SENTINEL TERMINAL WIDGET', terminalWidget, parentId);
     }
 
     toggleRenameTerminal(node: TerminalManagerTreeTypes.TerminalManagerTreeNode): void {
