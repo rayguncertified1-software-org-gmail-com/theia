@@ -15,16 +15,16 @@
 // *****************************************************************************
 
 import { injectable, postConstruct } from '@theia/core/shared/inversify';
-import { TreeModelImpl, CompositeTreeNode, SelectableTreeNode, SplitPanel } from '@theia/core/lib/browser';
-import { TerminalWidget } from './base/terminal-widget';
+import { TreeModelImpl, CompositeTreeNode, SelectableTreeNode, SplitPanel, Widget } from '@theia/core/lib/browser';
 import { Emitter } from '@theia/core';
 import { TerminalManager, TerminalManagerTreeTypes } from './terminal-manager-types';
 
 @injectable()
 export class TerminalManagerTreeModel extends TreeModelImpl {
 
-    activePage: TerminalManagerTreeTypes.PageNode;
-    activeTerminal: TerminalManagerTreeTypes.TerminalNode;
+    activePage: TerminalManagerTreeTypes.PageNode | undefined;
+    activeGroup: TerminalManagerTreeTypes.TerminalGroupNode | undefined;
+    activeTerminal: TerminalManagerTreeTypes.TerminalNode | undefined;
 
     protected pageNum = 0;
     protected groupNum = 0;
@@ -41,7 +41,7 @@ export class TerminalManagerTreeModel extends TreeModelImpl {
     readonly onTerminalColumnAdded = this.onTerminalColumnAddedEmitter.event;
     protected onTerminalRemovedEmitter = new Emitter<TerminalManagerTreeTypes.TerminalNode>();
     readonly onTerminalRemoved = this.onTerminalRemovedEmitter.event;
-    protected onTerminalSplitEmitter = new Emitter<{ groupNode: TerminalManagerTreeTypes.TerminalGroupNode, terminalWidget: TerminalWidget }>();
+    protected onTerminalSplitEmitter = new Emitter<{ groupNode: TerminalManagerTreeTypes.TerminalGroupNode, terminalWidget: Widget }>();
     readonly onTerminalSplit = this.onTerminalSplitEmitter.event;
 
     @postConstruct()
@@ -57,36 +57,54 @@ export class TerminalManagerTreeModel extends TreeModelImpl {
     }
 
     handleSelectionChanged(selectedNode: SelectableTreeNode): void {
-        if (TerminalManagerTreeTypes.isPageNode(selectedNode)) {
-            if (selectedNode === this.activePage) {
-                return;
+        let activeTerminal: TerminalManagerTreeTypes.TerminalNode | undefined = undefined;
+        let activeGroup: TerminalManagerTreeTypes.TerminalGroupNode | undefined = undefined;
+        let activePage: TerminalManagerTreeTypes.PageNode | undefined = undefined;
+
+        if (TerminalManagerTreeTypes.isTerminalNode(selectedNode)) {
+            activeTerminal = selectedNode;
+            const parent = activeTerminal.parent;
+            if (TerminalManagerTreeTypes.isTerminalGroupNode(parent)) {
+                activeGroup = parent;
+                const grandparent = activeGroup.parent;
+                if (TerminalManagerTreeTypes.isPageNode(grandparent)) {
+                    activePage = grandparent;
+                }
+            } else if (TerminalManagerTreeTypes.isPageNode(parent)) {
+                activePage = parent;
             }
-            this.activePage = selectedNode;
-        } else if (TerminalManagerTreeTypes.isTerminalNode(selectedNode)) {
-            const activePage = selectedNode.parent;
-            if (activePage === this.activePage) {
-                return;
+        } else if (TerminalManagerTreeTypes.isTerminalGroupNode(selectedNode)) {
+            const parent = selectedNode.parent;
+            if (TerminalManagerTreeTypes.isPageNode(parent)) {
+                activePage = parent;
             }
-            if (TerminalManagerTreeTypes.isPageNode(activePage) && TerminalManagerTreeTypes.isTerminalNode(selectedNode)) {
-                this.activePage = activePage;
-                this.activeTerminal = selectedNode;
-            }
+        } else if (TerminalManagerTreeTypes.isPageNode(selectedNode)) {
+            activePage = selectedNode;
         }
-        this.onTreeSelectionChangedEmitter.fire({ activePage: this.activePage, activeTerminal: this.activeTerminal });
+
+        this.activeTerminal = activeTerminal;
+        this.activeGroup = activeGroup;
+        this.activePage = activePage;
+        this.onTreeSelectionChangedEmitter.fire({ activePage, activeTerminal, activeGroup });
     }
 
-    addWidget(widget: SplitPanel | TerminalWidget, parent?: TerminalManagerTreeTypes.PageNode | TerminalManagerTreeTypes.TerminalGroupNode): void {
-        const widgetNode = this.createWidgetNode(widget);
-        this.activeTerminal = widgetNode;
-        this.onTreeSelectionChangedEmitter.fire({ activePage: this.activePage, activeTerminal: this.activeTerminal });
-        setTimeout(() => {
-            this.selectionService.addSelection(this.activeTerminal);
-        });
-        CompositeTreeNode.addChild(parent ?? this.activePage, widgetNode);
-        if (widget instanceof SplitPanel) {
-            this.onTerminalColumnAddedEmitter.fire(widgetNode);
+    addWidget(widget: SplitPanel | Widget, parent?: TerminalManagerTreeTypes.PageNode | TerminalManagerTreeTypes.TerminalGroupNode): void {
+        const parentNode = parent ?? this.activePage;
+        if (parentNode) {
+            const widgetNode = this.createWidgetNode(widget);
+            this.activeTerminal = widgetNode;
+            this.onTreeSelectionChangedEmitter.fire({ activePage: this.activePage, activeTerminal: this.activeTerminal, activeGroup: this.activeGroup });
+            setTimeout(() => {
+                if (this.activeTerminal) {
+                    this.selectionService.addSelection(this.activeTerminal);
+                }
+            });
+            CompositeTreeNode.addChild(parentNode ?? this.activePage, widgetNode);
+            if (widget instanceof SplitPanel) {
+                this.onTerminalColumnAddedEmitter.fire(widgetNode);
+            }
+            this.refresh();
         }
-        this.refresh();
     }
 
     addPage(): TerminalManagerTreeTypes.PageNode | undefined {
@@ -128,7 +146,7 @@ export class TerminalManagerTreeModel extends TreeModelImpl {
         };
     }
 
-    protected createWidgetNode(widget: SplitPanel | TerminalWidget): TerminalManagerTreeTypes.TerminalNode {
+    protected createWidgetNode(widget: SplitPanel | Widget): TerminalManagerTreeTypes.TerminalNode {
         return {
             id: `${widget.id}`,
             label: `${widget.id}`,
@@ -185,7 +203,7 @@ export class TerminalManagerTreeModel extends TreeModelImpl {
         }
     }
 
-    splitTerminalHorizontally(terminalWidget: TerminalWidget, parentId: TerminalManager.TerminalID): void {
+    splitTerminalHorizontally(terminalWidget: Widget, parentId: TerminalManager.TerminalID): void {
         const parentTerminalColumn = this.getNode(parentId);
         if (TerminalManagerTreeTypes.isTerminalNode(parentTerminalColumn)) {
             const pageOrGroup = parentTerminalColumn.parent;

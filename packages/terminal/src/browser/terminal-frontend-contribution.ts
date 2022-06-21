@@ -31,7 +31,7 @@ import {
     ApplicationShell, KeyCode, Key,
     KeybindingRegistry, Widget, LabelProvider, WidgetOpenerOptions, StorageService,
     QuickInputService,
-    codicon, CommonCommands, FrontendApplicationContribution, OnWillStopAction, Dialog, ConfirmDialog, FrontendApplication,
+    codicon, CommonCommands, FrontendApplicationContribution, OnWillStopAction, Dialog, ConfirmDialog,
     KeybindingContribution, WidgetManager
 } from '@theia/core/lib/browser';
 import { TabBarToolbarContribution, TabBarToolbarRegistry } from '@theia/core/lib/browser/shell/tab-bar-toolbar';
@@ -152,7 +152,7 @@ export namespace TerminalCommands {
         iconClass: codicon('add'),
     });
     export const MANAGER_NEW_TERMINAL_TOOLBAR = Command.toDefaultLocalizedCommand({
-        id: 'terminal:new-in-manager',
+        id: 'terminal:new-in-manager-toolbar',
         category: TERMINAL_CATEGORY,
         label: 'Create New Terminal in Manager',
         iconClass: codicon('add'),
@@ -273,10 +273,10 @@ export class TerminalFrontendContribution implements FrontendApplicationContribu
         });
     }
 
-    async initializeLayout(app: FrontendApplication): Promise<void> {
-        const terminalManagerWidget = await this.widgetManager.getOrCreateWidget(TerminalManagerWidget.ID);
-        app.shell.bottomPanel.addWidget(terminalManagerWidget);
-    }
+    // async initializeLayout(app: FrontendApplication): Promise<void> {
+    //     const terminalManagerWidget = await this.widgetManager.getOrCreateWidget(TerminalManagerWidget.ID);
+    //     app.shell.bottomPanel.addWidget(terminalManagerWidget);
+    // }
 
     onWillStop(): OnWillStopAction<number> | undefined {
         const preferenceValue = this.terminalPreferences['terminal.integrated.confirmOnExit'];
@@ -787,33 +787,6 @@ export class TerminalFrontendContribution implements FrontendApplicationContribu
         return widget;
     }
 
-    async openInManager(widget: TerminalWidget, options?: TerminalManager.ExtendedWidgetOpenerOptions): Promise<void> {
-        // const mergedOptions: WidgetOpenerOptions = {
-        //     mode: 'activate',
-        //     ...options,
-        //     widgetOptions: {
-        //         area: 'bottom',
-        //         ...(options && options.widgetOptions)
-        //     }
-        // };
-        const terminalManagerWidget = this.shell.terminalManager;
-        if (terminalManagerWidget && !widget.isAttached) {
-            this.shell.revealWidget(TerminalManagerWidget.ID);
-            const area = options?.widgetOptions?.area;
-            if (area) {
-                if (area === 'terminal-manager-current') {
-                    terminalManagerWidget.addWidget(widget);
-                } else if (area === 'terminal-manager-new-page') {
-                    terminalManagerWidget.addTerminalPage();
-                    terminalManagerWidget.addWidget(widget);
-                } else if (TerminalManager.isTerminalID(area)) {
-                    terminalManagerWidget.splitWidget(widget, area);
-                }
-            }
-            // this.shell.activateWidget(widget.id);
-        }
-    }
-
     // TODO: reuse WidgetOpenHandler.open
     open(widget: TerminalWidget, options?: TerminalManager.ExtendedWidgetOpenerOptions | WidgetOpenerOptions): void {
         const area = options?.widgetOptions?.area ?? 'bottom';
@@ -825,10 +798,6 @@ export class TerminalFrontendContribution implements FrontendApplicationContribu
                 ...(options && options.widgetOptions)
             }
         };
-        // if (TerminalManager.isTerminalManagerArea(area)) {
-        //     this.openInManager(widget, op);
-        //     return;
-        // }
         if (!widget.isAttached) {
             this.shell.addWidget(widget, op.widgetOptions as ApplicationShell.WidgetOptions | undefined);
         }

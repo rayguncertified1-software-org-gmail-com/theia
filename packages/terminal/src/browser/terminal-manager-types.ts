@@ -15,8 +15,7 @@
 // *****************************************************************************
 
 import { MenuPath } from '@theia/core';
-import { ApplicationShell, WidgetOpenerOptions, SelectableTreeNode, CompositeTreeNode, SplitPanel } from '@theia/core/lib/browser';
-import { TerminalWidget } from './base/terminal-widget';
+import { ApplicationShell, WidgetOpenerOptions, SelectableTreeNode, CompositeTreeNode, SplitPanel, Widget } from '@theia/core/lib/browser';
 
 export namespace TerminalManager {
     export type TerminalID = `terminal-${number}`;
@@ -29,7 +28,7 @@ export namespace TerminalManager {
 export namespace TerminalManagerTreeTypes {
     export interface TerminalNode extends SelectableTreeNode, CompositeTreeNode {
         terminal: true;
-        widget: SplitPanel | TerminalWidget;
+        widget: SplitPanel | Widget;
         isEditing: boolean;
         label: string;
     };
@@ -54,8 +53,9 @@ export namespace TerminalManagerTreeTypes {
     export const isTerminalGroupNode = (obj: unknown): obj is TerminalGroupNode => !!obj && typeof obj === 'object' && 'terminalGroup' in obj;
     export const isTerminalManagerTreeNode = (obj: unknown): obj is (PageNode | TerminalNode) => isPageNode(obj) || isTerminalNode(obj) || isTerminalGroupNode(obj);
     export interface SelectionChangedEvent {
-        activePage: PageNode;
-        activeTerminal: TerminalNode;
+        activePage: PageNode | undefined;
+        activeTerminal: TerminalNode | undefined;
+        activeGroup: TerminalGroupNode | undefined;
     }
 
     export const TerminalContextMenuID = 'terminal-manager-tree';

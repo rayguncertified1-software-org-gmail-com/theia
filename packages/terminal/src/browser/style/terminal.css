@@ -46,6 +46,16 @@
   background-color: var(--theia-sideBarSectionHeader-border);
 }
 
+#terminal-manager-widget .p-Widget {
+  -webkit-transition: -webkit-filter .25s ease;
+  transition: filter .25s ease;
+}
+
+#terminal-manager-widget .p-Widget.attention {
+  -webkit-filter: brightness(150%);
+  filter: brightness(150%);
+}
+
 .terminal-manager-tree-widget .rename-node-input {
   width: 100%;
 }
