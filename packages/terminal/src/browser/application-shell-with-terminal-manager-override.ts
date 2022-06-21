@@ -64,12 +64,12 @@ export class ApplicationShellWithTerminalManagerOverride extends ApplicationShel
             const area = options?.area;
             if (area) {
                 if (area === 'terminal-manager-current') {
-                    terminalManagerWidget.addTerminalGroup(widget);
+                    terminalManagerWidget.addTerminalGroupToPage(widget);
                 } else if (area === 'terminal-manager-new-page') {
                     terminalManagerWidget.addTerminalPage(widget);
                     // terminalManagerWidget.addNewWidgetColumn(widget);
                 } else if (TerminalManager.isTerminalID(area)) {
-                    terminalManagerWidget.splitWidget(widget, area);
+                    terminalManagerWidget.addWidgetToTerminalGroup(widget, area);
                 } else {
                     throw new Error('Unexpected area: ' + options.area);
                 }

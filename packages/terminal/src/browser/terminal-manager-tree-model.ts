@@ -42,8 +42,8 @@ export class TerminalManagerTreeModel extends TreeModelImpl {
     readonly onTerminalGroupAdded = this.onTerminalGroupAddedEmitter.event;
     protected onTerminalRemovedEmitter = new Emitter<TerminalManagerTreeTypes.TerminalNode>();
     readonly onTerminalRemoved = this.onTerminalRemovedEmitter.event;
-    protected onTerminalSplitEmitter = new Emitter<{ groupNode: TerminalManagerTreeTypes.TerminalGroupNode, terminalWidget: Widget }>();
-    readonly onTerminalSplit = this.onTerminalSplitEmitter.event;
+    protected onTerminalAddedToGroupEmitter = new Emitter<{ groupNode: TerminalManagerTreeTypes.TerminalGroupNode, terminalWidget: Widget }>();
+    readonly onTerminalAddedToGroup = this.onTerminalAddedToGroupEmitter.event;
 
     @postConstruct()
     protected override init(): void {
@@ -229,10 +229,10 @@ export class TerminalManagerTreeModel extends TreeModelImpl {
                 CompositeTreeNode.addChild(pageOrGroup, newGroupNode);
                 CompositeTreeNode.addChild(newGroupNode, parentTerminalColumn);
                 this.addWidget(terminalWidget, newGroupNode);
-                this.onTerminalSplitEmitter.fire({ groupNode: newGroupNode, terminalWidget });
+                this.onTerminalAddedToGroupEmitter.fire({ groupNode: newGroupNode, terminalWidget });
             } else if (TerminalManagerTreeTypes.isTerminalGroupNode(pageOrGroup)) {
                 this.addWidget(terminalWidget, pageOrGroup);
-                this.onTerminalSplitEmitter.fire({ groupNode: pageOrGroup, terminalWidget });
+                this.onTerminalAddedToGroupEmitter.fire({ groupNode: pageOrGroup, terminalWidget });
             }
             this.refresh();
         }
