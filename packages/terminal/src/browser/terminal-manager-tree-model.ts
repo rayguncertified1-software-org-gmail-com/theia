@@ -99,7 +99,7 @@ export class TerminalManagerTreeModel extends TreeModelImpl {
     addWidget(widget: TerminalWidget, parent?: TerminalManagerTreeTypes.PageNode | TerminalManagerTreeTypes.TerminalGroupNode): void {
         const parentNode = parent ?? this.activePage;
         if (parentNode) {
-            const widgetNode = this.createWidgetNode(widget);
+            const widgetNode = this.createTerminalWidgetNode(widget);
             this.activeTerminal = widgetNode;
             this.onTreeSelectionChangedEmitter.fire({ activePage: this.activePage, activeTerminal: this.activeTerminal, activeGroup: this.activeGroup });
             setTimeout(() => {
@@ -115,46 +115,49 @@ export class TerminalManagerTreeModel extends TreeModelImpl {
         }
     }
 
-    addPage(): TerminalManagerTreeTypes.PageNode | undefined {
-        const pageNode = this.createPageNode();
+    addPage(widget: TerminalWidget, groupPanel: SplitPanel, pagePanel: SplitPanel): void {
+        const pageNode = this.createPageNode(pagePanel);
+        const groupNode = this.createGroupNode(groupPanel);
+        const terminalNode = this.createTerminalWidgetNode(widget);
         if (this.root && CompositeTreeNode.is(this.root)) {
             this.activePage = pageNode;
+            CompositeTreeNode.addChild(groupNode, terminalNode);
+            CompositeTreeNode.addChild(pageNode, groupNode);
             this.root = CompositeTreeNode.addChild(this.root, pageNode);
             this.onPageAddedEmitter.fire(pageNode);
-            return pageNode;
         }
     }
 
-    protected createPageNode(): TerminalManagerTreeTypes.PageNode {
+    protected createPageNode(pagePanel: SplitPanel): TerminalManagerTreeTypes.PageNode {
         // TODO this will reset
-        const defaultPageName = `page-${this.pageNum++}`;
+        // const defaultPageName = `page-${this.pageNum++}`;
         return {
-            id: defaultPageName,
-            label: defaultPageName,
+            id: pagePanel.id,
+            label: pagePanel.id,
             parent: undefined,
             selected: false,
             children: [],
             page: true,
             isEditing: false,
-            panel: undefined,
+            panel: pagePanel,
         };
     }
 
-    createGroupNode(widget: SplitPanel): TerminalManagerTreeTypes.TerminalGroupNode {
-        const defaultGroupName = `group-${this.groupNum++}`;
+    createGroupNode(panel: SplitPanel): TerminalManagerTreeTypes.TerminalGroupNode {
+        // const defaultGroupName = `group-${this.groupNum++}`;
         return {
-            id: defaultGroupName,
-            label: defaultGroupName,
+            id: panel.id,
+            label: panel.id,
             parent: undefined,
             selected: false,
-            widget,
+            panel,
             children: [],
             terminalGroup: true,
             isEditing: false,
         };
     }
 
-    createWidgetNode(widget: TerminalWidget): TerminalManagerTreeTypes.TerminalNode {
+    createTerminalWidgetNode(widget: TerminalWidget): TerminalManagerTreeTypes.TerminalNode {
         return {
             id: `${widget.id}`,
             label: `${widget.id}`,

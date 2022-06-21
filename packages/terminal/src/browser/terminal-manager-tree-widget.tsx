@@ -169,10 +169,6 @@ export class TerminalManagerTreeWidget extends TreeWidget {
         }
     }
 
-    addPage(): TerminalManagerTreeTypes.PageNode | undefined {
-        return this.model.addPage();
-    }
-
     deleteTerminal(node: TerminalManagerTreeTypes.TerminalNode): void {
         this.model.deleteTerminalNode(node);
     }

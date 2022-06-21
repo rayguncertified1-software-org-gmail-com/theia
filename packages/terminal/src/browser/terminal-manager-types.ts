@@ -36,7 +36,7 @@ export namespace TerminalManagerTreeTypes {
 
     export interface TerminalGroupNode extends SelectableTreeNode, CompositeTreeNode {
         terminalGroup: true;
-        widget: SplitPanel;
+        panel: SplitPanel;
         isEditing: boolean;
         label: string;
     };
@@ -45,7 +45,7 @@ export namespace TerminalManagerTreeTypes {
         children: Array<TerminalNode | TerminalGroupNode>;
         isEditing: boolean;
         label: string;
-        panel: SplitPanel | undefined;
+        panel: SplitPanel;
     }
 
     export type TerminalManagerTreeNode = PageNode | TerminalNode | TerminalGroupNode;
