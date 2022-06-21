@@ -18,6 +18,7 @@ import { injectable, postConstruct } from '@theia/core/shared/inversify';
 import { TreeModelImpl, CompositeTreeNode, SelectableTreeNode, SplitPanel, Widget } from '@theia/core/lib/browser';
 import { Emitter } from '@theia/core';
 import { TerminalManager, TerminalManagerTreeTypes } from './terminal-manager-types';
+import { TerminalWidget } from './base/terminal-widget';
 
 @injectable()
 export class TerminalManagerTreeModel extends TreeModelImpl {
@@ -88,7 +89,14 @@ export class TerminalManagerTreeModel extends TreeModelImpl {
         this.onTreeSelectionChangedEmitter.fire({ activePage, activeTerminal, activeGroup });
     }
 
-    addWidget(widget: SplitPanel | Widget, parent?: TerminalManagerTreeTypes.PageNode | TerminalManagerTreeTypes.TerminalGroupNode): void {
+    addNewWidgetColumn(widgetNode: TerminalManagerTreeTypes.TerminalNode, parentGroup: TerminalManagerTreeTypes.TerminalGroupNode): void {
+        if (this.root && CompositeTreeNode.is(this.root)) {
+            const groupNode = CompositeTreeNode.addChild(parentGroup, widgetNode);
+            CompositeTreeNode.addChild(this.root, groupNode);
+        }
+    }
+
+    addWidget(widget: TerminalWidget, parent?: TerminalManagerTreeTypes.PageNode | TerminalManagerTreeTypes.TerminalGroupNode): void {
         const parentNode = parent ?? this.activePage;
         if (parentNode) {
             const widgetNode = this.createWidgetNode(widget);
@@ -132,7 +140,7 @@ export class TerminalManagerTreeModel extends TreeModelImpl {
         };
     }
 
-    protected createGroupNode(widget: SplitPanel): TerminalManagerTreeTypes.TerminalGroupNode {
+    createGroupNode(widget: SplitPanel): TerminalManagerTreeTypes.TerminalGroupNode {
         const defaultGroupName = `group-${this.groupNum++}`;
         return {
             id: defaultGroupName,
@@ -146,7 +154,7 @@ export class TerminalManagerTreeModel extends TreeModelImpl {
         };
     }
 
-    protected createWidgetNode(widget: SplitPanel | Widget): TerminalManagerTreeTypes.TerminalNode {
+    createWidgetNode(widget: TerminalWidget): TerminalManagerTreeTypes.TerminalNode {
         return {
             id: `${widget.id}`,
             label: `${widget.id}`,
@@ -203,7 +211,7 @@ export class TerminalManagerTreeModel extends TreeModelImpl {
         }
     }
 
-    splitTerminalHorizontally(terminalWidget: Widget, parentId: TerminalManager.TerminalID): void {
+    splitTerminalHorizontally(terminalWidget: TerminalWidget, parentId: TerminalManager.TerminalID): void {
         const parentTerminalColumn = this.getNode(parentId);
         if (TerminalManagerTreeTypes.isTerminalNode(parentTerminalColumn)) {
             const pageOrGroup = parentTerminalColumn.parent;

@@ -64,10 +64,10 @@ export class ApplicationShellWithTerminalManagerOverride extends ApplicationShel
             const area = options?.area;
             if (area) {
                 if (area === 'terminal-manager-current') {
-                    terminalManagerWidget.addWidget(widget);
+                    terminalManagerWidget.addNewWidgetColumn(widget);
                 } else if (area === 'terminal-manager-new-page') {
                     terminalManagerWidget.addTerminalPage();
-                    terminalManagerWidget.addWidget(widget);
+                    terminalManagerWidget.addNewWidgetColumn(widget);
                 } else if (TerminalManager.isTerminalID(area)) {
                     terminalManagerWidget.splitWidget(widget, area);
                 } else {

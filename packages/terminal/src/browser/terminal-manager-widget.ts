@@ -230,9 +230,14 @@ export class TerminalManagerWidget extends BaseWidget {
         return this.treeWidget.model.addPage();
     }
 
-    addWidget(widget: Widget): void {
-        const newWidgetColumn = this.createNewTerminalColumn(widget);
-        this.treeWidget.model.addWidget(newWidgetColumn);
+    addNewWidgetColumn(widget: Widget): void {
+        if (widget instanceof TerminalWidgetImpl) {
+            const newWidgetColumn = this.createNewTerminalColumn(widget);
+            const groupNode = this.treeWidget.model.createGroupNode(newWidgetColumn);
+            const widgetNode = this.treeWidget.model.createWidgetNode(widget);
+            this.treeWidget.model.addNewWidgetColumn(widgetNode, groupNode);
+            // this.treeWidget.model.addWidget(widget, groupNode);
+        }
     }
 
     deleteTerminal(terminalNode: TerminalManagerTreeTypes.TerminalNode): void {

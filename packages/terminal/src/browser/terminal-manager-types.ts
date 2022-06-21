@@ -15,7 +15,8 @@
 // *****************************************************************************
 
 import { MenuPath } from '@theia/core';
-import { ApplicationShell, WidgetOpenerOptions, SelectableTreeNode, CompositeTreeNode, SplitPanel, Widget } from '@theia/core/lib/browser';
+import { ApplicationShell, WidgetOpenerOptions, SelectableTreeNode, CompositeTreeNode, SplitPanel } from '@theia/core/lib/browser';
+import { TerminalWidget } from './base/terminal-widget';
 
 export namespace TerminalManager {
     export type TerminalID = `terminal-${number}`;
@@ -28,7 +29,7 @@ export namespace TerminalManager {
 export namespace TerminalManagerTreeTypes {
     export interface TerminalNode extends SelectableTreeNode, CompositeTreeNode {
         terminal: true;
-        widget: SplitPanel | Widget;
+        widget: TerminalWidget;
         isEditing: boolean;
         label: string;
     };
