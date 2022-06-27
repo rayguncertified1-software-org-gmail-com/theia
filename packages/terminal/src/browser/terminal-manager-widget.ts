@@ -84,7 +84,7 @@ export class TerminalManagerWidget extends BaseWidget {
         this.toDispose.push(this.treeWidget.model.onPageRemoved(pageNode => this.handlePageRemoved(pageNode)));
         this.toDispose.push(this.treeWidget.model.onTerminalGroupAdded(groupNode => this.handleTerminalGroupAdded(groupNode)));
         this.toDispose.push(this.treeWidget.model.onTerminalRemoved(terminalNode => this.handleTerminalRemoved(terminalNode)));
-        this.toDispose.push(this.treeWidget.model.onTerminalAddedToGroup(event => this.handleWidgetAddedToTerminalGroup(event)));
+        this.toDispose.push(this.treeWidget.model.onTerminalAddedToGroup(terminalNode => this.handleWidgetAddedToTerminalGroup(terminalNode)));
         this.toDispose.push(this.shell.onDidChangeActiveWidget(({ newValue }) => this.handleOnDidChangeActiveWidget(newValue)));
         this.title.iconClass = codicon('terminal-tmux');
         this.id = TerminalManagerWidget.ID;
@@ -177,15 +177,23 @@ export class TerminalManagerWidget extends BaseWidget {
         }
     }
 
-    addWidgetToTerminalGroup(widget: Widget, parentId: TerminalManager.TerminalID): void {
+    addWidgetToTerminalGroup(widget: Widget, terminalId: TerminalManager.TerminalID): void {
         if (widget instanceof TerminalWidgetImpl) {
-            this.treeWidget.model.splitTerminalHorizontally(widget, parentId);
+            this.treeWidget.model.splitTerminalHorizontally(widget, terminalId);
         }
         // this.treeWidget.model.splitTerminalHorizontally(terminalWidget, parentId);
         // console.log('SENTINEL TERMINAL WIDGET', terminalWidget, parentId);
     }
 
-    protected handleWidgetAddedToTerminalGroup(event: { groupNode: TerminalManagerTreeTypes.TerminalGroupNode, terminalWidget: Widget }): void {
+    protected handleWidgetAddedToTerminalGroup(terminalNode: TerminalManagerTreeTypes.TerminalNode): void {
+        const groupNode = terminalNode.parent;
+        console.log('SENTINEL GOT PAGE NODE', groupNode);
+        if (TerminalManagerTreeTypes.isTerminalGroupNode(groupNode)) {
+            const { panel } = groupNode;
+            panel.addWidget(terminalNode.widget);
+            console.log('SENTINEL WIDGET ADDED TO PANEL', panel);
+            this.update();
+        }
         // const parentTerminalColumn = event.groupNode.widget;
         // const { terminalWidget } = event;
         // parentTerminalColumn.addWidget(terminalWidget);

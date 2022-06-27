@@ -15,7 +15,7 @@
 // *****************************************************************************
 
 import { injectable, postConstruct } from '@theia/core/shared/inversify';
-import { TreeModelImpl, CompositeTreeNode, SelectableTreeNode, SplitPanel, Widget } from '@theia/core/lib/browser';
+import { TreeModelImpl, CompositeTreeNode, SelectableTreeNode, SplitPanel } from '@theia/core/lib/browser';
 import { Emitter } from '@theia/core';
 import { TerminalManager, TerminalManagerTreeTypes } from './terminal-manager-types';
 import { TerminalWidget } from './base/terminal-widget';
@@ -42,7 +42,8 @@ export class TerminalManagerTreeModel extends TreeModelImpl {
     readonly onTerminalGroupAdded = this.onTerminalGroupAddedEmitter.event;
     protected onTerminalRemovedEmitter = new Emitter<TerminalManagerTreeTypes.TerminalNode>();
     readonly onTerminalRemoved = this.onTerminalRemovedEmitter.event;
-    protected onTerminalAddedToGroupEmitter = new Emitter<{ groupNode: TerminalManagerTreeTypes.TerminalGroupNode, terminalWidget: Widget }>();
+
+    protected onTerminalAddedToGroupEmitter = new Emitter<TerminalManagerTreeTypes.TerminalNode>();
     readonly onTerminalAddedToGroup = this.onTerminalAddedToGroupEmitter.event;
 
     @postConstruct()
@@ -101,7 +102,7 @@ export class TerminalManagerTreeModel extends TreeModelImpl {
         }
     }
 
-    addWidget(widget: TerminalWidget, parent?: TerminalManagerTreeTypes.PageNode | TerminalManagerTreeTypes.TerminalGroupNode): void {
+    addWidget(widget: TerminalWidget, parent: TerminalManagerTreeTypes.PageNode | TerminalManagerTreeTypes.TerminalGroupNode): void {
         // const parentNode = parent ?? this.activePage;
         // if (parentNode) {
         //     const widgetNode = this.createTerminalWidgetNode(widget);
@@ -148,8 +149,7 @@ export class TerminalManagerTreeModel extends TreeModelImpl {
         };
     }
 
-    createGroupNode(panel: SplitPanel): TerminalManagerTreeTypes.TerminalGroupNode {
-        // const defaultGroupName = `group-${this.groupNum++}`;
+    protected createGroupNode(panel: SplitPanel): TerminalManagerTreeTypes.TerminalGroupNode {
         return {
             id: panel.id,
             label: panel.id,
@@ -219,21 +219,14 @@ export class TerminalManagerTreeModel extends TreeModelImpl {
         }
     }
 
-    splitTerminalHorizontally(terminalWidget: TerminalWidget, parentId: TerminalManager.TerminalID): void {
-        const parentTerminalColumn = this.getNode(parentId);
-        if (TerminalManagerTreeTypes.isTerminalNode(parentTerminalColumn)) {
-            const pageOrGroup = parentTerminalColumn.parent;
-            if (TerminalManagerTreeTypes.isPageNode(pageOrGroup) && parentTerminalColumn.widget instanceof SplitPanel) {
-                CompositeTreeNode.removeChild(pageOrGroup, parentTerminalColumn);
-                const newGroupNode = this.createGroupNode(parentTerminalColumn.widget);
-                CompositeTreeNode.addChild(pageOrGroup, newGroupNode);
-                CompositeTreeNode.addChild(newGroupNode, parentTerminalColumn);
-                this.addWidget(terminalWidget, newGroupNode);
-                this.onTerminalAddedToGroupEmitter.fire({ groupNode: newGroupNode, terminalWidget });
-            } else if (TerminalManagerTreeTypes.isTerminalGroupNode(pageOrGroup)) {
-                this.addWidget(terminalWidget, pageOrGroup);
-                this.onTerminalAddedToGroupEmitter.fire({ groupNode: pageOrGroup, terminalWidget });
-            }
+    splitTerminalHorizontally(terminalWidget: TerminalWidget, terminalId: TerminalManager.TerminalID): void {
+        const siblingTerminal = this.getNode(terminalId);
+        console.log('SENTINEL SIBLING TERMINA', siblingTerminal);
+        const parentGroup = siblingTerminal?.parent;
+        if (parentGroup && TerminalManagerTreeTypes.isTerminalGroupNode(parentGroup)) {
+            const terminalNode = this.createTerminalWidgetNode(terminalWidget);
+            CompositeTreeNode.addChild(parentGroup, terminalNode);
+            this.onTerminalAddedToGroupEmitter.fire(terminalNode);
             this.refresh();
         }
     }
