@@ -128,7 +128,6 @@ export class TerminalManagerWidget extends BaseWidget {
             headerSize: 0,
             animationDuration: 200
         }, this.splitPositionHandler);
-        // necessary because a panel extends Widget
         const newPagePanel = new SplitPanel({
             layout: newPageLayout,
         });
@@ -179,10 +178,8 @@ export class TerminalManagerWidget extends BaseWidget {
 
     addWidgetToTerminalGroup(widget: Widget, terminalId: TerminalManager.TerminalID): void {
         if (widget instanceof TerminalWidgetImpl) {
-            this.treeWidget.model.splitTerminalHorizontally(widget, terminalId);
+            this.treeWidget.model.addWidgetToTerminalGroup(widget, terminalId);
         }
-        // this.treeWidget.model.splitTerminalHorizontally(terminalWidget, parentId);
-        // console.log('SENTINEL TERMINAL WIDGET', terminalWidget, parentId);
     }
 
     protected handleWidgetAddedToTerminalGroup(terminalNode: TerminalManagerTreeTypes.TerminalNode): void {
@@ -191,14 +188,8 @@ export class TerminalManagerWidget extends BaseWidget {
         if (TerminalManagerTreeTypes.isTerminalGroupNode(groupNode)) {
             const { panel } = groupNode;
             panel.addWidget(terminalNode.widget);
-            console.log('SENTINEL WIDGET ADDED TO PANEL', panel);
             this.update();
         }
-        // const parentTerminalColumn = event.groupNode.widget;
-        // const { terminalWidget } = event;
-        // parentTerminalColumn.addWidget(terminalWidget);
-        // this.update();
-        // // console.log('SENTINEL NEW GROUP NODE', groupNode);
     }
 
     protected handleOnDidChangeActiveWidget(widget: Widget | null): void {
@@ -253,7 +244,7 @@ export class TerminalManagerWidget extends BaseWidget {
     }
 
     deleteTerminal(terminalNode: TerminalManagerTreeTypes.TerminalNode): void {
-        this.treeWidget.model.deleteTerminalNode(terminalNode);
+        this.treeWidget.model.deleteTerminalWidgetNode(terminalNode);
     }
 
     deleteGroup(groupNode: TerminalManagerTreeTypes.TerminalGroupNode): void {
@@ -261,7 +252,7 @@ export class TerminalManagerWidget extends BaseWidget {
     }
 
     deletePage(pageNode: TerminalManagerTreeTypes.PageNode): void {
-        this.treeWidget.model.deletePageNode(pageNode);
+        this.treeWidget.model.deleteTerminalPage(pageNode);
     }
 
     toggleRenameTerminal(node: TerminalManagerTreeTypes.TerminalManagerTreeNode): void {
