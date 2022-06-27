@@ -16,7 +16,7 @@
 
 import * as React from '@theia/core/shared/react';
 import { Container, inject, injectable, interfaces, postConstruct } from '@theia/core/shared/inversify';
-import { codicon, createTreeContainer, Message, NodeProps, SelectableTreeNode, TreeModel, TreeNode, TreeWidget } from '@theia/core/lib/browser';
+import { codicon, createTreeContainer, Message, NodeProps, SelectableTreeNode, TreeModel, TreeNode, TreeWidget, TREE_NODE_INDENT_GUIDE_CLASS } from '@theia/core/lib/browser';
 import { TerminalManagerTreeModel } from './terminal-manager-tree-model';
 import { CommandRegistry, CompositeMenuNode, Emitter, MenuModelRegistry } from '@theia/core';
 import { TerminalMenus } from './terminal-frontend-contribution';
@@ -170,7 +170,7 @@ export class TerminalManagerTreeWidget extends TreeWidget {
     }
 
     deleteTerminal(node: TerminalManagerTreeTypes.TerminalNode): void {
-        this.model.deleteTerminalWidgetNode(node);
+        this.model.deleteTerminalNode(node);
     }
 
     toggleRenameTerminal(node: TerminalManagerTreeTypes.TerminalManagerTreeNode): void {
@@ -184,6 +184,39 @@ export class TerminalManagerTreeWidget extends TreeWidget {
     protected override onUpdateRequest(msg: Message): void {
         super.onUpdateRequest(msg);
         this.onDidChangeEmitter.fire(undefined);
+    }
+
+    // protected override shouldDisplayNode(node: TreeNode): boolean {
+    //     if ((TerminalManagerTreeTypes.isTerminalGroupNode(node) || TerminalManagerTreeTypes.isPageNode(node)) && node.children.length < 2) {
+    //         return false;
+    //     }
+    //     return super.shouldDisplayNode(node);
+    // }
+
+    protected override renderIndent(node: TreeNode, props: NodeProps): React.ReactNode {
+        const renderIndentGuides = this.corePreferences['workbench.tree.renderIndentGuides'];
+        if (renderIndentGuides === 'none') {
+            return undefined;
+        }
+
+        const indentDivs: React.ReactNode[] = [];
+        let current: TreeNode | undefined = node;
+        let depth = props.depth;
+        while (current && depth) {
+            const classNames: string[] = [TREE_NODE_INDENT_GUIDE_CLASS];
+            if (this.needsActiveIndentGuideline(current)) {
+                classNames.push('active');
+            } else {
+                classNames.push(renderIndentGuides === 'onHover' ? 'hover' : 'always');
+            }
+            const paddingLeft = this.props.leftPadding * depth;
+            indentDivs.unshift(<div key={depth} className={classNames.join(' ')} style={{
+                paddingLeft: `${paddingLeft}px`
+            }} />);
+            current = current.parent;
+            depth--;
+        }
+        return indentDivs;
     }
 }
 

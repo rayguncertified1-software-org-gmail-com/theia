@@ -35,16 +35,18 @@ export class TerminalManagerTreeModel extends TreeModelImpl {
 
     protected onPageAddedEmitter = new Emitter<TerminalManagerTreeTypes.PageNode>();
     readonly onPageAdded = this.onPageAddedEmitter.event;
-    protected onPageRemovedEmitter = new Emitter<TerminalManagerTreeTypes.PageNode>();
-    readonly onPageRemoved = this.onPageRemovedEmitter.event;
+    // protected onPageDeletedEmitter = new Emitter<TerminalManagerTreeTypes.PageNode>();
+    // readonly onPageDeleted = this.onPageDeletedEmitter.event;
 
     protected onTerminalGroupAddedEmitter = new Emitter<TerminalManagerTreeTypes.TerminalGroupNode>();
     readonly onTerminalGroupAdded = this.onTerminalGroupAddedEmitter.event;
-    protected onTerminalRemovedEmitter = new Emitter<TerminalManagerTreeTypes.TerminalNode>();
-    readonly onTerminalRemoved = this.onTerminalRemovedEmitter.event;
+    // protected onTerminalGroupDeletedEmitter = new Emitter<TerminalManagerTreeTypes.TerminalGroupNode>();
+    // readonly onTerminalGroupDeleted = this.onTerminalGroupDeletedEmitter.event;
 
     protected onTerminalAddedToGroupEmitter = new Emitter<TerminalManagerTreeTypes.TerminalNode>();
     readonly onTerminalAddedToGroup = this.onTerminalAddedToGroupEmitter.event;
+    // protected onTerminalDeletedEmitter = new Emitter<TerminalManagerTreeTypes.TerminalNode>();
+    // readonly onTerminalDeleted = this.onTerminalDeletedEmitter.event;
 
     @postConstruct()
     protected override init(): void {
@@ -56,6 +58,153 @@ export class TerminalManagerTreeModel extends TreeModelImpl {
             }
         }));
         this.root = { id: 'root', parent: undefined, children: [], visible: false } as CompositeTreeNode;
+    }
+
+    addTerminalPage(widget: TerminalWidget, groupPanel: SplitPanel, pagePanel: SplitPanel): void {
+        const pageNode = this.createPageNode(pagePanel);
+        const groupNode = this.createGroupNode(groupPanel);
+        const terminalNode = this.createTerminalNode(widget);
+        if (this.root && CompositeTreeNode.is(this.root)) {
+            this.activePage = pageNode;
+            CompositeTreeNode.addChild(groupNode, terminalNode);
+            CompositeTreeNode.addChild(pageNode, groupNode);
+            this.root = CompositeTreeNode.addChild(this.root, pageNode);
+            this.onPageAddedEmitter.fire(pageNode);
+            setTimeout(() => {
+                this.selectionService.addSelection(terminalNode);
+            });
+        }
+    }
+
+    protected createPageNode(pagePanel: SplitPanel): TerminalManagerTreeTypes.PageNode {
+        return {
+            id: pagePanel.id,
+            label: pagePanel.id,
+            parent: undefined,
+            selected: false,
+            children: [],
+            page: true,
+            isEditing: false,
+            panel: pagePanel,
+        };
+    }
+
+    deleteTerminalPage(pageNode: TerminalManagerTreeTypes.PageNode): void {
+        while (pageNode.children.length > 0) {
+            const child = pageNode.children[0];
+            if (TerminalManagerTreeTypes.isTerminalGroupNode(child)) {
+                this.deleteTerminalGroup(child);
+            }
+        }
+        if (this.root && CompositeTreeNode.is(this.root)) {
+            pageNode.panel.dispose();
+            CompositeTreeNode.removeChild(this.root, pageNode);
+            this.refresh();
+            setTimeout(() => {
+                if (CompositeTreeNode.is(this.root) && SelectableTreeNode.is(this.root?.children[0])) {
+                    this.selectionService.addSelection(this.root.children[0]);
+                }
+            });
+        }
+    }
+
+    addTerminalGroup(widget: TerminalWidget, groupPanel: SplitPanel): void {
+        const groupNode = this.createGroupNode(groupPanel);
+        const terminalNode = this.createTerminalNode(widget);
+        if (this.root && this.activePage && CompositeTreeNode.is(this.root)) {
+            this.onTerminalGroupAddedEmitter.fire(groupNode);
+            CompositeTreeNode.addChild(groupNode, terminalNode);
+            CompositeTreeNode.addChild(this.activePage, groupNode);
+            this.refresh();
+            setTimeout(() => {
+                this.selectionService.addSelection(terminalNode);
+            });
+        }
+    }
+
+    protected createGroupNode(panel: SplitPanel): TerminalManagerTreeTypes.TerminalGroupNode {
+        return {
+            id: panel.id,
+            label: panel.id,
+            parent: undefined,
+            selected: false,
+            panel,
+            children: [],
+            terminalGroup: true,
+            isEditing: false,
+        };
+    }
+
+    deleteTerminalGroup(groupNode: TerminalManagerTreeTypes.TerminalGroupNode): void {
+        while (groupNode.children.length > 0) {
+            const child = groupNode.children[0];
+            if (TerminalManagerTreeTypes.isTerminalNode(child)) {
+                this.deleteTerminalNode(child);
+            }
+        }
+        const parentPageNode = groupNode.parent;
+        if (TerminalManagerTreeTypes.isPageNode(parentPageNode)) {
+            groupNode.panel.dispose();
+            // this.onTerminalGroupDeletedEmitter.fire(groupNode);
+            CompositeTreeNode.removeChild(parentPageNode, groupNode);
+            this.refresh();
+        }
+    }
+
+    addTerminal(terminalWidget: TerminalWidget, terminalId: TerminalManager.TerminalID): void {
+        const siblingTerminal = this.getNode(terminalId);
+        const parentGroup = siblingTerminal?.parent;
+        if (parentGroup && TerminalManagerTreeTypes.isTerminalGroupNode(parentGroup)) {
+            const terminalNode = this.createTerminalNode(terminalWidget);
+            CompositeTreeNode.addChild(parentGroup, terminalNode);
+            this.onTerminalAddedToGroupEmitter.fire(terminalNode);
+            this.refresh();
+            setTimeout(() => {
+                if (SelectableTreeNode.is(terminalNode)) {
+                    this.selectionService.addSelection(terminalNode);
+                }
+            });
+        }
+    }
+
+    createTerminalNode(widget: TerminalWidget): TerminalManagerTreeTypes.TerminalNode {
+        return {
+            id: `${widget.id}`,
+            label: `${widget.id}`,
+            parent: undefined,
+            children: [],
+            widget,
+            selected: false,
+            terminal: true,
+            isEditing: false,
+        };
+    }
+
+    deleteTerminalNode(node: TerminalManagerTreeTypes.TerminalNode): void {
+        const parentGroup = node.parent;
+        if (TerminalManagerTreeTypes.isTerminalNode(node) && TerminalManagerTreeTypes.isTerminalGroupNode(parentGroup)) {
+            node.widget.dispose();
+            // this.onTerminalDeletedEmitter.fire(node);
+            CompositeTreeNode.removeChild(parentGroup, node);
+            this.refresh();
+        }
+    }
+
+    toggleRenameTerminal(node: TerminalManagerTreeTypes.TerminalManagerTreeNode): void {
+        if (TerminalManagerTreeTypes.isTerminalManagerTreeNode(node)) {
+            node.isEditing = true;
+            this.root = this.root;
+        }
+    }
+
+    acceptRename(nodeId: string, newName: string): void {
+        const node = this.getNode(nodeId);
+        if (TerminalManagerTreeTypes.isTerminalManagerTreeNode(node)) {
+            const trimmedName = newName.trim();
+            node.label = trimmedName === '' ? node.label : newName;
+            node.isEditing = false;
+            this.root = this.root;
+        }
     }
 
     handleSelectionChanged(selectedNode: SelectableTreeNode): void {
@@ -90,136 +239,19 @@ export class TerminalManagerTreeModel extends TreeModelImpl {
         this.onTreeSelectionChangedEmitter.fire({ activePage, activeTerminal, activeGroup });
     }
 
-    addTerminalPage(widget: TerminalWidget, groupPanel: SplitPanel, pagePanel: SplitPanel): void {
-        const pageNode = this.createPageNode(pagePanel);
-        const groupNode = this.createGroupNode(groupPanel);
-        const terminalNode = this.createTerminalWidgetNode(widget);
-        if (this.root && CompositeTreeNode.is(this.root)) {
-            this.activePage = pageNode;
-            CompositeTreeNode.addChild(groupNode, terminalNode);
-            CompositeTreeNode.addChild(pageNode, groupNode);
-            this.root = CompositeTreeNode.addChild(this.root, pageNode);
-            this.onPageAddedEmitter.fire(pageNode);
-        }
+    protected pruneTree(): void {
+        // if (!this.root) {
+        //     return undefined;
+        // }
+        // for (const node of new DepthFirstTreeIterator(this.root)) {
+        //     if (TerminalManagerTreeTypes.isTerminalGroupNode(node) && node.children.length < 2) {
+        //         node.visible = false;
+        //     }
+        // }
     }
 
-    deleteTerminalPage(pageNode: TerminalManagerTreeTypes.PageNode): void {
-        while (pageNode.children.length > 0) {
-            const child = pageNode.children[0];
-            if (TerminalManagerTreeTypes.isTerminalGroupNode(child)) {
-                this.deleteGroupNode(child);
-            }
-        }
-        if (this.root && CompositeTreeNode.is(this.root)) {
-            CompositeTreeNode.removeChild(this.root, pageNode);
-            this.onPageRemovedEmitter.fire(pageNode);
-            this.refresh();
-            setTimeout(() => {
-                if (CompositeTreeNode.is(this.root) && SelectableTreeNode.is(this.root?.children[0])) {
-                    this.selectionService.addSelection(this.root.children[0]);
-                }
-            });
-        }
-    }
-
-    addTerminalGroup(widget: TerminalWidget, groupPanel: SplitPanel): void {
-        const groupNode = this.createGroupNode(groupPanel);
-        const terminalNode = this.createTerminalWidgetNode(widget);
-        if (this.root && this.activePage && CompositeTreeNode.is(this.root)) {
-            CompositeTreeNode.addChild(groupNode, terminalNode);
-            CompositeTreeNode.addChild(this.activePage, groupNode);
-            this.onTerminalGroupAddedEmitter.fire(groupNode);
-            this.refresh();
-        }
-    }
-
-    protected createPageNode(pagePanel: SplitPanel): TerminalManagerTreeTypes.PageNode {
-        return {
-            id: pagePanel.id,
-            label: pagePanel.id,
-            parent: undefined,
-            selected: false,
-            children: [],
-            page: true,
-            isEditing: false,
-            panel: pagePanel,
-        };
-    }
-
-    protected createGroupNode(panel: SplitPanel): TerminalManagerTreeTypes.TerminalGroupNode {
-        return {
-            id: panel.id,
-            label: panel.id,
-            parent: undefined,
-            selected: false,
-            panel,
-            children: [],
-            terminalGroup: true,
-            isEditing: false,
-        };
-    }
-
-    deleteGroupNode(groupNode: TerminalManagerTreeTypes.TerminalGroupNode): void {
-        while (groupNode.children.length > 0) {
-            const child = groupNode.children[0];
-            if (TerminalManagerTreeTypes.isTerminalNode(child)) {
-                this.deleteTerminalWidgetNode(child);
-            }
-        }
-        const parentPageNode = groupNode.parent;
-        if (TerminalManagerTreeTypes.isPageNode(parentPageNode)) {
-            CompositeTreeNode.removeChild(parentPageNode, groupNode);
-            this.refresh();
-        }
-    }
-
-    createTerminalWidgetNode(widget: TerminalWidget): TerminalManagerTreeTypes.TerminalNode {
-        return {
-            id: `${widget.id}`,
-            label: `${widget.id}`,
-            parent: undefined,
-            children: [],
-            widget,
-            selected: false,
-            terminal: true,
-            isEditing: false,
-        };
-    }
-
-    deleteTerminalWidgetNode(node: TerminalManagerTreeTypes.TerminalNode): void {
-        const parentGroup = node.parent;
-        if (TerminalManagerTreeTypes.isTerminalNode(node) && TerminalManagerTreeTypes.isTerminalGroupNode(parentGroup)) {
-            CompositeTreeNode.removeChild(parentGroup, node);
-            this.onTerminalRemovedEmitter.fire(node);
-            this.refresh();
-        }
-    }
-
-    addWidgetToTerminalGroup(terminalWidget: TerminalWidget, terminalId: TerminalManager.TerminalID): void {
-        const siblingTerminal = this.getNode(terminalId);
-        const parentGroup = siblingTerminal?.parent;
-        if (parentGroup && TerminalManagerTreeTypes.isTerminalGroupNode(parentGroup)) {
-            const terminalNode = this.createTerminalWidgetNode(terminalWidget);
-            CompositeTreeNode.addChild(parentGroup, terminalNode);
-            this.onTerminalAddedToGroupEmitter.fire(terminalNode);
-            this.refresh();
-        }
-    }
-
-    toggleRenameTerminal(node: TerminalManagerTreeTypes.TerminalManagerTreeNode): void {
-        if (TerminalManagerTreeTypes.isTerminalManagerTreeNode(node)) {
-            node.isEditing = true;
-            this.root = this.root;
-        }
-    }
-
-    acceptRename(nodeId: string, newName: string): void {
-        const node = this.getNode(nodeId);
-        if (TerminalManagerTreeTypes.isTerminalManagerTreeNode(node)) {
-            const trimmedName = newName.trim();
-            node.label = trimmedName === '' ? node.label : newName;
-            node.isEditing = false;
-            this.root = this.root;
-        }
+    override async refresh(parent?: Readonly<CompositeTreeNode>): Promise<CompositeTreeNode | undefined> {
+        this.pruneTree();
+        return super.refresh(parent);
     }
 }
