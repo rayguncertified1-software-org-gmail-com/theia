@@ -89,12 +89,13 @@ export class ApplicationShellWithTerminalManagerOverride extends ApplicationShel
         await super.setLayoutData(layoutData);
         const { terminalManager, activeWidgetId } = layoutData;
         if (terminalManager) {
-            await this.terminalManagerIsReady;
-            this.terminalManager.setLayoutData(terminalManager);
-            this.registerWithFocusTracker(terminalManager);
-        }
-        if (activeWidgetId) {
-            this.activateWidget(activeWidgetId);
+            this.terminalManagerIsReady.then(() => {
+                this.terminalManager.setLayoutData(terminalManager);
+                this.registerWithFocusTracker(terminalManager);
+                if (activeWidgetId) {
+                    this.activateWidget(activeWidgetId);
+                }
+            });
         }
     }
 
