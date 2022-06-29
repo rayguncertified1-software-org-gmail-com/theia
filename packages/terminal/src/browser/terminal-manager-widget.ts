@@ -19,8 +19,10 @@ import {
     ApplicationShell,
     BaseWidget,
     codicon,
+    CompositeTreeNode,
     DockPanelRenderer,
     DockPanelRendererFactory,
+    FrontendApplicationContribution,
     Panel,
     PanelLayout,
     SplitLayout,
@@ -36,7 +38,7 @@ import { TerminalCommands } from './terminal-frontend-contribution';
 import { TerminalManager, TerminalManagerTreeTypes } from './terminal-manager-types';
 
 @injectable()
-export class TerminalManagerWidget extends BaseWidget {
+export class TerminalManagerWidget extends BaseWidget implements FrontendApplicationContribution {
     static ID = 'terminal-manager-widget';
     static LABEL = 'Terminal';
 
@@ -73,6 +75,7 @@ export class TerminalManagerWidget extends BaseWidget {
     override layout: PanelLayout;
 
     protected pageAndTreeLayout: ViewContainerLayout | undefined;
+    protected layoutWasRestored = false;
 
     // serves as an empty container so that different view containers can be swapped out
     protected terminalPanelWrapper = new Panel({
@@ -117,7 +120,8 @@ export class TerminalManagerWidget extends BaseWidget {
         this.pageAndTreeLayout.addWidget(this.treeWidget);
     }
 
-    initializePanelSizes(): void {
+    initializeLayout(): void {
+        console.log('SENTINEL LAYOUT WAS INITIALIZED WITHOUT PROBLEMS');
         // this.pageAndTreeLayout?.setPartSizes([60, 15]);
     }
 
@@ -341,5 +345,6 @@ export class TerminalManagerWidget extends BaseWidget {
         // } else {
         //     this.refresh();
         // }
+        this.layoutWasRestored = true;
     }
 }

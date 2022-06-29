@@ -41,7 +41,6 @@ export class ApplicationShellWithTerminalManagerOverride extends ApplicationShel
         this.frontendState.reachedState('ready').then(() => this.createTerminalManager()).then(widget => {
             this.terminalManager = widget;
             this.bottomPanel.addWidget(this.terminalManager);
-            this.terminalManager.initializePanelSizes();
             this.terminalManagerIsReadyDeferred.resolve();
         });
     }

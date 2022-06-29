@@ -100,6 +100,7 @@ export default new ContainerModule((
     bind(TerminalThemeService).toSelf().inSingletonScope();
 
     bind(TerminalManagerWidget).toSelf().inSingletonScope();
+
     bind(WidgetFactory).toDynamicValue(context => ({
         id: TerminalManagerWidget.ID,
         createWidget: () => TerminalManagerWidget.createWidget(context.container),
