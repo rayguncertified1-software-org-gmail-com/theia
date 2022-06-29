@@ -52,6 +52,7 @@ import { TerminalThemeService } from './terminal-theme-service';
 import { QuickAccessContribution } from '@theia/core/lib/browser/quick-input/quick-access';
 import { TerminalManagerWidget } from './terminal-manager-widget';
 import { ApplicationShellWithTerminalManagerOverride } from './application-shell-with-terminal-manager-override';
+import { createTerminalLabelWidgetFactory, TerminalLabelWidgetFactory } from './terminal-label/terminal-label-widget';
 
 export default new ContainerModule((
     bind: interfaces.Bind,
@@ -83,7 +84,7 @@ export default new ContainerModule((
             child.bind('terminal-dom-id').toConstantValue(domId);
 
             child.bind(TerminalSearchWidgetFactory).toDynamicValue(context => createTerminalSearchFactory(context.container));
-
+            child.bind(TerminalLabelWidgetFactory).toDynamicValue(({ container }) => createTerminalLabelWidgetFactory(container));
             return child.get(TerminalWidget);
         }
     }));

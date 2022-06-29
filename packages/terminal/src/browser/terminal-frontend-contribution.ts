@@ -149,13 +149,13 @@ export namespace TerminalCommands {
         id: 'terminal:new-in-manager',
         category: TERMINAL_CATEGORY,
         label: 'Create New Terminal in Manager',
-        iconClass: codicon('add'),
+        iconClass: codicon('split-horizontal'),
     });
     export const MANAGER_NEW_TERMINAL_TOOLBAR = Command.toDefaultLocalizedCommand({
         id: 'terminal:new-in-manager-toolbar',
         category: TERMINAL_CATEGORY,
         label: 'Create New Terminal in Manager',
-        iconClass: codicon('add'),
+        iconClass: codicon('split-horizontal'),
     });
     export const MANAGER_DELETE_TERMINAL = Command.toDefaultLocalizedCommand({
         id: 'terminal:delete-terminal',
@@ -843,7 +843,7 @@ export class TerminalFrontendContribution implements FrontendApplicationContribu
 
     protected async openTerminal(options?: TerminalManager.ExtendedWidgetOptions): Promise<void> {
         const cwd = await this.selectTerminalCwd();
-        const termWidget = await this.newTerminal({ cwd });
+        const termWidget = await this.newTerminal({ cwd, title: 'super cool terminal' });
         termWidget.start();
         this.open(termWidget, { widgetOptions: options });
     }

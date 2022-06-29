@@ -37,6 +37,7 @@ import { TerminalThemeService } from './terminal-theme-service';
 import { CommandLineOptions, ShellCommandBuilder } from '@theia/process/lib/common/shell-command-builder';
 import { Key } from '@theia/core/lib/browser/keys';
 import { nls } from '@theia/core/lib/common/nls';
+import { TerminalLabelWidget, TerminalLabelWidgetFactory } from './terminal-label/terminal-label-widget';
 
 export const TERMINAL_WIDGET_FACTORY_ID = 'terminal';
 
@@ -58,6 +59,7 @@ export class TerminalWidgetImpl extends TerminalWidget implements StatefulWidget
     protected fitAddon: FitAddon;
     protected term: Terminal;
     protected searchBox: TerminalSearchWidget;
+    protected labelWidget: TerminalLabelWidget | undefined;
     protected restored = false;
     protected closeOnDispose = true;
     protected waitForConnection: Deferred<RpcProtocol> | undefined;
@@ -77,6 +79,7 @@ export class TerminalWidgetImpl extends TerminalWidget implements StatefulWidget
     @inject(ContributionProvider) @named(TerminalContribution) protected readonly terminalContributionProvider: ContributionProvider<TerminalContribution>;
     @inject(TerminalService) protected readonly terminalService: TerminalService;
     @inject(TerminalSearchWidgetFactory) protected readonly terminalSearchBoxFactory: TerminalSearchWidgetFactory;
+    @inject(TerminalLabelWidgetFactory) protected readonly terminalLabelWidgetFactory: TerminalLabelWidgetFactory;
     @inject(TerminalCopyOnSelectionHandler) protected readonly copyOnSelectionHandler: TerminalCopyOnSelectionHandler;
     @inject(TerminalThemeService) protected readonly themeService: TerminalThemeService;
     @inject(ShellCommandBuilder) protected readonly shellCommandBuilder: ShellCommandBuilder;
@@ -132,7 +135,6 @@ export class TerminalWidgetImpl extends TerminalWidget implements StatefulWidget
             rendererType: this.getTerminalRendererType(this.preferences['terminal.integrated.rendererType']),
             theme: this.themeService.theme
         });
-
         this.fitAddon = new FitAddon();
         this.term.loadAddon(this.fitAddon);
 
@@ -254,6 +256,8 @@ export class TerminalWidgetImpl extends TerminalWidget implements StatefulWidget
         }
 
         this.searchBox = this.terminalSearchBoxFactory(this.term);
+        // this.labelWidget = this.terminalLabelWidgetFactory(this.term);
+        // this.toDispose.push(this.labelWidget);
         this.toDispose.push(this.searchBox);
     }
 

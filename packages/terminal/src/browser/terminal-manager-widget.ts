@@ -205,15 +205,6 @@ export class TerminalManagerWidget extends BaseWidget {
         }
     }
 
-    // protected handlePageDeleted(pageNode: TerminalManagerTreeTypes.PageNode): void {
-    //     pageNode.panel?.dispose();
-    // }
-
-    // protected handleTerminalDeleted(terminalNode: TerminalManagerTreeTypes.TerminalNode): void {
-    //     const { widget } = terminalNode;
-    //     widget.dispose();
-    // }
-
     protected handleSelectionChange(changeEvent: TerminalManagerTreeTypes.SelectionChangedEvent): void {
         const { activePage, activeTerminal } = changeEvent;
         console.log('SENTINEL SHOULD BE RECEIVING EVENT', activeTerminal);

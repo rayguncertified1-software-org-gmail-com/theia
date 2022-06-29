@@ -16,7 +16,18 @@
 
 import * as React from '@theia/core/shared/react';
 import { Container, inject, injectable, interfaces, postConstruct } from '@theia/core/shared/inversify';
-import { codicon, createTreeContainer, Message, NodeProps, SelectableTreeNode, TreeModel, TreeNode, TreeWidget, TREE_NODE_INDENT_GUIDE_CLASS } from '@theia/core/lib/browser';
+import {
+    codicon,
+    CompositeTreeNode,
+    createTreeContainer,
+    Message,
+    NodeProps,
+    SelectableTreeNode,
+    TreeModel,
+    TreeNode,
+    TreeWidget,
+    TREE_NODE_INDENT_GUIDE_CLASS,
+} from '@theia/core/lib/browser';
 import { TerminalManagerTreeModel } from './terminal-manager-tree-model';
 import { CommandRegistry, CompositeMenuNode, Emitter, MenuModelRegistry } from '@theia/core';
 import { TerminalMenus } from './terminal-frontend-contribution';
@@ -27,7 +38,7 @@ export class TerminalManagerTreeWidget extends TreeWidget {
     static ID = 'terminal-manager-tree-widget';
 
     static createContainer(parent: interfaces.Container): Container {
-        const child = createTreeContainer(parent, { props: { contextMenuPath: TerminalMenus.TERMINAL_MANAGER_TREE_CONTEXT_MENU } });
+        const child = createTreeContainer(parent, { props: { leftPadding: 8, contextMenuPath: TerminalMenus.TERMINAL_MANAGER_TREE_CONTEXT_MENU } });
         child.bind(TerminalManagerTreeModel).toSelf().inSingletonScope();
         child.rebind(TreeModel).to(TerminalManagerTreeModel);
         child.bind(TerminalManagerTreeWidget).toSelf().inSingletonScope();
@@ -186,12 +197,14 @@ export class TerminalManagerTreeWidget extends TreeWidget {
         this.onDidChangeEmitter.fire(undefined);
     }
 
-    // protected override shouldDisplayNode(node: TreeNode): boolean {
-    //     if ((TerminalManagerTreeTypes.isTerminalGroupNode(node) || TerminalManagerTreeTypes.isPageNode(node)) && node.children.length < 2) {
-    //         return false;
-    //     }
-    //     return super.shouldDisplayNode(node);
-    // }
+    protected override shouldDisplayNode(node: TreeNode): boolean {
+        if (TerminalManagerTreeTypes.isTerminalGroupNode(node) && node.children.length < 2) {
+            return false;
+        } else if (TerminalManagerTreeTypes.isPageNode(node) && this.model.pages.size < 2) {
+            return false;
+        }
+        return super.shouldDisplayNode(node);
+    }
 
     protected override renderIndent(node: TreeNode, props: NodeProps): React.ReactNode {
         const renderIndentGuides = this.corePreferences['workbench.tree.renderIndentGuides'];
@@ -218,5 +231,14 @@ export class TerminalManagerTreeWidget extends TreeWidget {
         }
         return indentDivs;
     }
+
+    protected override getDepthForNode(node: TreeNode, depths: Map<CompositeTreeNode | undefined, number>): number {
+        const parentDepth = depths.get(node.parent);
+        if (TerminalManagerTreeTypes.isTerminalNode(node) && parentDepth === undefined) {
+            return 1;
+        }
+        return super.getDepthForNode(node, depths);
+    }
+
 }
 
