@@ -21,7 +21,6 @@ import {
     SelectableTreeNode,
     CompositeTreeNode,
     SplitPanel,
-    Widget,
     ApplicationShellLayoutVersion,
     DockPanel,
     SidePanel,
@@ -48,30 +47,26 @@ export namespace TerminalManager {
     }
     export interface TerminalWidgetLayoutData {
         widget: TerminalWidget;
-        height: number;
     }
 
     export interface PageLayoutData {
         groupLayouts: TerminalGroupLayoutData[];
+        groupRelativeWidths: number[];
         label: string;
     }
     export interface TerminalGroupLayoutData {
         widgetLayouts: TerminalWidgetLayoutData[];
-        width: number;
+        widgetRelativeHeights: number[];
         label: string;
     }
     export interface TerminalManagerLayoutData {
         pageLayouts: PageLayoutData[];
     }
-    export interface WidgetItem {
-        /** Can be undefined in case the widget could not be restored. */
-        widget?: Widget;
-    }
     export interface LayoutData {
         type: 'terminal-manager',
         items?: TerminalManagerLayoutData;
         // treeWidget?: TerminalManagerTreeWidget;
-        pageAndPanelRelativeSizes?: number[];
+        terminalAndTreeRelativeSizes?: number[];
     }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     export const isLayoutData = (obj: any): obj is LayoutData => typeof obj === 'object' && !!obj && 'type' in obj && obj.type === 'terminal-manager';

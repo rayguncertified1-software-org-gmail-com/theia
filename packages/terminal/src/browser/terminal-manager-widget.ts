@@ -272,12 +272,12 @@ export class TerminalManagerWidget extends BaseWidget {
         let layoutData = this.treeWidget.model.getLayoutData();
         const pageAndPanelRelativeSizes = this.pageAndTreeLayout?.relativeSizes();
         // layoutData = { ...layoutData, pageWidth, treeWidth, treeWidget: this.treeWidget };
-        layoutData = { ...layoutData, pageAndPanelRelativeSizes };
+        layoutData = { ...layoutData, terminalAndTreeRelativeSizes: pageAndPanelRelativeSizes };
         return layoutData;
     }
 
     setLayoutData(layoutData: TerminalManager.LayoutData): void {
-        const { pageAndPanelRelativeSizes, items } = layoutData;
+        const { terminalAndTreeRelativeSizes: pageAndPanelRelativeSizes, items } = layoutData;
         if (pageAndPanelRelativeSizes) {
             this.pageAndTreeLayout?.setRelativeSizes(pageAndPanelRelativeSizes);
         } else {
@@ -289,19 +289,21 @@ export class TerminalManagerWidget extends BaseWidget {
                 const pageLayout = pageLayouts[pageIndex];
                 const pagePanel = this.createPagePanel();
                 this.terminalPanelWrapper.addWidget(pagePanel);
-                const { groupLayouts } = pageLayout;
+                const { groupLayouts, groupRelativeWidths } = pageLayout;
                 for (let groupIndex = 0; groupIndex < groupLayouts.length; groupIndex++) {
                     const groupLayout = groupLayouts[groupIndex];
                     const groupPanel = this.createTerminalGroupPanel();
                     pagePanel.id = `page-${groupPanel.id}`;
                     pagePanel.addWidget(groupPanel);
-                    const { widgetLayouts } = groupLayout;
+                    const { widgetLayouts, widgetRelativeHeights } = groupLayout;
                     for (let widgetIndex = 0; widgetIndex < widgetLayouts.length; widgetIndex++) {
                         const widgetLayout = widgetLayouts[widgetIndex];
                         const { widget } = widgetLayout;
                         groupPanel.addWidget(widget);
                     }
+                    groupPanel.setRelativeSizes(widgetRelativeHeights);
                 }
+                pagePanel.setRelativeSizes(groupRelativeWidths);
             }
         }
         // const treeWidget = layoutData.treeWidget;

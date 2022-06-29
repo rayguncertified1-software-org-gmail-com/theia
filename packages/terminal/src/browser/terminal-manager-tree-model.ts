@@ -65,22 +65,21 @@ export class TerminalManagerTreeModel extends TreeModelImpl {
             const pageNodes = this.root.children;
             for (const pageNode of pageNodes) {
                 if (TerminalManagerTreeTypes.isPageNode(pageNode)) {
-                    const pageLayoutData: TerminalManager.PageLayoutData = {
-                        groupLayouts: [],
-                        label: pageNode.label
-                    };
                     const groupNodes = pageNode.children;
                     const pagePanel = pageNode.panel;
-                    const groupWidths = pagePanel.relativeSizes();
+                    const pageLayoutData: TerminalManager.PageLayoutData = {
+                        groupLayouts: [],
+                        label: pageNode.label,
+                        groupRelativeWidths: pagePanel.relativeSizes(),
+                    };
                     for (let groupIndex = 0; groupIndex < groupNodes.length; groupIndex++) {
                         const groupNode = groupNodes[groupIndex];
                         const groupPanel = groupNode.panel;
-                        const widgetHeights = groupPanel.relativeSizes();
                         if (TerminalManagerTreeTypes.isTerminalGroupNode(groupNode)) {
                             const groupLayoutData: TerminalManager.TerminalGroupLayoutData = {
                                 label: groupNode.label,
                                 widgetLayouts: [],
-                                width: groupWidths[groupIndex],
+                                widgetRelativeHeights: groupPanel.relativeSizes(),
                             };
                             const widgetNodes = groupNode.children;
                             for (let widgetIndex = 0; widgetIndex < widgetNodes.length; widgetIndex++) {
@@ -88,7 +87,6 @@ export class TerminalManagerTreeModel extends TreeModelImpl {
                                 if (TerminalManagerTreeTypes.isTerminalNode(widgetNode)) {
                                     const terminalLayoutData: TerminalManager.TerminalWidgetLayoutData = {
                                         widget: widgetNode.widget,
-                                        height: widgetHeights[widgetIndex],
                                     };
                                     groupLayoutData.widgetLayouts.push(terminalLayoutData);
                                 }
