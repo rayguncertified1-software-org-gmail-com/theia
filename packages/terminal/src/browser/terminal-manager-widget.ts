@@ -121,10 +121,6 @@ export class TerminalManagerWidget extends BaseWidget {
         this.pageAndTreeLayout?.setPartSizes([60, 15]);
     }
 
-    saveLayout(): void {
-        this.pageAndTreeLayout?.widgets.map(widget => this.pageAndTreeLayout?.getPartSize(widget));
-    }
-
     addTerminalPage(widget: Widget): void {
         if (widget instanceof TerminalWidgetImpl) {
             const groupPanel = this.createTerminalGroupPanel(widget);
@@ -262,7 +258,15 @@ export class TerminalManagerWidget extends BaseWidget {
     }
 
     getLayoutData(): TerminalManager.LayoutData {
-        return this.treeWidget.model.getLayoutData();
+        let layoutData = this.treeWidget.model.getLayoutData();
+        const mainPanelSizes = this.pageAndTreeLayout?.relativeSizes();
+        if (mainPanelSizes && mainPanelSizes.length === 2) {
+            const [pageWidth, treeWidth] = mainPanelSizes;
+            layoutData = { ...layoutData, pageWidth, treeWidth };
+        }
+        console.log('SENTINEL LAYOUT DATA', layoutData);
+        return layoutData;
+
     }
 
     setLayoutData(layoutData: TerminalManager.LayoutData): void {

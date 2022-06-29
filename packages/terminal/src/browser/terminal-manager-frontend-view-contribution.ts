@@ -17,9 +17,16 @@
 import { injectable } from '@theia/core/shared/inversify';
 import { AbstractViewContribution } from '@theia/core/lib/browser';
 import { TerminalManagerWidget } from './terminal-manager-widget';
+import { Command, CommandContribution, CommandRegistry } from '@theia/core';
+
+const GET_SIZES: Command = {
+    id: 'terminal-manager-get-layout',
+    label: 'TerminalManager: Get Layout Data',
+};
 
 @injectable()
-export class TerminalManagerFrontendViewContribution extends AbstractViewContribution<TerminalManagerWidget> {
+export class TerminalManagerFrontendViewContribution extends AbstractViewContribution<TerminalManagerWidget>
+    implements CommandContribution {
     constructor() {
         super({
             widgetId: TerminalManagerWidget.ID,
@@ -28,6 +35,13 @@ export class TerminalManagerFrontendViewContribution extends AbstractViewContrib
             defaultWidgetOptions: {
                 area: 'bottom'
             }
+        });
+    }
+
+    override registerCommands(commands: CommandRegistry): void {
+        super.registerCommands(commands);
+        commands.registerCommand(GET_SIZES, {
+            execute: () => this.tryGetWidget()?.getLayoutData(),
         });
     }
 }

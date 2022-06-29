@@ -192,6 +192,11 @@ export namespace TerminalCommands {
         label: 'Delete Group...',
         iconClass: codicon('trash'),
     });
+
+    export const GET_SIZES: Command = {
+        id: 'terminal-manager-get-layout',
+        label: 'TerminalManager: Get Layout Data',
+    };
 }
 
 @injectable()
@@ -410,6 +415,9 @@ export class TerminalFrontendContribution implements FrontendApplicationContribu
                 widgetOrID: Widget | string,
                 node?: TerminalManagerTreeTypes.TerminalManagerTreeNode,
             ) => widgetOrID instanceof TerminalManagerWidget || (widgetOrID === 'terminal-manager-tree' && TerminalManagerTreeTypes.isPageNode(node)),
+        });
+        commands.registerCommand(TerminalCommands.GET_SIZES, {
+            execute: () => this.widgetManager.getOrCreateWidget<TerminalManagerWidget>(TerminalManagerWidget.ID)?.then(widget => widget.getLayoutData()),
         });
         commands.registerCommand(TerminalCommands.MANAGER_NEW_TERMINAL, {
             execute: () => this.openTerminal({ area: 'terminal-manager-current' }),

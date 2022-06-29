@@ -68,6 +68,8 @@ export namespace TerminalManager {
     export interface LayoutData {
         type: 'terminal-manager',
         items?: TerminalManagerLayoutData;
+        pageWidth?: number;
+        treeWidth?: number;
     }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     export const isLayoutData = (obj: any): obj is LayoutData => typeof obj === 'object' && !!obj && 'type' in obj && obj.type === 'terminal-manager';
