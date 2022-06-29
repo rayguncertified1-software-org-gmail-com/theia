@@ -72,6 +72,8 @@ export class TerminalManagerWidget extends BaseWidget {
     protected activeTerminal: TerminalManagerTreeTypes.TerminalNode | undefined;
     override layout: PanelLayout;
 
+    protected pageAndTreeLayout: ViewContainerLayout | undefined;
+
     // serves as an empty container so that different view containers can be swapped out
     protected terminalPanelWrapper = new Panel({
         layout: new PanelLayout(),
@@ -93,25 +95,34 @@ export class TerminalManagerWidget extends BaseWidget {
         this.title.closable = false;
         this.title.label = TerminalManagerWidget.LABEL;
 
-        this.layout = new PanelLayout();
-        this.panel = new SplitPanel({
-            layout: new ViewContainerLayout({
-                renderer: SplitPanel.defaultRenderer,
-                orientation: 'horizontal',
-                spacing: 2,
-                headerSize: 0,
-                animationDuration: 200
-            }, this.splitPositionHandler),
-        });
-
-        this.layout.addWidget(this.panel);
-        (this.panel.layout as ViewContainerLayout).addWidget(this.terminalPanelWrapper);
-        (this.panel.layout as ViewContainerLayout).addWidget(this.treeWidget);
+        this.createPageAndTreeLayout();
         await this.commandService.executeCommand(TerminalCommands.MANAGER_NEW_PAGE_TOOLBAR.id);
     }
 
+    protected createPageAndTreeLayout(): void {
+        this.layout = new PanelLayout();
+        this.pageAndTreeLayout = new ViewContainerLayout({
+            renderer: SplitPanel.defaultRenderer,
+            orientation: 'horizontal',
+            spacing: 2,
+            headerSize: 0,
+            animationDuration: 200
+        }, this.splitPositionHandler);
+        this.panel = new SplitPanel({
+            layout: this.pageAndTreeLayout,
+        });
+
+        this.layout.addWidget(this.panel);
+        this.pageAndTreeLayout.addWidget(this.terminalPanelWrapper);
+        this.pageAndTreeLayout.addWidget(this.treeWidget);
+    }
+
     initializePanelSizes(): void {
-        (this.panel.layout as ViewContainerLayout).setPartSizes([60, 15]);
+        this.pageAndTreeLayout?.setPartSizes([60, 15]);
+    }
+
+    saveLayout(): void {
+        this.pageAndTreeLayout?.widgets.map(widget => this.pageAndTreeLayout?.getPartSize(widget));
     }
 
     addTerminalPage(widget: Widget): void {
@@ -207,7 +218,8 @@ export class TerminalManagerWidget extends BaseWidget {
 
     protected handleSelectionChange(changeEvent: TerminalManagerTreeTypes.SelectionChangedEvent): void {
         const { activePage, activeTerminal } = changeEvent;
-        console.log('SENTINEL SHOULD BE RECEIVING EVENT', activeTerminal);
+        const layout = (this.panel.layout as ViewContainerLayout);
+        console.log('SENTINEL PART SIZES', layout.widgets.map(widget => layout.getPartSize(widget)));
         if (activePage && activePage !== this.activePage) {
             this.activePage = activePage;
             this.title.label = `EMux: ${this.activePage.label}`;
