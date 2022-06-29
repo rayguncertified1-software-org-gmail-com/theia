@@ -15,7 +15,7 @@
 // *****************************************************************************
 
 import { inject, injectable, postConstruct } from '@theia/core/shared/inversify';
-import { ApplicationShell, Widget, WidgetManager } from '@theia/core/lib/browser';
+import { ApplicationShell, applicationShellLayoutVersion, DockLayout, SidePanel, Widget, WidgetManager } from '@theia/core/lib/browser';
 import { ApplicationShellWithToolbarOverride } from '@theia/toolbar/lib/browser/application-shell-with-toolbar-override';
 import { TerminalManagerWidget } from './terminal-manager-widget';
 import { FrontendApplicationStateService } from '@theia/core/lib/browser/frontend-application-state';
@@ -76,5 +76,49 @@ export class ApplicationShellWithTerminalManagerOverride extends ApplicationShel
                 this.track(widget);
             }
         }
+    }
+
+    override getLayoutData(): TerminalManager.ApplicationShellLayoutData {
+        return {
+            version: applicationShellLayoutVersion,
+            mainPanel: this.mainPanel.saveLayout(),
+            mainPanelPinned: this.getPinnedMainWidgets(),
+            bottomPanel: {
+                config: this.bottomPanel.saveLayout(),
+                pinned: this.getPinnedBottomWidgets(),
+                size: this.bottomPanel.isVisible ? this.getBottomPanelSize() : this.bottomPanelState.lastPanelSize,
+                expanded: this.isExpanded('bottom')
+            },
+            leftPanel: this.leftPanelHandler.getLayoutData(),
+            rightPanel: this.rightPanelHandler.getLayoutData(),
+            terminalManager: this.terminalManager.getLayoutData(),
+            activeWidgetId: this.activeWidget ? this.activeWidget.id : undefined
+        };
+    }
+
+    override async setLayoutData(layoutData: TerminalManager.ApplicationShellLayoutData): Promise<void> {
+        await super.setLayoutData(layoutData);
+        const { terminalManager, activeWidgetId } = layoutData;
+        if (terminalManager) {
+            this.terminalManager.setLayoutData(terminalManager);
+            this.registerWithFocusTracker(terminalManager);
+        }
+        if (activeWidgetId) {
+            this.activateWidget(activeWidgetId);
+        }
+    }
+
+    protected override registerWithFocusTracker(
+        data: DockLayout.ITabAreaConfig | DockLayout.ISplitAreaConfig | SidePanel.LayoutData | TerminalManager.LayoutData | null
+    ): void {
+        if (data && TerminalManager.isLayoutData(data)) {
+            if (data.items) {
+                // for (const widget of data.items) {
+
+                // }
+            }
+            return;
+        }
+        super.registerWithFocusTracker(data);
     }
 }

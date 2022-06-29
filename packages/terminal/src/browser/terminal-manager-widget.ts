@@ -260,4 +260,44 @@ export class TerminalManagerWidget extends BaseWidget {
     toggleRenameTerminal(node: TerminalManagerTreeTypes.TerminalManagerTreeNode): void {
         this.treeWidget.toggleRenameTerminal(node);
     }
+
+    getLayoutData(): TerminalManager.LayoutData {
+        return this.treeWidget.model.getLayoutData();
+    }
+
+    setLayoutData(layoutData: TerminalManager.LayoutData): void {
+        // eslint-disable-next-line no-null/no-null
+        // this.tabBar.currentTitle = null;
+
+        // let currentTitle: Title<Widget> | undefined;
+        // if (layoutData.items) {
+        //     for (const { widget, rank, expanded, pinned } of layoutData.items) {
+        //         if (widget) {
+        //             if (rank) {
+        //                 SidePanelHandler.rankProperty.set(widget, rank);
+        //             }
+        //             if (expanded) {
+        //                 currentTitle = widget.title;
+        //             }
+        //             if (pinned) {
+        //                 widget.title.className += ' theia-mod-pinned';
+        //                 widget.title.closable = false;
+        //             }
+        //             // Add the widgets directly to the tab bar in the same order as they are stored
+        //             this.tabBar.addTab(widget.title);
+        //         }
+        //     }
+        // }
+        // if (layoutData.size) {
+        //     this.state.lastPanelSize = layoutData.size;
+        // }
+
+        // // If the layout data contains an expanded item, update the currentTitle property
+        // // This implies a refresh through the `currentChanged` signal
+        // if (currentTitle) {
+        //     this.tabBar.currentTitle = currentTitle;
+        // } else {
+        //     this.refresh();
+        // }
+    }
 }

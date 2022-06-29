@@ -15,7 +15,17 @@
 // *****************************************************************************
 
 import { MenuPath } from '@theia/core';
-import { ApplicationShell, WidgetOpenerOptions, SelectableTreeNode, CompositeTreeNode, SplitPanel } from '@theia/core/lib/browser';
+import {
+    ApplicationShell,
+    WidgetOpenerOptions,
+    SelectableTreeNode,
+    CompositeTreeNode,
+    SplitPanel,
+    Widget,
+    ApplicationShellLayoutVersion,
+    DockPanel,
+    SidePanel,
+} from '@theia/core/lib/browser';
 import { TerminalWidget } from './base/terminal-widget';
 
 export namespace TerminalManager {
@@ -25,6 +35,43 @@ export namespace TerminalManager {
     export const isTerminalManagerArea = (obj: unknown): obj is Area => typeof obj === 'string' && obj.startsWith('terminal');
     export type ExtendedWidgetOptions = Omit<ApplicationShell.WidgetOptions, 'area'> & { area?: Area };
     export type ExtendedWidgetOpenerOptions = Omit<WidgetOpenerOptions, 'widgetOptions'> & { widgetOptions?: ExtendedWidgetOptions };
+
+    export interface ApplicationShellLayoutData extends ApplicationShell.LayoutData {
+        version?: string | ApplicationShellLayoutVersion,
+        mainPanel?: DockPanel.ILayoutConfig;
+        mainPanelPinned?: boolean[];
+        bottomPanel?: ApplicationShell.BottomPanelLayoutData;
+        leftPanel?: SidePanel.LayoutData;
+        rightPanel?: SidePanel.LayoutData;
+        terminalManager?: TerminalManager.LayoutData;
+        activeWidgetId?: string;
+    }
+    export interface TerminalWidgetLayoutData {
+        widget: TerminalWidget;
+        height: number;
+    }
+
+    export interface PageLayoutData {
+        group: TerminalGroupLayoutData[];
+    }
+    export interface TerminalGroupLayoutData {
+        widgetLayouts: TerminalWidgetLayoutData[];
+        width: number
+    }
+    export interface TerminalManagerLayoutData {
+        pageLayouts: PageLayoutData[];
+    }
+    export interface WidgetItem {
+        /** Can be undefined in case the widget could not be restored. */
+        widget?: Widget;
+    }
+    export interface LayoutData {
+        type: 'terminal-manager',
+        items?: TerminalManagerLayoutData;
+    }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    export const isLayoutData = (obj: any): obj is LayoutData => typeof obj === 'object' && !!obj && 'type' in obj && obj.type === 'terminal-manager';
+
 }
 export namespace TerminalManagerTreeTypes {
     export interface TerminalNode extends SelectableTreeNode, CompositeTreeNode {
@@ -42,7 +89,7 @@ export namespace TerminalManagerTreeTypes {
     };
     export interface PageNode extends SelectableTreeNode, CompositeTreeNode {
         page: true;
-        children: Array<TerminalNode | TerminalGroupNode>;
+        children: Array<TerminalGroupNode>;
         isEditing: boolean;
         label: string;
         panel: SplitPanel;
@@ -72,4 +119,5 @@ export namespace TerminalManagerTreeTypes {
         iconClass: string;
         tooltip: string;
     }
+
 }
