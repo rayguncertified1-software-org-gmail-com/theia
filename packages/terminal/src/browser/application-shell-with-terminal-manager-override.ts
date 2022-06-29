@@ -15,7 +15,7 @@
 // *****************************************************************************
 
 import { inject, injectable, postConstruct } from '@theia/core/shared/inversify';
-import { ApplicationShell, applicationShellLayoutVersion, DockLayout, SidePanel, Widget, WidgetManager } from '@theia/core/lib/browser';
+import { ApplicationShell, DockLayout, SidePanel, Widget, WidgetManager } from '@theia/core/lib/browser';
 import { ApplicationShellWithToolbarOverride } from '@theia/toolbar/lib/browser/application-shell-with-toolbar-override';
 import { TerminalManagerWidget } from './terminal-manager-widget';
 import { FrontendApplicationStateService } from '@theia/core/lib/browser/frontend-application-state';
@@ -80,19 +80,8 @@ export class ApplicationShellWithTerminalManagerOverride extends ApplicationShel
 
     override getLayoutData(): TerminalManager.ApplicationShellLayoutData {
         return {
-            version: applicationShellLayoutVersion,
-            mainPanel: this.mainPanel.saveLayout(),
-            mainPanelPinned: this.getPinnedMainWidgets(),
-            bottomPanel: {
-                config: this.bottomPanel.saveLayout(),
-                pinned: this.getPinnedBottomWidgets(),
-                size: this.bottomPanel.isVisible ? this.getBottomPanelSize() : this.bottomPanelState.lastPanelSize,
-                expanded: this.isExpanded('bottom')
-            },
-            leftPanel: this.leftPanelHandler.getLayoutData(),
-            rightPanel: this.rightPanelHandler.getLayoutData(),
+            ...super.getLayoutData(),
             terminalManager: this.terminalManager.getLayoutData(),
-            activeWidgetId: this.activeWidget ? this.activeWidget.id : undefined
         };
     }
 
@@ -100,6 +89,7 @@ export class ApplicationShellWithTerminalManagerOverride extends ApplicationShel
         await super.setLayoutData(layoutData);
         const { terminalManager, activeWidgetId } = layoutData;
         if (terminalManager) {
+            await this.terminalManagerIsReady;
             this.terminalManager.setLayoutData(terminalManager);
             this.registerWithFocusTracker(terminalManager);
         }

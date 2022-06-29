@@ -262,14 +262,16 @@ export class TerminalManagerWidget extends BaseWidget {
         const mainPanelSizes = this.pageAndTreeLayout?.relativeSizes();
         if (mainPanelSizes && mainPanelSizes.length === 2) {
             const [pageWidth, treeWidth] = mainPanelSizes;
+            // layoutData = { ...layoutData, pageWidth, treeWidth, treeWidget: this.treeWidget };
             layoutData = { ...layoutData, pageWidth, treeWidth };
         }
-        console.log('SENTINEL LAYOUT DATA', layoutData);
         return layoutData;
 
     }
 
     setLayoutData(layoutData: TerminalManager.LayoutData): void {
+        // const treeWidget = layoutData.treeWidget;
+        // console.log('SENTINEL GOT TREEWIDGET BACK', treeWidget);
         // eslint-disable-next-line no-null/no-null
         // this.tabBar.currentTitle = null;
 

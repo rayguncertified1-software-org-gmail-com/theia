@@ -174,6 +174,7 @@ export class ShellLayoutRestorer implements CommandContribution {
             return false;
         }
         const layoutData = await this.inflate(serializedLayoutData);
+        console.log('SENTINEL RESTORED LAYOUT DATA', layoutData);
         await app.shell.setLayoutData(layoutData);
         this.logger.info('<<< The layout has been successfully restored.');
         return true;

@@ -68,6 +68,7 @@ export namespace TerminalManager {
     export interface LayoutData {
         type: 'terminal-manager',
         items?: TerminalManagerLayoutData;
+        // treeWidget?: TerminalManagerTreeWidget;
         pageWidth?: number;
         treeWidth?: number;
     }
