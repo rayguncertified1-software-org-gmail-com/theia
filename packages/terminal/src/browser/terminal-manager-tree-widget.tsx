@@ -197,14 +197,14 @@ export class TerminalManagerTreeWidget extends TreeWidget {
         this.onDidChangeEmitter.fire(undefined);
     }
 
-    protected override shouldDisplayNode(node: TreeNode): boolean {
-        if (TerminalManagerTreeTypes.isTerminalGroupNode(node) && node.children.length < 2) {
-            return false;
-        } else if (TerminalManagerTreeTypes.isPageNode(node) && this.model.pages.size < 2) {
-            return false;
-        }
-        return super.shouldDisplayNode(node);
-    }
+    // protected override shouldDisplayNode(node: TreeNode): boolean {
+    //     if (TerminalManagerTreeTypes.isTerminalGroupNode(node) && node.children.length < 2) {
+    //         return false;
+    //     } else if (TerminalManagerTreeTypes.isPageNode(node) && this.model.pages.size < 2) {
+    //         return false;
+    //     }
+    //     return super.shouldDisplayNode(node);
+    // }
 
     protected override renderIndent(node: TreeNode, props: NodeProps): React.ReactNode {
         const renderIndentGuides = this.corePreferences['workbench.tree.renderIndentGuides'];

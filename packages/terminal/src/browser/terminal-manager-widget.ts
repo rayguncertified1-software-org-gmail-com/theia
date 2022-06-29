@@ -121,15 +121,22 @@ export class TerminalManagerWidget extends BaseWidget {
         // this.pageAndTreeLayout?.setPartSizes([60, 15]);
     }
 
-    addTerminalPage(widget: Widget, existingGroupPanel: SplitPanel | undefined, existingPagePanel: SplitPanel | undefined): void {
+    addTerminalPage(widget: Widget): void {
         if (widget instanceof TerminalWidgetImpl) {
-            const groupPanel = existingGroupPanel ?? this.createTerminalGroupPanel(widget);
-            const pagePanel = existingPagePanel ?? this.createPagePanel(groupPanel);
+            const groupPanel = this.createTerminalGroupPanel();
+            groupPanel.id = `group-${widget.id}`;
+            groupPanel.addWidget(widget);
+            const pagePanel = this.createPagePanel();
+            pagePanel.id = `page-${groupPanel.id}`;
+            pagePanel.addWidget(groupPanel);
+            // const groupPanel = existingGroupPanel ?? this.createTerminalGroupPanel(widget);
+            // const pagePanel = existingPagePanel ?? this.createPagePanel(groupPanel);
             return this.treeWidget.model.addTerminalPage(widget, groupPanel, pagePanel);
         }
     }
 
-    protected createPagePanel(groupPanel: SplitPanel): SplitPanel {
+    // protected createPagePanel(groupPanel: SplitPanel): SplitPanel {
+    protected createPagePanel(): SplitPanel {
         const newPageLayout = new ViewContainerLayout({
             renderer: SplitPanel.defaultRenderer,
             orientation: 'horizontal',
@@ -140,9 +147,9 @@ export class TerminalManagerWidget extends BaseWidget {
         const newPagePanel = new SplitPanel({
             layout: newPageLayout,
         });
-        newPagePanel.id = `page-${groupPanel.id}`;
         newPagePanel.node.tabIndex = -1;
-        newPageLayout.addWidget(groupPanel);
+        // newPagePanel.id = `page-${groupPanel.id}`;
+        // newPageLayout.addWidget(groupPanel);
         return newPagePanel;
     }
 
@@ -154,12 +161,16 @@ export class TerminalManagerWidget extends BaseWidget {
 
     addTerminalGroupToPage(widget: Widget): void {
         if (widget instanceof TerminalWidgetImpl) {
-            const groupPanel = this.createTerminalGroupPanel(widget);
+            // const groupPanel = this.createTerminalGroupPanel(widget);
+            const groupPanel = this.createTerminalGroupPanel();
+            groupPanel.id = `group-${widget.id}`;
+            groupPanel.addWidget(widget);
             this.treeWidget.model.addTerminalGroup(widget, groupPanel);
         }
     }
 
-    protected createTerminalGroupPanel(terminalWidget: Widget): SplitPanel {
+    // protected createTerminalGroupPanel(terminalWidget: Widget): SplitPanel {
+    protected createTerminalGroupPanel(): SplitPanel {
         const terminalColumnLayout = new ViewContainerLayout({
             renderer: SplitPanel.defaultRenderer,
             orientation: 'vertical',
@@ -171,9 +182,9 @@ export class TerminalManagerWidget extends BaseWidget {
         const terminalColumnPanel = new SplitPanel({
             layout: terminalColumnLayout,
         });
-        terminalColumnPanel.id = `group-${terminalWidget.id}`;
         terminalColumnPanel.node.tabIndex = -1;
-        terminalColumnLayout.addWidget(terminalWidget);
+        // terminalColumnPanel.id = `group-${terminalWidget.id}`;
+        // terminalColumnLayout.addWidget(terminalWidget);
         return terminalColumnPanel;
     }
 
@@ -276,13 +287,19 @@ export class TerminalManagerWidget extends BaseWidget {
         if (pageLayouts) {
             for (let pageIndex = 0; pageIndex < pageLayouts.length; pageIndex++) {
                 const pageLayout = pageLayouts[pageIndex];
+                const pagePanel = this.createPagePanel();
+                this.terminalPanelWrapper.addWidget(pagePanel);
                 const { groupLayouts } = pageLayout;
                 for (let groupIndex = 0; groupIndex < groupLayouts.length; groupIndex++) {
                     const groupLayout = groupLayouts[groupIndex];
+                    const groupPanel = this.createTerminalGroupPanel();
+                    pagePanel.id = `page-${groupPanel.id}`;
+                    pagePanel.addWidget(groupPanel);
                     const { widgetLayouts } = groupLayout;
                     for (let widgetIndex = 0; widgetIndex < widgetLayouts.length; widgetIndex++) {
                         const widgetLayout = widgetLayouts[widgetIndex];
-                        console.log('SENTINEL RESTORE WIDGETS', widgetLayout.widget);
+                        const { widget } = widgetLayout;
+                        groupPanel.addWidget(widget);
                     }
                 }
             }
