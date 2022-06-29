@@ -118,13 +118,13 @@ export class TerminalManagerWidget extends BaseWidget {
     }
 
     initializePanelSizes(): void {
-        this.pageAndTreeLayout?.setPartSizes([60, 15]);
+        // this.pageAndTreeLayout?.setPartSizes([60, 15]);
     }
 
-    addTerminalPage(widget: Widget): void {
+    addTerminalPage(widget: Widget, existingGroupPanel: SplitPanel | undefined, existingPagePanel: SplitPanel | undefined): void {
         if (widget instanceof TerminalWidgetImpl) {
-            const groupPanel = this.createTerminalGroupPanel(widget);
-            const pagePanel = this.createPagePanel(groupPanel);
+            const groupPanel = existingGroupPanel ?? this.createTerminalGroupPanel(widget);
+            const pagePanel = existingPagePanel ?? this.createPagePanel(groupPanel);
             return this.treeWidget.model.addTerminalPage(widget, groupPanel, pagePanel);
         }
     }
@@ -259,17 +259,34 @@ export class TerminalManagerWidget extends BaseWidget {
 
     getLayoutData(): TerminalManager.LayoutData {
         let layoutData = this.treeWidget.model.getLayoutData();
-        const mainPanelSizes = this.pageAndTreeLayout?.relativeSizes();
-        if (mainPanelSizes && mainPanelSizes.length === 2) {
-            const [pageWidth, treeWidth] = mainPanelSizes;
-            // layoutData = { ...layoutData, pageWidth, treeWidth, treeWidget: this.treeWidget };
-            layoutData = { ...layoutData, pageWidth, treeWidth };
-        }
+        const pageAndPanelRelativeSizes = this.pageAndTreeLayout?.relativeSizes();
+        // layoutData = { ...layoutData, pageWidth, treeWidth, treeWidget: this.treeWidget };
+        layoutData = { ...layoutData, pageAndPanelRelativeSizes };
         return layoutData;
-
     }
 
     setLayoutData(layoutData: TerminalManager.LayoutData): void {
+        const { pageAndPanelRelativeSizes, items } = layoutData;
+        if (pageAndPanelRelativeSizes) {
+            this.pageAndTreeLayout?.setRelativeSizes(pageAndPanelRelativeSizes);
+        } else {
+            this.pageAndTreeLayout?.setPartSizes([60, 15]);
+        }
+        const pageLayouts = items?.pageLayouts;
+        if (pageLayouts) {
+            for (let pageIndex = 0; pageIndex < pageLayouts.length; pageIndex++) {
+                const pageLayout = pageLayouts[pageIndex];
+                const { groupLayouts } = pageLayout;
+                for (let groupIndex = 0; groupIndex < groupLayouts.length; groupIndex++) {
+                    const groupLayout = groupLayouts[groupIndex];
+                    const { widgetLayouts } = groupLayout;
+                    for (let widgetIndex = 0; widgetIndex < widgetLayouts.length; widgetIndex++) {
+                        const widgetLayout = widgetLayouts[widgetIndex];
+                        console.log('SENTINEL RESTORE WIDGETS', widgetLayout.widget);
+                    }
+                }
+            }
+        }
         // const treeWidget = layoutData.treeWidget;
         // console.log('SENTINEL GOT TREEWIDGET BACK', treeWidget);
         // eslint-disable-next-line no-null/no-null

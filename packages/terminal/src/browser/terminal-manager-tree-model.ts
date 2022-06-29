@@ -65,7 +65,10 @@ export class TerminalManagerTreeModel extends TreeModelImpl {
             const pageNodes = this.root.children;
             for (const pageNode of pageNodes) {
                 if (TerminalManagerTreeTypes.isPageNode(pageNode)) {
-                    const pageLayoutData: TerminalManager.PageLayoutData = { group: [] };
+                    const pageLayoutData: TerminalManager.PageLayoutData = {
+                        groupLayouts: [],
+                        label: pageNode.label
+                    };
                     const groupNodes = pageNode.children;
                     const pagePanel = pageNode.panel;
                     const groupWidths = pagePanel.relativeSizes();
@@ -75,6 +78,7 @@ export class TerminalManagerTreeModel extends TreeModelImpl {
                         const widgetHeights = groupPanel.relativeSizes();
                         if (TerminalManagerTreeTypes.isTerminalGroupNode(groupNode)) {
                             const groupLayoutData: TerminalManager.TerminalGroupLayoutData = {
+                                label: groupNode.label,
                                 widgetLayouts: [],
                                 width: groupWidths[groupIndex],
                             };
@@ -89,13 +93,14 @@ export class TerminalManagerTreeModel extends TreeModelImpl {
                                     groupLayoutData.widgetLayouts.push(terminalLayoutData);
                                 }
                             }
-                            pageLayoutData.group.push(groupLayoutData);
+                            pageLayoutData.groupLayouts.push(groupLayoutData);
                         }
                     }
                     pageItems.pageLayouts.push(pageLayoutData);
                 }
             }
         }
+        console.log('SENTINEL LAYOUT', fullLayoutData);
         return fullLayoutData;
     }
 

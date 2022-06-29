@@ -52,11 +52,13 @@ export namespace TerminalManager {
     }
 
     export interface PageLayoutData {
-        group: TerminalGroupLayoutData[];
+        groupLayouts: TerminalGroupLayoutData[];
+        label: string;
     }
     export interface TerminalGroupLayoutData {
         widgetLayouts: TerminalWidgetLayoutData[];
-        width: number
+        width: number;
+        label: string;
     }
     export interface TerminalManagerLayoutData {
         pageLayouts: PageLayoutData[];
@@ -69,8 +71,7 @@ export namespace TerminalManager {
         type: 'terminal-manager',
         items?: TerminalManagerLayoutData;
         // treeWidget?: TerminalManagerTreeWidget;
-        pageWidth?: number;
-        treeWidth?: number;
+        pageAndPanelRelativeSizes?: number[];
     }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     export const isLayoutData = (obj: any): obj is LayoutData => typeof obj === 'object' && !!obj && 'type' in obj && obj.type === 'terminal-manager';
