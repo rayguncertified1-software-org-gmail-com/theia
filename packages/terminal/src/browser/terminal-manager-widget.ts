@@ -19,7 +19,6 @@ import {
     ApplicationShell,
     BaseWidget,
     codicon,
-    CompositeTreeNode,
     DockPanelRenderer,
     DockPanelRendererFactory,
     FrontendApplicationContribution,
@@ -273,78 +272,46 @@ export class TerminalManagerWidget extends BaseWidget implements FrontendApplica
     }
 
     getLayoutData(): TerminalManager.LayoutData {
-        let layoutData = this.treeWidget.model.getLayoutData();
-        const pageAndPanelRelativeSizes = this.pageAndTreeLayout?.relativeSizes();
-        // layoutData = { ...layoutData, pageWidth, treeWidth, treeWidget: this.treeWidget };
-        layoutData = { ...layoutData, terminalAndTreeRelativeSizes: pageAndPanelRelativeSizes };
-        return layoutData;
+        return this.treeWidget.model.getLayoutData();
+        // let layoutData = this.treeWidget.model.getLayoutData();
+        // const pageAndPanelRelativeSizes = this.pageAndTreeLayout?.relativeSizes();
+        // // layoutData = { ...layoutData, pageWidth, treeWidth, treeWidget: this.treeWidget };
+        // layoutData = { ...layoutData, terminalAndTreeRelativeSizes: pageAndPanelRelativeSizes };
+        // return layoutData;
     }
 
     setLayoutData(layoutData: TerminalManager.LayoutData): void {
-        const { terminalAndTreeRelativeSizes: pageAndPanelRelativeSizes, items } = layoutData;
-        if (pageAndPanelRelativeSizes) {
-            this.pageAndTreeLayout?.setRelativeSizes(pageAndPanelRelativeSizes);
-        } else {
-            this.pageAndTreeLayout?.setPartSizes([60, 15]);
-        }
-        const pageLayouts = items?.pageLayouts;
-        if (pageLayouts) {
-            for (let pageIndex = 0; pageIndex < pageLayouts.length; pageIndex++) {
-                const pageLayout = pageLayouts[pageIndex];
-                const pagePanel = this.createPagePanel();
-                this.terminalPanelWrapper.addWidget(pagePanel);
-                const { groupLayouts, groupRelativeWidths } = pageLayout;
-                for (let groupIndex = 0; groupIndex < groupLayouts.length; groupIndex++) {
-                    const groupLayout = groupLayouts[groupIndex];
-                    const groupPanel = this.createTerminalGroupPanel();
-                    pagePanel.id = `page-${groupPanel.id}`;
-                    pagePanel.addWidget(groupPanel);
-                    const { widgetLayouts, widgetRelativeHeights } = groupLayout;
-                    for (let widgetIndex = 0; widgetIndex < widgetLayouts.length; widgetIndex++) {
-                        const widgetLayout = widgetLayouts[widgetIndex];
-                        const { widget } = widgetLayout;
-                        groupPanel.addWidget(widget);
-                    }
-                    groupPanel.setRelativeSizes(widgetRelativeHeights);
-                }
-                pagePanel.setRelativeSizes(groupRelativeWidths);
-            }
-        }
-        // const treeWidget = layoutData.treeWidget;
-        // console.log('SENTINEL GOT TREEWIDGET BACK', treeWidget);
-        // eslint-disable-next-line no-null/no-null
-        // this.tabBar.currentTitle = null;
-
-        // let currentTitle: Title<Widget> | undefined;
-        // if (layoutData.items) {
-        //     for (const { widget, rank, expanded, pinned } of layoutData.items) {
-        //         if (widget) {
-        //             if (rank) {
-        //                 SidePanelHandler.rankProperty.set(widget, rank);
+        console.log('SENTINEL LAYOUT DATA', layoutData);
+        // const { terminalAndTreeRelativeSizes: pageAndPanelRelativeSizes, items } = layoutData;
+        // if (pageAndPanelRelativeSizes) {
+        //     this.pageAndTreeLayout?.setRelativeSizes(pageAndPanelRelativeSizes);
+        // } else {
+        //     this.pageAndTreeLayout?.setPartSizes([60, 15]);
+        // }
+        // const pageLayouts = items?.pageLayouts;
+        // if (pageLayouts) {
+        //     for (let pageIndex = 0; pageIndex < pageLayouts.length; pageIndex++) {
+        //         const pageLayout = pageLayouts[pageIndex];
+        //         const pagePanel = this.createPagePanel();
+        //         this.terminalPanelWrapper.addWidget(pagePanel);
+        //         const { groupLayouts, groupRelativeWidths } = pageLayout;
+        //         for (let groupIndex = 0; groupIndex < groupLayouts.length; groupIndex++) {
+        //             const groupLayout = groupLayouts[groupIndex];
+        //             const groupPanel = this.createTerminalGroupPanel();
+        //             pagePanel.id = `page-${groupPanel.id}`;
+        //             pagePanel.addWidget(groupPanel);
+        //             const { widgetLayouts, widgetRelativeHeights } = groupLayout;
+        //             for (let widgetIndex = 0; widgetIndex < widgetLayouts.length; widgetIndex++) {
+        //                 const widgetLayout = widgetLayouts[widgetIndex];
+        //                 const { widget } = widgetLayout;
+        //                 groupPanel.addWidget(widget);
         //             }
-        //             if (expanded) {
-        //                 currentTitle = widget.title;
-        //             }
-        //             if (pinned) {
-        //                 widget.title.className += ' theia-mod-pinned';
-        //                 widget.title.closable = false;
-        //             }
-        //             // Add the widgets directly to the tab bar in the same order as they are stored
-        //             this.tabBar.addTab(widget.title);
+        //             groupPanel.setRelativeSizes(widgetRelativeHeights);
         //         }
+        //         pagePanel.setRelativeSizes(groupRelativeWidths);
         //     }
         // }
-        // if (layoutData.size) {
-        //     this.state.lastPanelSize = layoutData.size;
-        // }
-
-        // // If the layout data contains an expanded item, update the currentTitle property
-        // // This implies a refresh through the `currentChanged` signal
-        // if (currentTitle) {
-        //     this.tabBar.currentTitle = currentTitle;
-        // } else {
-        //     this.refresh();
-        // }
+        // const treeWidget = layoutData.treeWidget;
         this.layoutWasRestored = true;
     }
 }
