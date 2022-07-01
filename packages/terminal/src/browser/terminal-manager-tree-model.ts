@@ -169,13 +169,13 @@ export class TerminalManagerTreeModel extends TreeModelImpl {
             // pageNode.panel.dispose();
             CompositeTreeNode.removeChild(this.root, pageNode);
             this.pages.delete(pageNode);
-            this.refresh();
             setTimeout(() => {
                 if (CompositeTreeNode.is(this.root) && SelectableTreeNode.is(this.root?.children[0])) {
                     this.selectionService.addSelection(this.root.children[0]);
                 }
             });
         }
+        this.refresh();
     }
 
     addTerminalGroup(widgetId: TerminalManagerTreeTypes.TerminalId, groupId: TerminalManagerTreeTypes.GroupId): void {
@@ -221,8 +221,8 @@ export class TerminalManagerTreeModel extends TreeModelImpl {
             this.onTerminalGroupDeletedEmitter.fire(groupId);
             // groupNode.panel.dispose();
             CompositeTreeNode.removeChild(parentPageNode, groupNode);
-            this.refresh();
         }
+        this.refresh();
     }
 
     addTerminal(newTerminalId: TerminalManagerTreeTypes.TerminalId, siblingTerminalId: TerminalManagerTreeTypes.TerminalId): void {
@@ -274,6 +274,7 @@ export class TerminalManagerTreeModel extends TreeModelImpl {
             //     this.deleteTerminalGroup(parentGroupNode);
             // }
         }
+        this.refresh();
     }
 
     toggleRenameTerminal(entityId: TerminalManagerTreeTypes.TerminalManagerValidId): void {
