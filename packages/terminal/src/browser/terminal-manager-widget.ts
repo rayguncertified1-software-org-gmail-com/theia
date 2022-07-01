@@ -314,7 +314,6 @@ export class TerminalManagerWidget extends BaseWidget implements FrontendApplica
             items: pageItems,
             widget: this.treeWidget,
             terminalAndTreeRelativeSizes: this.pageAndTreeLayout?.relativeSizes(),
-
         };
         const treeRoot = this.treeWidget.model.root;
         if (treeRoot && CompositeTreeNode.is(treeRoot)) {
@@ -368,7 +367,7 @@ export class TerminalManagerWidget extends BaseWidget implements FrontendApplica
 
     setLayoutData(layoutData: TerminalManager.LayoutData): void {
         console.log('SENTINEL LAYOUT DATA', layoutData);
-        // const { terminalAndTreeRelativeSizes: pageAndPanelRelativeSizes, items } = layoutData;
+        // const { items, terminalAndTreeRelativeSizes, } = layoutData;
         // if (pageAndPanelRelativeSizes) {
         //     this.pageAndTreeLayout?.setRelativeSizes(pageAndPanelRelativeSizes);
         // } else {
