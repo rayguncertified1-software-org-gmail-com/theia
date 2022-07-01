@@ -221,6 +221,7 @@ export class TerminalManagerWidget extends BaseWidget implements FrontendApplica
     addWidgetToTerminalGroup(widget: Widget, siblingTerminalId: TerminalManagerTreeTypes.TerminalId): void {
         const newTerminalId = widget.id;
         if (widget instanceof TerminalWidgetImpl && TerminalManagerTreeTypes.isTerminalID(newTerminalId)) {
+            this.terminalWidgets.set(newTerminalId, widget);
             this.treeWidget.model.addTerminal(newTerminalId, siblingTerminalId);
         }
     }
