@@ -427,11 +427,11 @@ export class TerminalFrontendContribution implements FrontendApplicationContribu
             isVisible: widget => widget instanceof TerminalManagerWidget,
         });
         commands.registerCommand(TerminalCommands.MANAGER_DELETE_TERMINAL, {
-            execute: (...args: TerminalManagerTreeTypes.ContextMenuArgs) => TerminalManagerTreeTypes.isTerminalNode(args[1]) && this.deleteTerminalFromManager(args[1]),
+            execute: (...args: TerminalManagerTreeTypes.ContextMenuArgs) => TerminalManagerTreeTypes.isTerminalID(args[1]) && this.deleteTerminalFromManager(args[1]),
             isVisible: (...args: TerminalManagerTreeTypes.ContextMenuArgs) => args[0] === 'terminal-manager-tree' && TerminalManagerTreeTypes.isTerminalNode(args[1]),
         });
         commands.registerCommand(TerminalCommands.MANAGER_DELETE_PAGE, {
-            execute: (...args: TerminalManagerTreeTypes.ContextMenuArgs) => TerminalManagerTreeTypes.isPageNode(args[1]) && this.deletePageFromManager(args[1]),
+            execute: (...args: TerminalManagerTreeTypes.ContextMenuArgs) => TerminalManagerTreeTypes.isPageId(args[1]) && this.deletePageFromManager(args[1]),
             isVisible: (...args: TerminalManagerTreeTypes.ContextMenuArgs) => args[0] === 'terminal-manager-tree' && TerminalManagerTreeTypes.isPageNode(args[1]),
         });
         commands.registerCommand(TerminalCommands.MANAGER_RENAME_TERMINAL, {
@@ -440,15 +440,15 @@ export class TerminalFrontendContribution implements FrontendApplicationContribu
         });
         commands.registerCommand(TerminalCommands.MANAGER_SPLIT_TERMINAL_HORIZONTAL, {
             execute: (...args: TerminalManagerTreeTypes.ContextMenuArgs) => {
-                const { id } = args[1];
-                if (TerminalManager.isTerminalID(id)) {
+                const id = args[1];
+                if (TerminalManagerTreeTypes.isTerminalID(id)) {
                     this.openTerminal({ area: id });
                 }
             },
             isVisible: (...args: TerminalManagerTreeTypes.ContextMenuArgs) => args[0] === 'terminal-manager-tree' && TerminalManagerTreeTypes.isTerminalNode(args[1]),
         });
         commands.registerCommand(TerminalCommands.MANAGER_DELETE_GROUP, {
-            execute: (...args: TerminalManagerTreeTypes.ContextMenuArgs) => TerminalManagerTreeTypes.isTerminalGroupNode(args[1]) && this.deleteGroupFromManager(args[1]),
+            execute: (...args: TerminalManagerTreeTypes.ContextMenuArgs) => TerminalManagerTreeTypes.isGroupId(args[1]) && this.deleteGroupFromManager(args[1]),
             isVisible: (...args: TerminalManagerTreeTypes.ContextMenuArgs) => 'terminal-manager-tree' && TerminalManagerTreeTypes.isTerminalGroupNode(args[1]),
         });
         commands.registerCommand(TerminalCommands.NEW_ACTIVE_WORKSPACE, {
@@ -532,24 +532,24 @@ export class TerminalFrontendContribution implements FrontendApplicationContribu
         });
     }
 
-    protected deleteTerminalFromManager(terminalNode: TerminalManagerTreeTypes.TerminalNode): void {
+    protected deleteTerminalFromManager(terminalId: TerminalManagerTreeTypes.TerminalId): void {
         const terminalManagerWidget = this.shell.terminalManager;
-        terminalManagerWidget.deleteTerminal(terminalNode);
+        terminalManagerWidget.deleteTerminal(terminalId);
     }
 
-    protected deleteGroupFromManager(groupNode: TerminalManagerTreeTypes.TerminalGroupNode): void {
+    protected deleteGroupFromManager(groupId: TerminalManagerTreeTypes.GroupId): void {
         const terminalManagerWidget = this.shell.terminalManager;
-        terminalManagerWidget.deleteGroup(groupNode);
+        terminalManagerWidget.deleteGroup(groupId);
     }
 
-    protected deletePageFromManager(pageNode: TerminalManagerTreeTypes.PageNode): void {
+    protected deletePageFromManager(pageId: TerminalManagerTreeTypes.PageId): void {
         const terminalManagerWidget = this.shell.terminalManager;
-        terminalManagerWidget.deletePage(pageNode);
+        terminalManagerWidget.deletePage(pageId);
     }
 
-    protected toggleRenameTerminalFromManager(terminalNode: TerminalManagerTreeTypes.TerminalManagerTreeNode): void {
+    protected toggleRenameTerminalFromManager(entityId: TerminalManagerTreeTypes.TerminalManagerValidId): void {
         const terminalManagerWidget = this.shell.terminalManager;
-        terminalManagerWidget.toggleRenameTerminal(terminalNode);
+        terminalManagerWidget.toggleRenameTerminal(entityId);
     }
 
     async openInTerminal(uri: URI): Promise<void> {

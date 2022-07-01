@@ -19,7 +19,7 @@ import { ApplicationShell, DockLayout, SidePanel, Widget, WidgetManager } from '
 import { ApplicationShellWithToolbarOverride } from '@theia/toolbar/lib/browser/application-shell-with-toolbar-override';
 import { TerminalManagerWidget } from './terminal-manager-widget';
 import { FrontendApplicationStateService } from '@theia/core/lib/browser/frontend-application-state';
-import { TerminalManager } from './terminal-manager-types';
+import { TerminalManager, TerminalManagerTreeTypes } from './terminal-manager-types';
 import { Deferred } from '@theia/core/lib/common/promise-util';
 
 @injectable()
@@ -67,7 +67,7 @@ export class ApplicationShellWithTerminalManagerOverride extends ApplicationShel
                 } else if (area === 'terminal-manager-new-page') {
                     terminalManagerWidget.addTerminalPage(widget);
                     // terminalManagerWidget.addNewWidgetColumn(widget);
-                } else if (TerminalManager.isTerminalID(area)) {
+                } else if (TerminalManagerTreeTypes.isTerminalID(area)) {
                     terminalManagerWidget.addWidgetToTerminalGroup(widget, area);
                 } else {
                     throw new Error('Unexpected area: ' + options.area);
@@ -102,11 +102,12 @@ export class ApplicationShellWithTerminalManagerOverride extends ApplicationShel
         data: DockLayout.ITabAreaConfig | DockLayout.ISplitAreaConfig | SidePanel.LayoutData | TerminalManager.LayoutData | null
     ): void {
         if (data && TerminalManager.isLayoutData(data)) {
-            if (data.items) {
-                // for (const widget of data.items) {
+            // TODO
+            // if (data.items) {
+            //     // for (const widget of data.items) {
 
-                // }
-            }
+            //     // }
+            // }
             return;
         }
         super.registerWithFocusTracker(data);

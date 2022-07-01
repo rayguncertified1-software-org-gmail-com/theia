@@ -180,12 +180,8 @@ export class TerminalManagerTreeWidget extends TreeWidget {
         }
     }
 
-    deleteTerminal(node: TerminalManagerTreeTypes.TerminalNode): void {
-        this.model.deleteTerminalNode(node);
-    }
-
-    toggleRenameTerminal(node: TerminalManagerTreeTypes.TerminalManagerTreeNode): void {
-        this.model.toggleRenameTerminal(node);
+    deleteTerminal(terminalId: TerminalManagerTreeTypes.TerminalId): void {
+        this.model.deleteTerminalNode(terminalId);
     }
 
     protected override toNodeName(node: TerminalManagerTreeTypes.TerminalManagerTreeNode): string {
