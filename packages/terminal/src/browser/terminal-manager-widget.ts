@@ -19,6 +19,7 @@ import {
     ApplicationShell,
     BaseWidget,
     codicon,
+    CompositeTreeNode,
     DockPanelRenderer,
     DockPanelRendererFactory,
     FrontendApplicationContribution,
@@ -307,12 +308,62 @@ export class TerminalManagerWidget extends BaseWidget implements FrontendApplica
     }
 
     getLayoutData(): TerminalManager.LayoutData {
-        return this.treeWidget.model.getLayoutData();
-        // let layoutData = this.treeWidget.model.getLayoutData();
-        // const pageAndPanelRelativeSizes = this.pageAndTreeLayout?.relativeSizes();
-        // // layoutData = { ...layoutData, pageWidth, treeWidth, treeWidget: this.treeWidget };
-        // layoutData = { ...layoutData, terminalAndTreeRelativeSizes: pageAndPanelRelativeSizes };
-        // return layoutData;
+        const pageItems: TerminalManager.TerminalManagerLayoutData = { pageLayouts: [] };
+        const fullLayoutData: TerminalManager.LayoutData = {
+            type: 'terminal-manager',
+            items: pageItems,
+            widget: this.treeWidget,
+            terminalAndTreeRelativeSizes: this.pageAndTreeLayout?.relativeSizes(),
+
+        };
+        const treeRoot = this.treeWidget.model.root;
+        if (treeRoot && CompositeTreeNode.is(treeRoot)) {
+            const pageNodes = treeRoot.children;
+            for (const pageNode of pageNodes) {
+                if (TerminalManagerTreeTypes.isPageNode(pageNode)) {
+                    const groupNodes = pageNode.children;
+                    const pagePanel = this.pagePanels.get(pageNode.id);
+                    const pageLayoutData: TerminalManager.PageLayoutData = {
+                        groupLayouts: [],
+                        label: pageNode.label,
+                        groupRelativeWidths: pagePanel?.relativeSizes(),
+                    };
+                    for (let groupIndex = 0; groupIndex < groupNodes.length; groupIndex++) {
+                        const groupNode = groupNodes[groupIndex];
+                        const groupPanel = this.groupPanels.get(groupNode.id);
+                        if (TerminalManagerTreeTypes.isTerminalGroupNode(groupNode)) {
+                            const groupLayoutData: TerminalManager.TerminalGroupLayoutData = {
+                                label: groupNode.label,
+                                widgetLayouts: [],
+                                widgetRelativeHeights: groupPanel?.relativeSizes(),
+                            };
+                            const widgetNodes = groupNode.children;
+                            for (let widgetIndex = 0; widgetIndex < widgetNodes.length; widgetIndex++) {
+                                const widgetNode = widgetNodes[widgetIndex];
+                                if (TerminalManagerTreeTypes.isTerminalNode(widgetNode)) {
+                                    const widget = this.terminalWidgets.get(widgetNode.id as TerminalManagerTreeTypes.TerminalId);
+                                    const terminalLayoutData: TerminalManager.TerminalWidgetLayoutData = {
+                                        widget,
+                                    };
+                                    groupLayoutData.widgetLayouts.push(terminalLayoutData);
+                                }
+                            }
+                            pageLayoutData.groupLayouts.push(groupLayoutData);
+                        }
+                    }
+                    pageItems.pageLayouts.push(pageLayoutData);
+                }
+            }
+        }
+        console.log('SENTINEL LAYOUT', fullLayoutData);
+        return fullLayoutData;
+
+        // return this.treeWidget.model.getLayoutData();
+        // // let layoutData = this.treeWidget.model.getLayoutData();
+        // // const pageAndPanelRelativeSizes = this.pageAndTreeLayout?.relativeSizes();
+        // // // layoutData = { ...layoutData, pageWidth, treeWidth, treeWidget: this.treeWidget };
+        // // layoutData = { ...layoutData, terminalAndTreeRelativeSizes: pageAndPanelRelativeSizes };
+        // // return layoutData;
     }
 
     setLayoutData(layoutData: TerminalManager.LayoutData): void {

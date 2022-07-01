@@ -17,7 +17,7 @@
 import { injectable, postConstruct } from '@theia/core/shared/inversify';
 import { TreeModelImpl, CompositeTreeNode, SelectableTreeNode, DepthFirstTreeIterator } from '@theia/core/lib/browser';
 import { Emitter } from '@theia/core';
-import { TerminalManager, TerminalManagerTreeTypes } from './terminal-manager-types';
+import { TerminalManagerTreeTypes } from './terminal-manager-types';
 
 @injectable()
 export class TerminalManagerTreeModel extends TreeModelImpl {
@@ -68,57 +68,57 @@ export class TerminalManagerTreeModel extends TreeModelImpl {
 
     protected getContext = () => this;
 
-    getLayoutData(): TerminalManager.LayoutData {
-        return {
-            type: 'terminal-manager',
-            treeModel: this.getContext(),
-        };
-        // const pageItems: TerminalManager.TerminalManagerLayoutData = { pageLayouts: [] };
-        // const fullLayoutData: TerminalManager.LayoutData = {
-        //     type: 'terminal-manager',
-        //     items: pageItems,
-        //     treeModel: this.getContext(),
-        // };
-        // if (this.root && CompositeTreeNode.is(this.root)) {
-        //     const pageNodes = this.root.children;
-        //     for (const pageNode of pageNodes) {
-        //         if (TerminalManagerTreeTypes.isPageNode(pageNode)) {
-        //             const groupNodes = pageNode.children;
-        //             const pagePanel = pageNode.panel;
-        //             const pageLayoutData: TerminalManager.PageLayoutData = {
-        //                 groupLayouts: [],
-        //                 label: pageNode.label,
-        //                 groupRelativeWidths: pagePanel.relativeSizes(),
-        //             };
-        //             for (let groupIndex = 0; groupIndex < groupNodes.length; groupIndex++) {
-        //                 const groupNode = groupNodes[groupIndex];
-        //                 const groupPanel = groupNode.panel;
-        //                 if (TerminalManagerTreeTypes.isTerminalGroupNode(groupNode)) {
-        //                     const groupLayoutData: TerminalManager.TerminalGroupLayoutData = {
-        //                         label: groupNode.label,
-        //                         widgetLayouts: [],
-        //                         widgetRelativeHeights: groupPanel.relativeSizes(),
-        //                     };
-        //                     const widgetNodes = groupNode.children;
-        //                     for (let widgetIndex = 0; widgetIndex < widgetNodes.length; widgetIndex++) {
-        //                         const widgetNode = widgetNodes[widgetIndex];
-        //                         if (TerminalManagerTreeTypes.isTerminalNode(widgetNode)) {
-        //                             const terminalLayoutData: TerminalManager.TerminalWidgetLayoutData = {
-        //                                 widget: widgetNode.widget,
-        //                             };
-        //                             groupLayoutData.widgetLayouts.push(terminalLayoutData);
-        //                         }
-        //                     }
-        //                     pageLayoutData.groupLayouts.push(groupLayoutData);
-        //                 }
-        //             }
-        //             pageItems.pageLayouts.push(pageLayoutData);
-        //         }
-        //     }
-        // }
-        // console.log('SENTINEL LAYOUT', fullLayoutData);
-        // return fullLayoutData;
-    }
+    // getLayoutData(): TerminalManager.LayoutData {
+    //     return {
+    //         type: 'terminal-manager',
+    //         treeModel: this.getContext(),
+    //     };
+    //     // const pageItems: TerminalManager.TerminalManagerLayoutData = { pageLayouts: [] };
+    //     // const fullLayoutData: TerminalManager.LayoutData = {
+    //     //     type: 'terminal-manager',
+    //     //     items: pageItems,
+    //     //     treeModel: this.getContext(),
+    //     // };
+    //     // if (this.root && CompositeTreeNode.is(this.root)) {
+    //     //     const pageNodes = this.root.children;
+    //     //     for (const pageNode of pageNodes) {
+    //     //         if (TerminalManagerTreeTypes.isPageNode(pageNode)) {
+    //     //             const groupNodes = pageNode.children;
+    //     //             const pagePanel = pageNode.panel;
+    //     //             const pageLayoutData: TerminalManager.PageLayoutData = {
+    //     //                 groupLayouts: [],
+    //     //                 label: pageNode.label,
+    //     //                 groupRelativeWidths: pagePanel.relativeSizes(),
+    //     //             };
+    //     //             for (let groupIndex = 0; groupIndex < groupNodes.length; groupIndex++) {
+    //     //                 const groupNode = groupNodes[groupIndex];
+    //     //                 const groupPanel = groupNode.panel;
+    //     //                 if (TerminalManagerTreeTypes.isTerminalGroupNode(groupNode)) {
+    //     //                     const groupLayoutData: TerminalManager.TerminalGroupLayoutData = {
+    //     //                         label: groupNode.label,
+    //     //                         widgetLayouts: [],
+    //     //                         widgetRelativeHeights: groupPanel.relativeSizes(),
+    //     //                     };
+    //     //                     const widgetNodes = groupNode.children;
+    //     //                     for (let widgetIndex = 0; widgetIndex < widgetNodes.length; widgetIndex++) {
+    //     //                         const widgetNode = widgetNodes[widgetIndex];
+    //     //                         if (TerminalManagerTreeTypes.isTerminalNode(widgetNode)) {
+    //     //                             const terminalLayoutData: TerminalManager.TerminalWidgetLayoutData = {
+    //     //                                 widget: widgetNode.widget,
+    //     //                             };
+    //     //                             groupLayoutData.widgetLayouts.push(terminalLayoutData);
+    //     //                         }
+    //     //                     }
+    //     //                     pageLayoutData.groupLayouts.push(groupLayoutData);
+    //     //                 }
+    //     //             }
+    //     //             pageItems.pageLayouts.push(pageLayoutData);
+    //     //         }
+    //     //     }
+    //     // }
+    //     // console.log('SENTINEL LAYOUT', fullLayoutData);
+    //     // return fullLayoutData;
+    // }
 
     addTerminalPage(
         widgetId: TerminalManagerTreeTypes.TerminalId,

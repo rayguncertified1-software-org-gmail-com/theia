@@ -26,7 +26,7 @@ import {
     SidePanel,
 } from '@theia/core/lib/browser';
 import { TerminalWidget } from './base/terminal-widget';
-import { TerminalManagerTreeModel } from './terminal-manager-tree-model';
+import { TerminalManagerTreeWidget } from './terminal-manager-tree-widget';
 
 export namespace TerminalManager {
 
@@ -46,17 +46,17 @@ export namespace TerminalManager {
         activeWidgetId?: string;
     }
     export interface TerminalWidgetLayoutData {
-        widget: TerminalWidget;
+        widget: TerminalWidget | undefined;
     }
 
     export interface PageLayoutData {
         groupLayouts: TerminalGroupLayoutData[];
-        groupRelativeWidths: number[];
+        groupRelativeWidths: number[] | undefined;
         label: string;
     }
     export interface TerminalGroupLayoutData {
         widgetLayouts: TerminalWidgetLayoutData[];
-        widgetRelativeHeights: number[];
+        widgetRelativeHeights: number[] | undefined;
         label: string;
     }
     export interface TerminalManagerLayoutData {
@@ -64,10 +64,9 @@ export namespace TerminalManager {
     }
     export interface LayoutData {
         type: 'terminal-manager',
-        treeModel: TerminalManagerTreeModel
-        // items?: TerminalManagerLayoutData;
-        // treeModel?: TerminalManagerTreeModel;
-        // terminalAndTreeRelativeSizes?: number[];
+        widget: TerminalManagerTreeWidget;
+        items?: TerminalManagerLayoutData;
+        terminalAndTreeRelativeSizes: number[] | undefined;
     }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     export const isLayoutData = (obj: any): obj is LayoutData => typeof obj === 'object' && !!obj && 'type' in obj && obj.type === 'terminal-manager';

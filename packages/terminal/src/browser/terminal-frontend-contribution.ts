@@ -145,16 +145,10 @@ export namespace TerminalCommands {
         label: 'Show All Opened Terminals'
     });
 
-    export const MANAGER_NEW_TERMINAL = Command.toDefaultLocalizedCommand({
-        id: 'terminal:new-in-manager',
-        category: TERMINAL_CATEGORY,
-        label: 'Create New Terminal in Manager',
-        iconClass: codicon('split-horizontal'),
-    });
     export const MANAGER_NEW_TERMINAL_TOOLBAR = Command.toDefaultLocalizedCommand({
         id: 'terminal:new-in-manager-toolbar',
         category: TERMINAL_CATEGORY,
-        label: 'Create New Terminal in Manager',
+        label: 'Create New Terminal Group',
         iconClass: codicon('split-horizontal'),
     });
     export const MANAGER_DELETE_TERMINAL = Command.toDefaultLocalizedCommand({
@@ -173,6 +167,7 @@ export namespace TerminalCommands {
         id: 'terminal:new-manager-page',
         category: TERMINAL_CATEGORY,
         label: 'Create New Terminal Page',
+        iconClass: codicon('new-file'),
     });
     export const MANAGER_DELETE_PAGE = Command.toDefaultLocalizedCommand({
         id: 'terminal:delete-page',
@@ -419,9 +414,7 @@ export class TerminalFrontendContribution implements FrontendApplicationContribu
         commands.registerCommand(TerminalCommands.GET_SIZES, {
             execute: () => this.widgetManager.getOrCreateWidget<TerminalManagerWidget>(TerminalManagerWidget.ID)?.then(widget => widget.getLayoutData()),
         });
-        commands.registerCommand(TerminalCommands.MANAGER_NEW_TERMINAL, {
-            execute: () => this.openTerminal({ area: 'terminal-manager-current' }),
-        });
+
         commands.registerCommand(TerminalCommands.MANAGER_NEW_PAGE_TOOLBAR, {
             execute: () => this.openTerminal({ area: 'terminal-manager-new-page' }),
             isVisible: widget => widget instanceof TerminalManagerWidget,
@@ -643,13 +636,11 @@ export class TerminalFrontendContribution implements FrontendApplicationContribu
         toolbar.registerItem({
             id: TerminalCommands.MANAGER_NEW_TERMINAL_TOOLBAR.id,
             command: TerminalCommands.MANAGER_NEW_TERMINAL_TOOLBAR.id,
-            icon: codicon('add'),
             tooltip: TerminalCommands.MANAGER_NEW_TERMINAL_TOOLBAR.label,
         });
         toolbar.registerItem({
             id: TerminalCommands.MANAGER_NEW_PAGE_TOOLBAR.id,
             command: TerminalCommands.MANAGER_NEW_PAGE_TOOLBAR.id,
-            icon: codicon('new-file'),
         });
     }
 
@@ -851,7 +842,7 @@ export class TerminalFrontendContribution implements FrontendApplicationContribu
 
     protected async openTerminal(options?: TerminalManager.ExtendedWidgetOptions): Promise<void> {
         const cwd = await this.selectTerminalCwd();
-        const termWidget = await this.newTerminal({ cwd, title: 'super cool terminal' });
+        const termWidget = await this.newTerminal({ cwd });
         termWidget.start();
         this.open(termWidget, { widgetOptions: options });
     }

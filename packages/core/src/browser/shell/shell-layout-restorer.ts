@@ -192,22 +192,28 @@ export class ShellLayoutRestorer implements CommandContribution {
      * Turns the layout data to a string representation.
      */
     protected deflate(data: object): string {
-        return JSON.stringify(data, (property: string, value) => {
-            if (this.isWidgetProperty(property)) {
-                const description = this.convertToDescription(value as Widget);
-                return description;
-            } else if (this.isWidgetsProperty(property)) {
-                const descriptions: WidgetDescription[] = [];
-                for (const widget of (value as Widget[])) {
-                    const description = this.convertToDescription(widget);
-                    if (description) {
-                        descriptions.push(description);
+        console.log('SENTINEL DEFLATE DATA OBJECT', data);
+        try {
+            return JSON.stringify(data, (property: string, value) => {
+                if (this.isWidgetProperty(property)) {
+                    const description = this.convertToDescription(value as Widget);
+                    return description;
+                } else if (this.isWidgetsProperty(property)) {
+                    const descriptions: WidgetDescription[] = [];
+                    for (const widget of (value as Widget[])) {
+                        const description = this.convertToDescription(widget);
+                        if (description) {
+                            descriptions.push(description);
+                        }
                     }
+                    return descriptions;
                 }
-                return descriptions;
-            }
-            return value;
-        });
+                return value;
+            });
+        } catch (e) {
+            console.log('SENTINEL THIS IS THE DATA THAT CAUSES THE ERROR', e, data);
+            throw e;
+        }
     }
 
     private convertToDescription(widget: Widget): WidgetDescription | undefined {
