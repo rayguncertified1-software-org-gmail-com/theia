@@ -30,15 +30,14 @@ import {
 } from '@theia/core/lib/browser';
 import { TerminalManagerTreeModel } from './terminal-manager-tree-model';
 import { CommandRegistry, CompositeMenuNode, Emitter, MenuModelRegistry } from '@theia/core';
-import { TerminalMenus } from './terminal-frontend-contribution';
-import { TerminalManagerTreeTypes } from './terminal-manager-types';
+import { TerminalManager, TerminalManagerTreeTypes } from './terminal-manager-types';
 
 @injectable()
 export class TerminalManagerTreeWidget extends TreeWidget {
     static ID = 'terminal-manager-tree-widget';
 
     static createContainer(parent: interfaces.Container): Container {
-        const child = createTreeContainer(parent, { props: { leftPadding: 8, contextMenuPath: TerminalMenus.TERMINAL_MANAGER_TREE_CONTEXT_MENU } });
+        const child = createTreeContainer(parent, { props: { leftPadding: 8, contextMenuPath: TerminalManager.TERMINAL_MANAGER_TREE_CONTEXT_MENU } });
         child.bind(TerminalManagerTreeModel).toSelf().inSingletonScope();
         child.rebind(TreeModel).to(TerminalManagerTreeModel);
         child.bind(TerminalManagerTreeWidget).toSelf().inSingletonScope();

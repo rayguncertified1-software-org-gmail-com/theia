@@ -22,7 +22,6 @@ import {
     CompositeTreeNode,
     DockPanelRenderer,
     DockPanelRendererFactory,
-    FrontendApplicationContribution,
     Panel,
     PanelLayout,
     SplitPanel,
@@ -32,14 +31,13 @@ import {
 } from '@theia/core/lib/browser';
 import { TerminalManagerTreeWidget } from './terminal-manager-tree-widget';
 import { TerminalWidgetImpl } from './terminal-widget-impl';
-import { CommandService } from '@theia/core';
-import { TerminalCommands } from './terminal-frontend-contribution';
+import { CommandService, Emitter } from '@theia/core';
 import { UUID } from '@theia/core/shared/@phosphor/coreutils';
-import { TerminalManager, TerminalManagerTreeTypes } from './terminal-manager-types';
+import { TerminalManager, TerminalManagerCommands, TerminalManagerTreeTypes } from './terminal-manager-types';
 import { TerminalWidget } from './base/terminal-widget';
 
 @injectable()
-export class TerminalManagerWidget extends BaseWidget implements FrontendApplicationContribution {
+export class TerminalManagerWidget extends BaseWidget implements ApplicationShell.TrackableWidgetProvider {
     static ID = 'terminal-manager-widget';
     static LABEL = 'Terminal';
 
@@ -74,6 +72,9 @@ export class TerminalManagerWidget extends BaseWidget implements FrontendApplica
     protected groupPanels = new Map<TerminalManagerTreeTypes.GroupId, TerminalManagerTreeTypes.GroupSplitPanel>();
     protected terminalWidgets = new Map<TerminalManagerTreeTypes.TerminalId, TerminalWidget>();
 
+    protected readonly onDidChangeTrackableWidgetsEmitter = new Emitter<Widget[]>();
+    readonly onDidChangeTrackableWidgets = this.onDidChangeTrackableWidgetsEmitter.event;
+
     // serves as an empty container so that different view containers can be swapped out
     protected terminalPanelWrapper = new Panel({
         layout: new PanelLayout(),
@@ -95,11 +96,16 @@ export class TerminalManagerWidget extends BaseWidget implements FrontendApplica
         this.toDispose.push(this.shell.onDidChangeActiveWidget(({ newValue }) => this.handleOnDidChangeActiveWidget(newValue)));
         this.title.iconClass = codicon('terminal-tmux');
         this.id = TerminalManagerWidget.ID;
-        this.title.closable = false;
+        this.title.closable = true;
         this.title.label = TerminalManagerWidget.LABEL;
 
         this.createPageAndTreeLayout();
-        await this.commandService.executeCommand(TerminalCommands.MANAGER_NEW_PAGE_TOOLBAR.id);
+        await this.commandService.executeCommand(TerminalManagerCommands.MANAGER_NEW_PAGE_TOOLBAR.id);
+        this.pageAndTreeLayout?.setPartSizes([60, 15]);
+    }
+
+    getTrackableWidgets(): Widget[] {
+        return Array.from(this.terminalWidgets.values());
     }
 
     protected createPageAndTreeLayout(): void {
@@ -118,11 +124,6 @@ export class TerminalManagerWidget extends BaseWidget implements FrontendApplica
         this.layout.addWidget(this.panel);
         this.pageAndTreeLayout.addWidget(this.terminalPanelWrapper);
         this.pageAndTreeLayout.addWidget(this.treeWidget);
-    }
-
-    initializeLayout(): void {
-        console.log('SENTINEL LAYOUT WAS INITIALIZED WITHOUT PROBLEMS');
-        // this.pageAndTreeLayout?.setPartSizes([60, 15]);
     }
 
     addTerminalPage(widget: Widget): void {
@@ -223,6 +224,7 @@ export class TerminalManagerWidget extends BaseWidget implements FrontendApplica
         const newTerminalId = widget.id;
         if (widget instanceof TerminalWidgetImpl && TerminalManagerTreeTypes.isTerminalID(newTerminalId)) {
             this.terminalWidgets.set(newTerminalId, widget);
+            this.onDidChangeTrackableWidgetsEmitter.fire(this.getTrackableWidgets());
             this.treeWidget.model.addTerminal(newTerminalId, siblingTerminalId);
         }
     }

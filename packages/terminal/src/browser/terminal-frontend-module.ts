@@ -25,8 +25,8 @@ import {
     WidgetFactory,
     KeybindingContext,
     FrontendApplicationContribution,
-    ApplicationShell,
     KeybindingContribution,
+    bindViewContribution,
 } from '@theia/core/lib/browser';
 import { TabBarToolbarContribution } from '@theia/core/lib/browser/shell/tab-bar-toolbar';
 import { TerminalFrontendContribution } from './terminal-frontend-contribution';
@@ -51,14 +51,14 @@ import { ColorContribution } from '@theia/core/lib/browser/color-application-con
 import { TerminalThemeService } from './terminal-theme-service';
 import { QuickAccessContribution } from '@theia/core/lib/browser/quick-input/quick-access';
 import { TerminalManagerWidget } from './terminal-manager-widget';
-import { ApplicationShellWithTerminalManagerOverride } from './application-shell-with-terminal-manager-override';
 import { createTerminalLabelWidgetFactory, TerminalLabelWidgetFactory } from './terminal-label/terminal-label-widget';
+import { TerminalManagerFrontendViewContribution } from './terminal-manager-frontend-view-contribution';
 
 export default new ContainerModule((
     bind: interfaces.Bind,
     _unbind: interfaces.Unbind,
     _isBound: interfaces.IsBound,
-    rebind: interfaces.Rebind) => {
+    _rebind: interfaces.Rebind) => {
     bindTerminalPreferences(bind);
     bind(KeybindingContext).to(TerminalActiveContext).inSingletonScope();
     bind(KeybindingContext).to(TerminalSearchVisibleContext).inSingletonScope();
@@ -98,9 +98,9 @@ export default new ContainerModule((
     }
 
     bind(TerminalThemeService).toSelf().inSingletonScope();
-
-    bind(TerminalManagerWidget).toSelf().inSingletonScope();
-
+    bindViewContribution(bind, TerminalManagerFrontendViewContribution);
+    bind(FrontendApplicationContribution).toService(TerminalManagerFrontendViewContribution);
+    bind(TabBarToolbarContribution).toService(TerminalManagerFrontendViewContribution);
     bind(WidgetFactory).toDynamicValue(context => ({
         id: TerminalManagerWidget.ID,
         createWidget: () => TerminalManagerWidget.createWidget(context.container),
@@ -146,6 +146,4 @@ export default new ContainerModule((
 
     bind(TerminalLinkmatcherDiffPost).toSelf().inSingletonScope();
     bind(TerminalContribution).toService(TerminalLinkmatcherDiffPost);
-    bind(ApplicationShellWithTerminalManagerOverride).toSelf().inSingletonScope();
-    rebind(ApplicationShell).toService(ApplicationShellWithTerminalManagerOverride);
 });

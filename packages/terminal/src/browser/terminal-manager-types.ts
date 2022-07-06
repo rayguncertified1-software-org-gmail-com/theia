@@ -14,26 +14,75 @@
 // SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
 // *****************************************************************************
 
-import { MenuPath } from '@theia/core';
+import { Command, MenuPath } from '@theia/core';
 import {
     ApplicationShell,
-    WidgetOpenerOptions,
     SelectableTreeNode,
     CompositeTreeNode,
     SplitPanel,
     ApplicationShellLayoutVersion,
     DockPanel,
     SidePanel,
+    codicon,
 } from '@theia/core/lib/browser';
 import { TerminalWidget } from './base/terminal-widget';
 import { TerminalManagerTreeWidget } from './terminal-manager-tree-widget';
 
-export namespace TerminalManager {
+export namespace TerminalManagerCommands {
+    export const MANAGER_NEW_TERMINAL_TOOLBAR = Command.toDefaultLocalizedCommand({
+        id: 'terminal:new-in-manager-toolbar',
+        category: 'Terminal Manager',
+        label: 'Create New Terminal Group',
+        iconClass: codicon('split-horizontal'),
+    });
+    export const MANAGER_DELETE_TERMINAL = Command.toDefaultLocalizedCommand({
+        id: 'terminal:delete-terminal',
+        category: 'Terminal Manager',
+        label: 'Delete Terminal',
+        iconClass: codicon('trash'),
+    });
+    export const MANAGER_RENAME_TERMINAL = Command.toDefaultLocalizedCommand({
+        id: 'terminal: rename-terminal',
+        category: 'Terminal Manager',
+        label: 'Rename...',
+        iconClass: codicon('edit'),
+    });
+    export const MANAGER_NEW_PAGE_TOOLBAR = Command.toDefaultLocalizedCommand({
+        id: 'terminal:new-manager-page',
+        category: 'Terminal Manager',
+        label: 'Create New Terminal Page',
+        iconClass: codicon('new-file'),
+    });
+    export const MANAGER_DELETE_PAGE = Command.toDefaultLocalizedCommand({
+        id: 'terminal:delete-page',
+        category: 'Terminal Manager',
+        label: 'Delete Page',
+        iconClass: codicon('trash'),
+    });
+    export const MANAGER_SPLIT_TERMINAL_HORIZONTAL = Command.toDefaultLocalizedCommand({
+        id: 'terminal:manager-split-horizontal',
+        category: 'Terminal Manager',
+        label: 'Split Active Terminal Vertically',
+        iconClass: codicon('split-vertical'),
+    });
+    export const MANAGER_DELETE_GROUP = Command.toDefaultLocalizedCommand({
+        id: 'terminal:manager-delete-group',
+        category: 'Terminal Manager',
+        label: 'Delete Group...',
+        iconClass: codicon('trash'),
+    });
 
-    export type Area = ApplicationShell.Area | 'terminal-manager-current' | 'terminal-manager-new-page' | TerminalManagerTreeTypes.TerminalId;
+    export const GET_SIZES: Command = {
+        id: 'terminal-manager-get-layout',
+        label: 'TerminalManager: Get Layout Data',
+    };
+}
+
+export namespace TerminalManager {
+    export const TERMINAL_MANAGER_TREE_CONTEXT_MENU = ['terminal-manager-tree-context-menu'];
+
+    export type Area = 'terminal-manager-current' | 'terminal-manager-new-page' | TerminalManagerTreeTypes.TerminalId;
     export const isTerminalManagerArea = (obj: unknown): obj is Area => typeof obj === 'string' && obj.startsWith('terminal');
-    export type ExtendedWidgetOptions = Omit<ApplicationShell.WidgetOptions, 'area'> & { area?: Area };
-    export type ExtendedWidgetOpenerOptions = Omit<WidgetOpenerOptions, 'widgetOptions'> & { widgetOptions?: ExtendedWidgetOptions };
 
     export interface ApplicationShellLayoutData extends ApplicationShell.LayoutData {
         version?: string | ApplicationShellLayoutVersion,

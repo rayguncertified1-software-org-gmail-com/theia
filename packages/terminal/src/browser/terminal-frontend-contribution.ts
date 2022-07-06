@@ -57,9 +57,6 @@ import {
 } from '../common/base-terminal-protocol';
 import { nls } from '@theia/core/lib/common/nls';
 import { TerminalPreferences } from './terminal-preferences';
-import { TerminalManagerWidget } from './terminal-manager-widget';
-import { TerminalManagerTreeTypes, TerminalManager } from './terminal-manager-types';
-import { ApplicationShellWithTerminalManagerOverride } from './application-shell-with-terminal-manager-override';
 
 export namespace TerminalMenus {
     export const TERMINAL = [...MAIN_MENU_BAR, '7_terminal'];
@@ -69,7 +66,6 @@ export namespace TerminalMenus {
     export const TERMINAL_TASKS_CONFIG = [...TERMINAL_TASKS, '4_terminal'];
     export const TERMINAL_NAVIGATOR_CONTEXT_MENU = ['navigator-context-menu', 'navigation'];
     export const TERMINAL_OPEN_EDITORS_CONTEXT_MENU = ['open-editors-context-menu', 'navigation'];
-    export const TERMINAL_MANAGER_TREE_CONTEXT_MENU = ['terminal-manager-tree-context-menu'];
 }
 
 export namespace TerminalCommands {
@@ -144,61 +140,13 @@ export namespace TerminalCommands {
         category: CommonCommands.VIEW_CATEGORY,
         label: 'Show All Opened Terminals'
     });
-
-    export const MANAGER_NEW_TERMINAL_TOOLBAR = Command.toDefaultLocalizedCommand({
-        id: 'terminal:new-in-manager-toolbar',
-        category: TERMINAL_CATEGORY,
-        label: 'Create New Terminal Group',
-        iconClass: codicon('split-horizontal'),
-    });
-    export const MANAGER_DELETE_TERMINAL = Command.toDefaultLocalizedCommand({
-        id: 'terminal:delete-terminal',
-        category: TERMINAL_CATEGORY,
-        label: 'Delete Terminal',
-        iconClass: codicon('trash'),
-    });
-    export const MANAGER_RENAME_TERMINAL = Command.toDefaultLocalizedCommand({
-        id: 'terminal: rename-terminal',
-        category: TERMINAL_CATEGORY,
-        label: 'Rename...',
-        iconClass: codicon('edit'),
-    });
-    export const MANAGER_NEW_PAGE_TOOLBAR = Command.toDefaultLocalizedCommand({
-        id: 'terminal:new-manager-page',
-        category: TERMINAL_CATEGORY,
-        label: 'Create New Terminal Page',
-        iconClass: codicon('new-file'),
-    });
-    export const MANAGER_DELETE_PAGE = Command.toDefaultLocalizedCommand({
-        id: 'terminal:delete-page',
-        category: TERMINAL_CATEGORY,
-        label: 'Delete Page',
-        iconClass: codicon('trash'),
-    });
-    export const MANAGER_SPLIT_TERMINAL_HORIZONTAL = Command.toDefaultLocalizedCommand({
-        id: 'terminal:manager-split-horizontal',
-        category: TERMINAL_CATEGORY,
-        label: 'Split Active Terminal Vertically',
-        iconClass: codicon('split-vertical'),
-    });
-    export const MANAGER_DELETE_GROUP = Command.toDefaultLocalizedCommand({
-        id: 'terminal:manager-delete-group',
-        category: TERMINAL_CATEGORY,
-        label: 'Delete Group...',
-        iconClass: codicon('trash'),
-    });
-
-    export const GET_SIZES: Command = {
-        id: 'terminal-manager-get-layout',
-        label: 'TerminalManager: Get Layout Data',
-    };
 }
 
 @injectable()
 export class TerminalFrontendContribution implements FrontendApplicationContribution,
     CommandContribution, MenuContribution, KeybindingContribution, TerminalService, TabBarToolbarContribution, ColorContribution {
 
-    @inject(ApplicationShell) protected readonly shell: ApplicationShellWithTerminalManagerOverride;
+    @inject(ApplicationShell) protected readonly shell: ApplicationShell;
     @inject(WidgetManager) protected readonly widgetManager: WidgetManager;
     @inject(ShellTerminalServerProxy) protected readonly shellTerminalServer: ShellTerminalServerProxy;
     @inject(FileService) protected readonly fileService: FileService;
@@ -404,46 +352,7 @@ export class TerminalFrontendContribution implements FrontendApplicationContribu
         commands.registerCommand(TerminalCommands.NEW, {
             execute: () => this.openTerminal()
         });
-        commands.registerCommand(TerminalCommands.MANAGER_NEW_TERMINAL_TOOLBAR, {
-            execute: () => this.openTerminal({ area: 'terminal-manager-current' }),
-            isVisible: (
-                widgetOrID: Widget | string,
-                node?: TerminalManagerTreeTypes.TerminalManagerTreeNode,
-            ) => widgetOrID instanceof TerminalManagerWidget || (widgetOrID === 'terminal-manager-tree' && TerminalManagerTreeTypes.isPageNode(node)),
-        });
-        commands.registerCommand(TerminalCommands.GET_SIZES, {
-            execute: () => this.widgetManager.getOrCreateWidget<TerminalManagerWidget>(TerminalManagerWidget.ID)?.then(widget => widget.getLayoutData()),
-        });
 
-        commands.registerCommand(TerminalCommands.MANAGER_NEW_PAGE_TOOLBAR, {
-            execute: () => this.openTerminal({ area: 'terminal-manager-new-page' }),
-            isVisible: widget => widget instanceof TerminalManagerWidget,
-        });
-        commands.registerCommand(TerminalCommands.MANAGER_DELETE_TERMINAL, {
-            execute: (...args: TerminalManagerTreeTypes.ContextMenuArgs) => TerminalManagerTreeTypes.isTerminalID(args[1]) && this.deleteTerminalFromManager(args[1]),
-            isVisible: (...args: TerminalManagerTreeTypes.ContextMenuArgs) => args[0] === 'terminal-manager-tree' && TerminalManagerTreeTypes.isTerminalNode(args[1]),
-        });
-        commands.registerCommand(TerminalCommands.MANAGER_DELETE_PAGE, {
-            execute: (...args: TerminalManagerTreeTypes.ContextMenuArgs) => TerminalManagerTreeTypes.isPageId(args[1]) && this.deletePageFromManager(args[1]),
-            isVisible: (...args: TerminalManagerTreeTypes.ContextMenuArgs) => args[0] === 'terminal-manager-tree' && TerminalManagerTreeTypes.isPageNode(args[1]),
-        });
-        commands.registerCommand(TerminalCommands.MANAGER_RENAME_TERMINAL, {
-            execute: (...args: TerminalManagerTreeTypes.ContextMenuArgs) => this.toggleRenameTerminalFromManager(args[1]),
-            isVisible: (...args: TerminalManagerTreeTypes.ContextMenuArgs) => args[0] === 'terminal-manager-tree',
-        });
-        commands.registerCommand(TerminalCommands.MANAGER_SPLIT_TERMINAL_HORIZONTAL, {
-            execute: (...args: TerminalManagerTreeTypes.ContextMenuArgs) => {
-                const id = args[1];
-                if (TerminalManagerTreeTypes.isTerminalID(id)) {
-                    this.openTerminal({ area: id });
-                }
-            },
-            isVisible: (...args: TerminalManagerTreeTypes.ContextMenuArgs) => args[0] === 'terminal-manager-tree' && TerminalManagerTreeTypes.isTerminalNode(args[1]),
-        });
-        commands.registerCommand(TerminalCommands.MANAGER_DELETE_GROUP, {
-            execute: (...args: TerminalManagerTreeTypes.ContextMenuArgs) => TerminalManagerTreeTypes.isGroupId(args[1]) && this.deleteGroupFromManager(args[1]),
-            isVisible: (...args: TerminalManagerTreeTypes.ContextMenuArgs) => 'terminal-manager-tree' && TerminalManagerTreeTypes.isTerminalGroupNode(args[1]),
-        });
         commands.registerCommand(TerminalCommands.NEW_ACTIVE_WORKSPACE, {
             execute: () => this.openActiveWorkspaceTerminal()
         });
@@ -525,26 +434,6 @@ export class TerminalFrontendContribution implements FrontendApplicationContribu
         });
     }
 
-    protected deleteTerminalFromManager(terminalId: TerminalManagerTreeTypes.TerminalId): void {
-        const terminalManagerWidget = this.shell.terminalManager;
-        terminalManagerWidget.deleteTerminal(terminalId);
-    }
-
-    protected deleteGroupFromManager(groupId: TerminalManagerTreeTypes.GroupId): void {
-        const terminalManagerWidget = this.shell.terminalManager;
-        terminalManagerWidget.deleteGroup(groupId);
-    }
-
-    protected deletePageFromManager(pageId: TerminalManagerTreeTypes.PageId): void {
-        const terminalManagerWidget = this.shell.terminalManager;
-        terminalManagerWidget.deletePage(pageId);
-    }
-
-    protected toggleRenameTerminalFromManager(entityId: TerminalManagerTreeTypes.TerminalManagerValidId): void {
-        const terminalManagerWidget = this.shell.terminalManager;
-        terminalManagerWidget.toggleRenameTerminal(entityId);
-    }
-
     async openInTerminal(uri: URI): Promise<void> {
         // Determine folder path of URI
         let stat: FileStat;
@@ -582,48 +471,6 @@ export class TerminalFrontendContribution implements FrontendApplicationContribu
             commandId: TerminalCommands.TERMINAL_CONTEXT.id,
             order: 'z'
         });
-        menus.registerMenuAction(TerminalMenus.TERMINAL_MANAGER_TREE_CONTEXT_MENU, {
-            commandId: TerminalCommands.MANAGER_SPLIT_TERMINAL_HORIZONTAL.id,
-            order: 'a',
-        });
-        menus.registerMenuAction(TerminalMenus.TERMINAL_MANAGER_TREE_CONTEXT_MENU, {
-            commandId: TerminalCommands.MANAGER_RENAME_TERMINAL.id,
-            order: 'b',
-        });
-        menus.registerMenuAction(TerminalMenus.TERMINAL_MANAGER_TREE_CONTEXT_MENU, {
-            commandId: TerminalCommands.MANAGER_DELETE_TERMINAL.id,
-            order: 'c',
-        });
-        menus.registerMenuAction(TerminalMenus.TERMINAL_MANAGER_TREE_CONTEXT_MENU, {
-            commandId: TerminalCommands.MANAGER_DELETE_PAGE.id,
-            order: 'c',
-        });
-        menus.registerMenuAction(TerminalMenus.TERMINAL_MANAGER_TREE_CONTEXT_MENU, {
-            commandId: TerminalCommands.MANAGER_DELETE_GROUP.id,
-            order: 'c',
-        });
-
-        menus.registerMenuAction(TerminalManagerTreeTypes.PAGE_NODE_MENU, {
-            commandId: TerminalCommands.MANAGER_NEW_TERMINAL_TOOLBAR.id,
-            order: 'a',
-        });
-        menus.registerMenuAction(TerminalManagerTreeTypes.PAGE_NODE_MENU, {
-            commandId: TerminalCommands.MANAGER_DELETE_PAGE.id,
-            order: 'c'
-        });
-
-        menus.registerMenuAction(TerminalManagerTreeTypes.TERMINAL_NODE_MENU, {
-            commandId: TerminalCommands.MANAGER_DELETE_TERMINAL.id,
-            order: 'c'
-        });
-        menus.registerMenuAction(TerminalManagerTreeTypes.TERMINAL_NODE_MENU, {
-            commandId: TerminalCommands.MANAGER_SPLIT_TERMINAL_HORIZONTAL.id,
-            order: 'b'
-        });
-        menus.registerMenuAction(TerminalManagerTreeTypes.GROUP_NODE_MENU, {
-            commandId: TerminalCommands.MANAGER_DELETE_GROUP.id,
-            order: 'c',
-        });
     }
 
     registerToolbarItems(toolbar: TabBarToolbarRegistry): void {
@@ -632,15 +479,6 @@ export class TerminalFrontendContribution implements FrontendApplicationContribu
             command: TerminalCommands.SPLIT.id,
             icon: codicon('split-horizontal'),
             tooltip: TerminalCommands.SPLIT.label
-        });
-        toolbar.registerItem({
-            id: TerminalCommands.MANAGER_NEW_TERMINAL_TOOLBAR.id,
-            command: TerminalCommands.MANAGER_NEW_TERMINAL_TOOLBAR.id,
-            tooltip: TerminalCommands.MANAGER_NEW_TERMINAL_TOOLBAR.label,
-        });
-        toolbar.registerItem({
-            id: TerminalCommands.MANAGER_NEW_PAGE_TOOLBAR.id,
-            command: TerminalCommands.MANAGER_NEW_PAGE_TOOLBAR.id,
         });
     }
 
@@ -787,9 +625,9 @@ export class TerminalFrontendContribution implements FrontendApplicationContribu
     }
 
     // TODO: reuse WidgetOpenHandler.open
-    open(widget: TerminalWidget, options?: TerminalManager.ExtendedWidgetOpenerOptions | WidgetOpenerOptions): void {
+    open(widget: TerminalWidget, options?: WidgetOpenerOptions): void {
         const area = options?.widgetOptions?.area ?? 'bottom';
-        const op: TerminalManager.ExtendedWidgetOpenerOptions = {
+        const op: WidgetOpenerOptions = {
             mode: 'activate',
             ...options,
             widgetOptions: {
@@ -798,7 +636,7 @@ export class TerminalFrontendContribution implements FrontendApplicationContribu
             }
         };
         if (!widget.isAttached) {
-            this.shell.addWidget(widget, op.widgetOptions as ApplicationShell.WidgetOptions | undefined);
+            this.shell.addWidget(widget, op.widgetOptions);
         }
         if (op.mode === 'activate') {
             this.shell.activateWidget(widget.id);
@@ -840,7 +678,7 @@ export class TerminalFrontendContribution implements FrontendApplicationContribu
         return ref instanceof TerminalWidget ? ref : undefined;
     }
 
-    protected async openTerminal(options?: TerminalManager.ExtendedWidgetOptions): Promise<void> {
+    protected async openTerminal(options?: ApplicationShell.WidgetOptions): Promise<void> {
         const cwd = await this.selectTerminalCwd();
         const termWidget = await this.newTerminal({ cwd });
         termWidget.start();
