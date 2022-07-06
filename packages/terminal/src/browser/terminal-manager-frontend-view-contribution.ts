@@ -45,6 +45,7 @@ export class TerminalManagerFrontendViewContribution extends AbstractViewContrib
 
     async initializeLayout(app: FrontendApplication): Promise<void> {
         await this.openView();
+        // return widget.initializeLayout();
     }
 
     override registerCommands(commands: CommandRegistry): void {
@@ -60,10 +61,10 @@ export class TerminalManagerFrontendViewContribution extends AbstractViewContrib
                 node?: TerminalManagerTreeTypes.TerminalManagerTreeNode,
             ) => widgetOrID instanceof TerminalManagerWidget || (widgetOrID === 'terminal-manager-tree' && TerminalManagerTreeTypes.isPageNode(node)),
         });
-        commands.registerCommand(TerminalManagerCommands.GET_SIZES, {
-            execute: () => this.widgetManager.getOrCreateWidget<TerminalManagerWidget>(TerminalManagerWidget.ID)?.then(widget => widget.getLayoutData()),
+        commands.registerCommand(TerminalManagerCommands.MANAGER_SHOW_TREE_TOOLBAR, {
+            execute: () => this.handleToggleTree(),
+            isVisible: widget => widget instanceof TerminalManagerWidget,
         });
-
         commands.registerCommand(TerminalManagerCommands.MANAGER_NEW_PAGE_TOOLBAR, {
             execute: () => this.openInManager('terminal-manager-new-page'),
             isVisible: widget => widget instanceof TerminalManagerWidget,
@@ -96,10 +97,10 @@ export class TerminalManagerFrontendViewContribution extends AbstractViewContrib
     }
 
     async openInManager(area: TerminalManager.Area): Promise<void> {
-        const [terminalManagerWidget, terminalWidget] = await Promise.all([
-            this.openView({ activate: true }),
-            this.terminalFrontendContribution.newTerminal({}),
-        ]);
+        const terminalManagerWidget = await this.widget;
+        this.openView({ activate: true }).then(widget => widget.setPanelSizes());
+        const terminalWidget = await this.terminalFrontendContribution.newTerminal({});
+        console.log('SENTINEL AFTER PROMISES');
         terminalWidget.start();
         if (area && terminalManagerWidget) {
             if (area === 'terminal-manager-current') {
@@ -110,6 +111,12 @@ export class TerminalManagerFrontendViewContribution extends AbstractViewContrib
                 terminalManagerWidget.addWidgetToTerminalGroup(terminalWidget, area);
             }
         }
+    }
+
+    protected async handleToggleTree(): Promise<void> {
+        const terminalManagerWidget = await this.widget;
+        terminalManagerWidget.toggleTreeVisibility();
+
     }
 
     protected deleteTerminalFromManager(terminalId: TerminalManagerTreeTypes.TerminalId): void {
@@ -187,6 +194,10 @@ export class TerminalManagerFrontendViewContribution extends AbstractViewContrib
         toolbar.registerItem({
             id: TerminalManagerCommands.MANAGER_NEW_PAGE_TOOLBAR.id,
             command: TerminalManagerCommands.MANAGER_NEW_PAGE_TOOLBAR.id,
+        });
+        toolbar.registerItem({
+            id: TerminalManagerCommands.MANAGER_SHOW_TREE_TOOLBAR.id,
+            command: TerminalManagerCommands.MANAGER_SHOW_TREE_TOOLBAR.id,
         });
     }
 }

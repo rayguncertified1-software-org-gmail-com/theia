@@ -27,6 +27,7 @@ import {
     FrontendApplicationContribution,
     KeybindingContribution,
     bindViewContribution,
+    PreferenceContribution,
 } from '@theia/core/lib/browser';
 import { TabBarToolbarContribution } from '@theia/core/lib/browser/shell/tab-bar-toolbar';
 import { TerminalFrontendContribution } from './terminal-frontend-contribution';
@@ -53,6 +54,8 @@ import { QuickAccessContribution } from '@theia/core/lib/browser/quick-input/qui
 import { TerminalManagerWidget } from './terminal-manager-widget';
 import { createTerminalLabelWidgetFactory, TerminalLabelWidgetFactory } from './terminal-label/terminal-label-widget';
 import { TerminalManagerFrontendViewContribution } from './terminal-manager-frontend-view-contribution';
+import { TerminalManagerPreferenceContribution, TerminalManagerPreferences, TerminalManagerPreferenceSchema } from './terminal-manager-preferences';
+import { PreferenceProxyFactory } from '@theia/core/lib/browser/preferences/injectable-preference-proxy';
 
 export default new ContainerModule((
     bind: interfaces.Bind,
@@ -105,6 +108,13 @@ export default new ContainerModule((
         id: TerminalManagerWidget.ID,
         createWidget: () => TerminalManagerWidget.createWidget(context.container),
     }));
+
+    bind(TerminalManagerPreferences).toDynamicValue(ctx => {
+        const factory = ctx.container.get<PreferenceProxyFactory>(PreferenceProxyFactory);
+        return factory(TerminalManagerPreferenceSchema, { validated: true });
+    }).inSingletonScope();
+    bind(TerminalManagerPreferenceContribution).toConstantValue({ schema: TerminalManagerPreferenceSchema });
+    bind(PreferenceContribution).toService(TerminalManagerPreferenceContribution);
 
     bind(TerminalFrontendContribution).toSelf().inSingletonScope();
     bind(FrontendApplicationContribution).to(TerminalFrontendContribution);

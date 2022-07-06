@@ -35,6 +35,7 @@ import { CommandService, Emitter } from '@theia/core';
 import { UUID } from '@theia/core/shared/@phosphor/coreutils';
 import { TerminalManager, TerminalManagerCommands, TerminalManagerTreeTypes } from './terminal-manager-types';
 import { TerminalWidget } from './base/terminal-widget';
+import { TerminalManagerPreferences } from './terminal-manager-preferences';
 
 @injectable()
 export class TerminalManagerWidget extends BaseWidget implements ApplicationShell.TrackableWidgetProvider {
@@ -59,6 +60,7 @@ export class TerminalManagerWidget extends BaseWidget implements ApplicationShel
     @inject(DockPanelRendererFactory) protected dockPanelRendererFactory: () => DockPanelRenderer;
     @inject(ApplicationShell) protected readonly shell: ApplicationShell;
     @inject(CommandService) protected readonly commandService: CommandService;
+    @inject(TerminalManagerPreferences) protected readonly terminalManagerPreferences: TerminalManagerPreferences;
 
     protected activePageId: TerminalManagerTreeTypes.PageId | undefined;
     protected activeTerminalId: TerminalManagerTreeTypes.TerminalId | undefined;
@@ -94,18 +96,40 @@ export class TerminalManagerWidget extends BaseWidget implements ApplicationShel
         this.toDispose.push(this.treeWidget.model.onTerminalDeletedFromGroup(({ terminalId, groupId: groupId }) => this.handleTerminalDeleted(terminalId, groupId)));
 
         this.toDispose.push(this.shell.onDidChangeActiveWidget(({ newValue }) => this.handleOnDidChangeActiveWidget(newValue)));
+
+        this.toDispose.push(this.terminalManagerPreferences.onPreferenceChanged(() => this.resolveMainLayout()));
         this.title.iconClass = codicon('terminal-tmux');
         this.id = TerminalManagerWidget.ID;
         this.title.closable = true;
         this.title.label = TerminalManagerWidget.LABEL;
+        await this.terminalManagerPreferences.ready;
+        return this.initializeLayout();
+    }
 
+    async initializeLayout(): Promise<void> {
         this.createPageAndTreeLayout();
         await this.commandService.executeCommand(TerminalManagerCommands.MANAGER_NEW_PAGE_TOOLBAR.id);
-        this.pageAndTreeLayout?.setPartSizes([60, 15]);
+        this.setPanelSizes();
+    }
+
+    setPanelSizes(): void {
+        const treeViewLocation = this.terminalManagerPreferences.get('terminalManager.treeViewLocation');
+        const panelSizes = treeViewLocation === 'right' ? [60, 15] : [15, 60];
+        setTimeout(() => this.pageAndTreeLayout?.setPartSizes(panelSizes));
     }
 
     getTrackableWidgets(): Widget[] {
         return Array.from(this.terminalWidgets.values());
+    }
+
+    toggleTreeVisibility(): void {
+        const { isHidden } = this.treeWidget;
+        if (isHidden) {
+            this.treeWidget.show();
+            this.setPanelSizes();
+        } else {
+            this.treeWidget.hide();
+        }
     }
 
     protected createPageAndTreeLayout(): void {
@@ -122,8 +146,21 @@ export class TerminalManagerWidget extends BaseWidget implements ApplicationShel
         });
 
         this.layout.addWidget(this.panel);
-        this.pageAndTreeLayout.addWidget(this.terminalPanelWrapper);
-        this.pageAndTreeLayout.addWidget(this.treeWidget);
+        this.resolveMainLayout();
+    }
+
+    protected resolveMainLayout(): void {
+        const treeViewLocation = this.terminalManagerPreferences.get('terminalManager.treeViewLocation');
+        this.pageAndTreeLayout?.removeWidget(this.treeWidget);
+        this.pageAndTreeLayout?.removeWidget(this.terminalPanelWrapper);
+        if (treeViewLocation === 'left') {
+            this.pageAndTreeLayout?.addWidget(this.treeWidget);
+        }
+        this.pageAndTreeLayout?.addWidget(this.terminalPanelWrapper);
+        if (treeViewLocation === 'right') {
+            this.pageAndTreeLayout?.addWidget(this.treeWidget);
+        }
+        this.setPanelSizes();
     }
 
     addTerminalPage(widget: Widget): void {

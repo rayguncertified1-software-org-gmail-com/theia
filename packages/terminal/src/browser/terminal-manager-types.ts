@@ -72,10 +72,12 @@ export namespace TerminalManagerCommands {
         iconClass: codicon('trash'),
     });
 
-    export const GET_SIZES: Command = {
-        id: 'terminal-manager-get-layout',
-        label: 'TerminalManager: Get Layout Data',
-    };
+    export const MANAGER_SHOW_TREE_TOOLBAR = Command.toDefaultLocalizedCommand({
+        id: 'terminal:manager-toggle-tree',
+        category: 'Terminal Manager',
+        label: 'Toggle Tree View',
+        iconClass: codicon('list-tree'),
+    });
 }
 
 export namespace TerminalManager {
