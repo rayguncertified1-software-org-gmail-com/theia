@@ -399,7 +399,7 @@ export class TerminalManagerWidget extends BaseWidget implements ApplicationShel
         return layoutData;
     }
     restoreState(oldState: TerminalManager.LayoutData): void {
-        console.log('SENTINEL TERMINAL MANAGER RESTORE STATE');
+        console.log('SENTINEL TERMINAL MANAGER RESTORE STATE', oldState);
         const { items, widget, terminalAndTreeRelativeSizes } = oldState;
         if (widget && terminalAndTreeRelativeSizes && items) {
             this.treeWidget = widget;
@@ -452,7 +452,9 @@ export class TerminalManagerWidget extends BaseWidget implements ApplicationShel
                     const { widget } = widgetLayout;
                     if (widget instanceof TerminalWidgetImpl) {
                         const widgetId = TerminalManagerTreeTypes.generateTerminalKey(widget);
+                        console.log('SENTINEL WIDGET ID TO RESTORE', widgetId);
                         const widgetNode = treeWidget.model.getNode(widgetId);
+                        console.log('SENTINEL CORRESPONDING WIDGET NODE', widgetNode);
                         if (!TerminalManagerTreeTypes.isTerminalNode(widgetNode)) {
                             throw createError(widgetId);
                         }

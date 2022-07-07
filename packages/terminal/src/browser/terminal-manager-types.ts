@@ -126,10 +126,10 @@ export namespace TerminalManager {
 
 }
 export namespace TerminalManagerTreeTypes {
-    export type TerminalKey = `terminal-${string}::${string}`;
+    export type TerminalKey = `terminal-${string}`;
     export const generateTerminalKey = (widget: TerminalWidgetImpl): TerminalKey => {
-        const { created, title } = widget.options as TerminalWidgetFactoryOptions;
-        return `terminal-${created}::${title}`;
+        const { created } = widget.options as TerminalWidgetFactoryOptions;
+        return `terminal-${created}`;
     };
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     export const isTerminalKey = (obj: unknown): obj is TerminalKey => typeof obj === 'string' && obj.startsWith('terminal-');
