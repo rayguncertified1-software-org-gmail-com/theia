@@ -21,6 +21,7 @@ import { Command, CommandRegistry, MenuModelRegistry } from '@theia/core';
 import { TerminalManager, TerminalManagerCommands, TerminalManagerTreeTypes } from './terminal-manager-types';
 import { TabBarToolbarContribution, TabBarToolbarRegistry } from '@theia/core/lib/browser/shell/tab-bar-toolbar';
 import { TerminalFrontendContribution } from './terminal-frontend-contribution';
+import { UUID } from '@theia/core/shared/@phosphor/coreutils';
 
 const GET_SIZES: Command = {
     id: 'terminal-manager-get-layout',
@@ -100,6 +101,7 @@ export class TerminalManagerFrontendViewContribution extends AbstractViewContrib
         const terminalManagerWidget = await this.widget;
         this.openView({ activate: true }).then(widget => widget.setPanelSizes());
         const terminalWidget = await this.terminalFrontendContribution.newTerminal({});
+        Object.assign(terminalWidget, { uuid: `terminal-${UUID.uuid4()}` });
         terminalWidget.start();
         if (area && terminalManagerWidget) {
             if (area === 'terminal-manager-current') {

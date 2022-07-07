@@ -32,7 +32,6 @@ import {
     WidgetManager,
 } from '@theia/core/lib/browser';
 import { TerminalManagerTreeWidget } from './terminal-manager-tree-widget';
-import { TerminalWidgetImpl } from './terminal-widget-impl';
 import { CommandService, Emitter } from '@theia/core';
 import { UUID } from '@theia/core/shared/@phosphor/coreutils';
 import { TerminalManager, TerminalManagerCommands, TerminalManagerTreeTypes } from './terminal-manager-types';
@@ -76,7 +75,7 @@ export class TerminalManagerWidget extends BaseWidget implements ApplicationShel
 
     protected pagePanels = new Map<TerminalManagerTreeTypes.PageId, TerminalManagerTreeTypes.PageSplitPanel>();
     protected groupPanels = new Map<TerminalManagerTreeTypes.GroupId, TerminalManagerTreeTypes.GroupSplitPanel>();
-    protected terminalWidgets = new Map<TerminalManagerTreeTypes.TerminalId, TerminalWidget>();
+    protected terminalWidgets = new Map<TerminalManagerTreeTypes.TerminalId, TerminalManagerTreeTypes.TerminalWidgetWithUUID>();
 
     protected readonly onDidChangeTrackableWidgetsEmitter = new Emitter<Widget[]>();
     readonly onDidChangeTrackableWidgets = this.onDidChangeTrackableWidgetsEmitter.event;
@@ -196,16 +195,15 @@ export class TerminalManagerWidget extends BaseWidget implements ApplicationShel
         if (!this.treeWidget) {
             return;
         }
-        const terminalId = widget.id;
-        if (widget instanceof TerminalWidgetImpl && TerminalManagerTreeTypes.isTerminalID(terminalId)) {
-            this.terminalWidgets.set(terminalId, widget);
+        if (TerminalManagerTreeTypes.isTerminalWidgetWithUUI(widget)) {
+            this.terminalWidgets.set(widget.uuid, widget);
             const groupPanel = this.createTerminalGroupPanel();
             groupPanel.addWidget(widget);
             const pagePanel = this.createPagePanel();
             pagePanel.addWidget(groupPanel);
             // const groupPanel = existingGroupPanel ?? this.createTerminalGroupPanel(widget);
             // const pagePanel = existingPagePanel ?? this.createPagePanel(groupPanel);
-            return this.treeWidget.model.addTerminalPage(terminalId, groupPanel.id, pagePanel.id);
+            return this.treeWidget.model.addTerminalPage(widget.uuid, groupPanel.id, pagePanel.id);
         }
     }
 
@@ -245,8 +243,8 @@ export class TerminalManagerWidget extends BaseWidget implements ApplicationShel
         if (!this.treeWidget) {
             return;
         }
-        const terminalId = widget.id;
-        if (widget instanceof TerminalWidgetImpl && TerminalManagerTreeTypes.isTerminalID(terminalId)) {
+        if (TerminalManagerTreeTypes.isTerminalWidgetWithUUI(widget)) {
+            const terminalId = widget.uuid;
             // const groupPanel = this.createTerminalGroupPanel(widget);
             this.terminalWidgets.set(terminalId, widget);
             const groupPanel = this.createTerminalGroupPanel();
@@ -279,7 +277,7 @@ export class TerminalManagerWidget extends BaseWidget implements ApplicationShel
             return;
         }
         const groupPanel = this.groupPanels.get(groupId);
-        const activePagePanelId = this.treeWidget.model.activePage?.id;
+        const activePagePanelId = this.treeWidget.model.activePageNode?.id;
         if (!activePagePanelId || !groupPanel) {
             return;
         }
@@ -299,8 +297,8 @@ export class TerminalManagerWidget extends BaseWidget implements ApplicationShel
         if (!this.treeWidget) {
             return;
         }
-        const newTerminalId = widget.id;
-        if (widget instanceof TerminalWidgetImpl && TerminalManagerTreeTypes.isTerminalID(newTerminalId)) {
+        if (TerminalManagerTreeTypes.isTerminalWidgetWithUUI(widget)) {
+            const newTerminalId = widget.uuid;
             this.terminalWidgets.set(newTerminalId, widget);
             this.onDidChangeTrackableWidgetsEmitter.fire(this.getTrackableWidgets());
             this.treeWidget.model.addTerminal(newTerminalId, siblingTerminalId);
@@ -331,10 +329,10 @@ export class TerminalManagerWidget extends BaseWidget implements ApplicationShel
         if (!this.treeWidget) {
             return;
         }
-        if (!(widget instanceof TerminalWidgetImpl)) {
+        if (!(TerminalManagerTreeTypes.isTerminalWidgetWithUUI(widget))) {
             return;
         }
-        const node = this.treeWidget.model.getNode(widget.id);
+        const node = this.treeWidget.model.getNode(widget.uuid);
         if (node && TerminalManagerTreeTypes.isTerminalNode(node)) {
             this.treeWidget.model.selectNode(node);
         }
@@ -393,7 +391,9 @@ export class TerminalManagerWidget extends BaseWidget implements ApplicationShel
     }
 
     storeState(): TerminalManager.LayoutData {
-        return this.getLayoutData();
+        const layoutData = this.getLayoutData();
+        console.log('SENTINEL LAYOUT DATA', layoutData);
+        return layoutData;
     }
     restoreState(oldState: TerminalManager.LayoutData): void {
         console.log('SENTINEL TERMINAL MANAGER RESTORE STATE');
@@ -442,13 +442,13 @@ export class TerminalManagerWidget extends BaseWidget implements ApplicationShel
                     throw createError(groupId);
                 }
                 this.groupPanels.set(groupId, groupPanel);
-                groupPanels.unshift(groupPanel);
+                groupPanels.push(groupPanel);
                 // pagePanel.addWidget(groupPanel);
                 const terminalWidgets: TerminalWidget[] = [];
                 for (const widgetLayout of widgetLayouts) {
                     const { widget } = widgetLayout;
-                    const widgetId = widget?.id;
-                    if (widget && TerminalManagerTreeTypes.isTerminalID(widgetId)) {
+                    if (TerminalManagerTreeTypes.isTerminalWidgetWithUUI(widget)) {
+                        const widgetId = widget.uuid;
                         const widgetNode = treeWidget.model.getNode(widgetId);
                         if (!TerminalManagerTreeTypes.isTerminalNode(widgetNode)) {
                             throw createError(widgetId);
@@ -505,7 +505,7 @@ export class TerminalManagerWidget extends BaseWidget implements ApplicationShel
                             for (let widgetIndex = 0; widgetIndex < widgetNodes.length; widgetIndex++) {
                                 const widgetNode = widgetNodes[widgetIndex];
                                 if (TerminalManagerTreeTypes.isTerminalNode(widgetNode)) {
-                                    const widget = this.terminalWidgets.get(widgetNode.id as TerminalManagerTreeTypes.TerminalId);
+                                    const widget = this.terminalWidgets.get(widgetNode.id);
                                     const terminalLayoutData: TerminalManager.TerminalWidgetLayoutData = {
                                         widget,
                                     };

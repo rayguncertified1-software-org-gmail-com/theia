@@ -27,7 +27,9 @@ import {
 } from '@theia/core/lib/browser';
 import { TerminalWidget } from './base/terminal-widget';
 import { TerminalManagerTreeWidget } from './terminal-manager-tree-widget';
+import { TerminalWidgetImpl } from './terminal-widget-impl';
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export namespace TerminalManagerCommands {
     export const MANAGER_NEW_TERMINAL_TOOLBAR = Command.toDefaultLocalizedCommand({
         id: 'terminal:new-in-manager-toolbar',
@@ -124,12 +126,18 @@ export namespace TerminalManager {
 
 }
 export namespace TerminalManagerTreeTypes {
-    export type TerminalId = `terminal-${number}`;
+    export type TerminalId = `terminal-${string}`;
+    export interface TerminalWidgetWithUUID extends TerminalWidget {
+        uuid: TerminalId;
+    }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    export const isTerminalWidgetWithUUI = (obj: any): obj is TerminalWidgetWithUUID => typeof obj === 'object' && !!obj && obj instanceof TerminalWidgetImpl && 'uuid' in obj;
     export const isTerminalID = (obj: unknown): obj is TerminalId => typeof obj === 'string' && obj.startsWith('terminal-');
     export interface TerminalNode extends SelectableTreeNode, CompositeTreeNode {
         terminal: true;
         isEditing: boolean;
         label: string;
+        id: TerminalId;
     };
 
     export type GroupId = `group-${string}`;
@@ -160,7 +168,7 @@ export namespace TerminalManagerTreeTypes {
     export type TerminalManagerTreeNode = PageNode | TerminalNode | TerminalGroupNode;
     export type TerminalManagerValidId = PageId | TerminalId | GroupId;
     export const isPageNode = (obj: unknown): obj is PageNode => !!obj && typeof obj === 'object' && 'page' in obj;
-    export const isTerminalNode = (obj: unknown): obj is TerminalNode => !!obj && typeof obj === 'object' && 'terminal' in obj;
+    export const isTerminalNode = (obj: any): obj is TerminalNode => !!obj && typeof obj === 'object' && 'terminal' in obj;
     export const isTerminalGroupNode = (obj: unknown): obj is TerminalGroupNode => !!obj && typeof obj === 'object' && 'terminalGroup' in obj;
     export const isTerminalManagerTreeNode = (obj: unknown): obj is (PageNode | TerminalNode) => isPageNode(obj) || isTerminalNode(obj) || isTerminalGroupNode(obj);
     export interface SelectionChangedEvent {

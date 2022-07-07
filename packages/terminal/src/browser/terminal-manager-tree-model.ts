@@ -22,9 +22,9 @@ import { TerminalManagerTreeTypes } from './terminal-manager-types';
 @injectable()
 export class TerminalManagerTreeModel extends TreeModelImpl {
 
-    activePage: TerminalManagerTreeTypes.PageNode | undefined;
-    activeGroup: TerminalManagerTreeTypes.TerminalGroupNode | undefined;
-    activeTerminal: TerminalManagerTreeTypes.TerminalNode | undefined;
+    activePageNode: TerminalManagerTreeTypes.PageNode | undefined;
+    activeGroupNode: TerminalManagerTreeTypes.TerminalGroupNode | undefined;
+    activeTerminalNode: TerminalManagerTreeTypes.TerminalNode | undefined;
 
     protected pageNum = 0;
     protected groupNum = 0;
@@ -77,7 +77,7 @@ export class TerminalManagerTreeModel extends TreeModelImpl {
         const groupNode = this.createGroupNode(groupId);
         const terminalNode = this.createTerminalNode(widgetId);
         if (this.root && CompositeTreeNode.is(this.root)) {
-            this.activePage = pageNode;
+            this.activePageNode = pageNode;
             CompositeTreeNode.addChild(groupNode, terminalNode);
             CompositeTreeNode.addChild(pageNode, groupNode);
             this.root = CompositeTreeNode.addChild(this.root, pageNode);
@@ -129,10 +129,10 @@ export class TerminalManagerTreeModel extends TreeModelImpl {
     addTerminalGroup(widgetId: TerminalManagerTreeTypes.TerminalId, groupId: TerminalManagerTreeTypes.GroupId): void {
         const groupNode = this.createGroupNode(groupId);
         const terminalNode = this.createTerminalNode(widgetId);
-        if (this.root && this.activePage && CompositeTreeNode.is(this.root)) {
+        if (this.root && this.activePageNode && CompositeTreeNode.is(this.root)) {
             this.onTerminalGroupAddedEmitter.fire(groupNode.id);
             CompositeTreeNode.addChild(groupNode, terminalNode);
-            CompositeTreeNode.addChild(this.activePage, groupNode);
+            CompositeTreeNode.addChild(this.activePageNode, groupNode);
             this.refresh();
             setTimeout(() => {
                 this.selectionService.addSelection(terminalNode);
@@ -261,12 +261,12 @@ export class TerminalManagerTreeModel extends TreeModelImpl {
             activePage = selectedNode;
         }
 
-        this.activeTerminal = activeTerminal;
-        this.activeGroup = activeGroup;
-        this.activePage = activePage;
+        this.activeTerminalNode = activeTerminal;
+        this.activeGroupNode = activeGroup;
+        this.activePageNode = activePage;
         this.onTreeSelectionChangedEmitter.fire({
             activePageId: activePage?.id,
-            activeTerminalId: activeTerminal?.id as TerminalManagerTreeTypes.TerminalId,
+            activeTerminalId: activeTerminal?.id,
             activeGroupId: activeGroup?.id
         });
     }
