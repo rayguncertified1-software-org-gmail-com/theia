@@ -101,13 +101,11 @@ export class TerminalManagerWidget extends BaseWidget implements ApplicationShel
     async initializeLayout(): Promise<void> {
         this.treeWidget = await this.widgetManager.getOrCreateWidget<TerminalManagerTreeWidget>(TerminalManagerTreeWidget.ID);
         this.registerListeners();
-        this.createPageAndTreeLayout();
-        if (this.stateWasRestored && this.treeWidget) {
-            console.log('SENTINEL STATE WAS RESTORED SO WE DONT INITIALIZE');
-        } else {
+        if (!this.stateWasRestored && this.treeWidget) {
+            this.createPageAndTreeLayout();
             console.log('SENTINEL CREATING A NEW LAYOUT BECAUSE WE DONT HAVE OLD STATE');
             await this.commandService.executeCommand(TerminalManagerCommands.MANAGER_NEW_PAGE_TOOLBAR.id);
-            this.setPanelSizes();
+            // this.setPanelSizes();
         }
         this.onDidChangeTrackableWidgetsEmitter.fire(this.getTrackableWidgets());
     }
@@ -132,10 +130,15 @@ export class TerminalManagerWidget extends BaseWidget implements ApplicationShel
         this.toDispose.push(this.terminalManagerPreferences.onPreferenceChanged(() => this.resolveMainLayout()));
     }
 
-    setPanelSizes(): void {
+    setPanelSizes(relativeSizes?: number[]): void {
+        let panelSizes: number[] = [.2, .6];
         const treeViewLocation = this.terminalManagerPreferences.get('terminalManager.treeViewLocation');
-        const panelSizes = treeViewLocation === 'right' ? [60, 15] : [15, 60];
-        setTimeout(() => this.pageAndTreeLayout?.setPartSizes(panelSizes));
+        if (relativeSizes) {
+            panelSizes = relativeSizes;
+        } else if (treeViewLocation === 'right') {
+            panelSizes = [.6, .2];
+        }
+        setTimeout(() => this.pageAndTreeLayout?.setRelativeSizes(panelSizes));
     }
 
     getTrackableWidgets(): Widget[] {
@@ -157,7 +160,7 @@ export class TerminalManagerWidget extends BaseWidget implements ApplicationShel
         }
     }
 
-    protected createPageAndTreeLayout(): void {
+    protected createPageAndTreeLayout(relativeSizes?: number[]): void {
         this.layout = new PanelLayout();
         this.pageAndTreeLayout = new ViewContainerLayout({
             renderer: SplitPanel.defaultRenderer,
@@ -171,10 +174,10 @@ export class TerminalManagerWidget extends BaseWidget implements ApplicationShel
         });
 
         this.layout.addWidget(this.panel);
-        this.resolveMainLayout();
+        this.resolveMainLayout(relativeSizes);
     }
 
-    protected resolveMainLayout(): void {
+    protected resolveMainLayout(relativeSizes?: number[]): void {
         if (!this.treeWidget) {
             return;
         }
@@ -188,7 +191,7 @@ export class TerminalManagerWidget extends BaseWidget implements ApplicationShel
         if (treeViewLocation === 'right') {
             this.pageAndTreeLayout?.addWidget(this.treeWidget);
         }
-        this.setPanelSizes();
+        this.setPanelSizes(relativeSizes);
     }
 
     addTerminalPage(widget: Widget): void {
@@ -395,10 +398,11 @@ export class TerminalManagerWidget extends BaseWidget implements ApplicationShel
         return this.getLayoutData();
     }
     restoreState(oldState: TerminalManager.LayoutData): void {
-        const treeWidget = oldState.widget;
-        if (treeWidget) {
-            this.treeWidget = treeWidget;
+        const { items, widget, terminalAndTreeRelativeSizes } = oldState;
+        if (widget && terminalAndTreeRelativeSizes && items) {
+            this.treeWidget = widget;
             this.stateWasRestored = true;
+            this.createPageAndTreeLayout(terminalAndTreeRelativeSizes);
         }
         // console.log('SENTINEL RESTORE STATE BEING CALLED ON TERMINAL MANAGER WIDGET');
         // this.treeWidget = oldState.widget;
