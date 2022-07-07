@@ -100,15 +100,16 @@ export namespace TerminalManager {
         widget: TerminalWidget | undefined;
     }
 
-    export interface PageLayoutData {
-        groupLayouts: TerminalGroupLayoutData[];
-        groupRelativeWidths: number[] | undefined;
-        label: string;
-    }
     export interface TerminalGroupLayoutData {
         widgetLayouts: TerminalWidgetLayoutData[];
         widgetRelativeHeights: number[] | undefined;
-        label: string;
+        id: TerminalManagerTreeTypes.GroupId;
+    }
+
+    export interface PageLayoutData {
+        groupLayouts: TerminalGroupLayoutData[];
+        groupRelativeWidths: number[] | undefined;
+        id: TerminalManagerTreeTypes.PageId;
     }
     export interface TerminalManagerLayoutData {
         pageLayouts: PageLayoutData[];

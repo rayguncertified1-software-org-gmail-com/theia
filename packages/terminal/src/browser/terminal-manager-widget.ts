@@ -22,7 +22,6 @@ import {
     CompositeTreeNode,
     DockPanelRenderer,
     DockPanelRendererFactory,
-    FrontendApplicationContribution,
     Panel,
     PanelLayout,
     SplitPanel,
@@ -41,7 +40,7 @@ import { TerminalWidget } from './base/terminal-widget';
 import { TerminalManagerPreferences } from './terminal-manager-preferences';
 
 @injectable()
-export class TerminalManagerWidget extends BaseWidget implements ApplicationShell.TrackableWidgetProvider, StatefulWidget, FrontendApplicationContribution {
+export class TerminalManagerWidget extends BaseWidget implements ApplicationShell.TrackableWidgetProvider, StatefulWidget {
 
     static ID = 'terminal-manager-widget';
     static LABEL = 'Terminal';
@@ -89,7 +88,6 @@ export class TerminalManagerWidget extends BaseWidget implements ApplicationShel
 
     @postConstruct()
     protected async init(): Promise<void> {
-
         this.title.iconClass = codicon('terminal-tmux');
         this.id = TerminalManagerWidget.ID;
         this.title.closable = true;
@@ -99,13 +97,12 @@ export class TerminalManagerWidget extends BaseWidget implements ApplicationShel
     }
 
     async initializeLayout(): Promise<void> {
-        this.treeWidget = await this.widgetManager.getOrCreateWidget<TerminalManagerTreeWidget>(TerminalManagerTreeWidget.ID);
+        console.log('SENTINEL TERMINAL MANAGER WIDGET INITIALIZELAYOUT');
+        this.treeWidget = this.treeWidget ?? await this.widgetManager.getOrCreateWidget<TerminalManagerTreeWidget>(TerminalManagerTreeWidget.ID);
         this.registerListeners();
-        if (!this.stateWasRestored && this.treeWidget) {
+        if (!this.stateWasRestored) {
             this.createPageAndTreeLayout();
-            console.log('SENTINEL CREATING A NEW LAYOUT BECAUSE WE DONT HAVE OLD STATE');
             await this.commandService.executeCommand(TerminalManagerCommands.MANAGER_NEW_PAGE_TOOLBAR.id);
-            // this.setPanelSizes();
         }
         this.onDidChangeTrackableWidgetsEmitter.fire(this.getTrackableWidgets());
     }
@@ -175,6 +172,7 @@ export class TerminalManagerWidget extends BaseWidget implements ApplicationShel
 
         this.layout.addWidget(this.panel);
         this.resolveMainLayout(relativeSizes);
+        this.update();
     }
 
     protected resolveMainLayout(relativeSizes?: number[]): void {
@@ -211,7 +209,7 @@ export class TerminalManagerWidget extends BaseWidget implements ApplicationShel
         }
     }
 
-    protected createPagePanel(): TerminalManagerTreeTypes.PageSplitPanel {
+    protected createPagePanel(pageId?: TerminalManagerTreeTypes.PageId): TerminalManagerTreeTypes.PageSplitPanel {
         const newPageLayout = new ViewContainerLayout({
             renderer: SplitPanel.defaultRenderer,
             orientation: 'horizontal',
@@ -224,7 +222,7 @@ export class TerminalManagerWidget extends BaseWidget implements ApplicationShel
         }) as TerminalManagerTreeTypes.PageSplitPanel;
         const uuid = UUID.uuid4();
         pagePanel.node.tabIndex = -1;
-        pagePanel.id = `page-${uuid}`;
+        pagePanel.id = pageId ?? `page-${uuid}`;
         this.pagePanels.set(pagePanel.id, pagePanel);
 
         return pagePanel;
@@ -257,7 +255,7 @@ export class TerminalManagerWidget extends BaseWidget implements ApplicationShel
         }
     }
 
-    protected createTerminalGroupPanel(): TerminalManagerTreeTypes.GroupSplitPanel {
+    protected createTerminalGroupPanel(groupId?: TerminalManagerTreeTypes.GroupId): TerminalManagerTreeTypes.GroupSplitPanel {
         const terminalColumnLayout = new ViewContainerLayout({
             renderer: SplitPanel.defaultRenderer,
             orientation: 'vertical',
@@ -271,7 +269,7 @@ export class TerminalManagerWidget extends BaseWidget implements ApplicationShel
         }) as TerminalManagerTreeTypes.GroupSplitPanel;
         const uuid = UUID.uuid4();
         groupPanel.node.tabIndex = -1;
-        groupPanel.id = `group-${uuid}`;
+        groupPanel.id = groupId ?? `group-${uuid}`;
         this.groupPanels.set(groupPanel.id, groupPanel);
         return groupPanel;
     }
@@ -398,15 +396,78 @@ export class TerminalManagerWidget extends BaseWidget implements ApplicationShel
         return this.getLayoutData();
     }
     restoreState(oldState: TerminalManager.LayoutData): void {
+        console.log('SENTINEL TERMINAL MANAGER RESTORE STATE');
         const { items, widget, terminalAndTreeRelativeSizes } = oldState;
         if (widget && terminalAndTreeRelativeSizes && items) {
             this.treeWidget = widget;
-            this.stateWasRestored = true;
             this.createPageAndTreeLayout(terminalAndTreeRelativeSizes);
+            try {
+                this.restoreLayoutData(items, widget);
+                this.stateWasRestored = true;
+            } catch (e) {
+                console.error(e);
+                this.pagePanels = new Map();
+                this.groupPanels = new Map();
+                this.terminalWidgets = new Map();
+                this.stateWasRestored = false;
+            }
         }
         // console.log('SENTINEL RESTORE STATE BEING CALLED ON TERMINAL MANAGER WIDGET');
         // this.treeWidget = oldState.widget;
         // // console.log('SENTINEL OLD STATE', oldState);
+    }
+
+    restoreLayoutData(items: TerminalManager.TerminalManagerLayoutData, treeWidget: TerminalManagerTreeWidget): void {
+        const createError = (nodeId: string): Error => new Error(`Terminal manager widget state could not be restored, mismatch in restored data for ${nodeId}`);
+
+        const { pageLayouts } = items;
+        for (const pageLayout of pageLayouts) {
+            const pageId = pageLayout.id;
+
+            const pagePanel = this.createPagePanel(pageId);
+            const pageNode = treeWidget.model.getNode(pageId);
+            if (!TerminalManagerTreeTypes.isPageNode(pageNode)) {
+                throw createError(pageId);
+            }
+            this.pagePanels.set(pageId, pagePanel);
+            this.terminalPanelWrapper.addWidget(pagePanel);
+            const { groupLayouts } = pageLayout;
+            for (const groupLayout of groupLayouts) {
+                const { widgetLayouts } = groupLayout;
+                const groupId = groupLayout.id;
+                const groupPanel = this.createTerminalGroupPanel(groupId);
+                const groupNode = treeWidget.model.getNode(groupId);
+                if (!TerminalManagerTreeTypes.isTerminalGroupNode(groupNode)) {
+                    throw createError(groupId);
+                }
+                this.groupPanels.set(groupId, groupPanel);
+                pagePanel.addWidget(groupPanel);
+                const terminalWidgets: TerminalWidget[] = [];
+                for (const widgetLayout of widgetLayouts) {
+                    const { widget } = widgetLayout;
+                    const widgetId = widget?.id;
+                    if (widget && TerminalManagerTreeTypes.isTerminalID(widgetId)) {
+                        const widgetNode = treeWidget.model.getNode(widgetId);
+                        if (!TerminalManagerTreeTypes.isTerminalNode(widgetNode)) {
+                            throw createError(widgetId);
+                        }
+                        this.terminalWidgets.set(widgetId, widget);
+                        terminalWidgets.unshift(widget);
+                    }
+                }
+                terminalWidgets.forEach(widget => groupPanel.addWidget(widget));
+                const { widgetRelativeHeights } = groupLayout;
+                if (widgetRelativeHeights) {
+                    setTimeout(() => groupPanel.setRelativeSizes(widgetRelativeHeights));
+                }
+            }
+            const { groupRelativeWidths } = pageLayout;
+            if (groupRelativeWidths) {
+                setTimeout(() => pagePanel.setRelativeSizes(groupRelativeWidths));
+            }
+        }
+        this.onDidChangeTrackableWidgetsEmitter.fire(this.getTrackableWidgets());
+        this.update();
     }
 
     getLayoutData(): TerminalManager.LayoutData {
@@ -425,7 +486,7 @@ export class TerminalManagerWidget extends BaseWidget implements ApplicationShel
                     const pagePanel = this.pagePanels.get(pageNode.id);
                     const pageLayoutData: TerminalManager.PageLayoutData = {
                         groupLayouts: [],
-                        label: pageNode.label,
+                        id: pageNode.id,
                         groupRelativeWidths: pagePanel?.relativeSizes(),
                     };
                     for (let groupIndex = 0; groupIndex < groupNodes.length; groupIndex++) {
@@ -433,7 +494,7 @@ export class TerminalManagerWidget extends BaseWidget implements ApplicationShel
                         const groupPanel = this.groupPanels.get(groupNode.id);
                         if (TerminalManagerTreeTypes.isTerminalGroupNode(groupNode)) {
                             const groupLayoutData: TerminalManager.TerminalGroupLayoutData = {
-                                label: groupNode.label,
+                                id: groupNode.id,
                                 widgetLayouts: [],
                                 widgetRelativeHeights: groupPanel?.relativeSizes(),
                             };
@@ -456,47 +517,5 @@ export class TerminalManagerWidget extends BaseWidget implements ApplicationShel
             }
         }
         return fullLayoutData;
-
-        // return this.treeWidget.model.getLayoutData();
-        // // let layoutData = this.treeWidget.model.getLayoutData();
-        // // const pageAndPanelRelativeSizes = this.pageAndTreeLayout?.relativeSizes();
-        // // // layoutData = { ...layoutData, pageWidth, treeWidth, treeWidget: this.treeWidget };
-        // // layoutData = { ...layoutData, terminalAndTreeRelativeSizes: pageAndPanelRelativeSizes };
-        // // return layoutData;
-    }
-
-    setLayoutData(layoutData: TerminalManager.LayoutData): void {
-        console.log('SENTINEL LAYOUT DATA', layoutData);
-        // const { items, terminalAndTreeRelativeSizes, } = layoutData;
-        // if (pageAndPanelRelativeSizes) {
-        //     this.pageAndTreeLayout?.setRelativeSizes(pageAndPanelRelativeSizes);
-        // } else {
-        //     this.pageAndTreeLayout?.setPartSizes([60, 15]);
-        // }
-        // const pageLayouts = items?.pageLayouts;
-        // if (pageLayouts) {
-        //     for (let pageIndex = 0; pageIndex < pageLayouts.length; pageIndex++) {
-        //         const pageLayout = pageLayouts[pageIndex];
-        //         const pagePanel = this.createPagePanel();
-        //         this.terminalPanelWrapper.addWidget(pagePanel);
-        //         const { groupLayouts, groupRelativeWidths } = pageLayout;
-        //         for (let groupIndex = 0; groupIndex < groupLayouts.length; groupIndex++) {
-        //             const groupLayout = groupLayouts[groupIndex];
-        //             const groupPanel = this.createTerminalGroupPanel();
-        //             pagePanel.id = `page-${groupPanel.id}`;
-        //             pagePanel.addWidget(groupPanel);
-        //             const { widgetLayouts, widgetRelativeHeights } = groupLayout;
-        //             for (let widgetIndex = 0; widgetIndex < widgetLayouts.length; widgetIndex++) {
-        //                 const widgetLayout = widgetLayouts[widgetIndex];
-        //                 const { widget } = widgetLayout;
-        //                 groupPanel.addWidget(widget);
-        //             }
-        //             groupPanel.setRelativeSizes(widgetRelativeHeights);
-        //         }
-        //         pagePanel.setRelativeSizes(groupRelativeWidths);
-        //     }
-        // }
-        // const treeWidget = layoutData.treeWidget;
-        this.layoutWasRestored = true;
     }
 }
