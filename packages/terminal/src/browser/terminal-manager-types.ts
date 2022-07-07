@@ -27,7 +27,7 @@ import {
 } from '@theia/core/lib/browser';
 import { TerminalWidget } from './base/terminal-widget';
 import { TerminalManagerTreeWidget } from './terminal-manager-tree-widget';
-import { TerminalWidgetImpl } from './terminal-widget-impl';
+import { TerminalWidgetFactoryOptions, TerminalWidgetImpl } from './terminal-widget-impl';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export namespace TerminalManagerCommands {
@@ -85,7 +85,7 @@ export namespace TerminalManagerCommands {
 export namespace TerminalManager {
     export const TERMINAL_MANAGER_TREE_CONTEXT_MENU = ['terminal-manager-tree-context-menu'];
 
-    export type Area = 'terminal-manager-current' | 'terminal-manager-new-page' | TerminalManagerTreeTypes.TerminalId;
+    export type Area = 'terminal-manager-current' | 'terminal-manager-new-page' | TerminalManagerTreeTypes.TerminalKey;
     export const isTerminalManagerArea = (obj: unknown): obj is Area => typeof obj === 'string' && obj.startsWith('terminal');
 
     export interface ApplicationShellLayoutData extends ApplicationShell.LayoutData {
@@ -126,18 +126,18 @@ export namespace TerminalManager {
 
 }
 export namespace TerminalManagerTreeTypes {
-    export type TerminalId = `terminal-${string}`;
-    export interface TerminalWidgetWithUUID extends TerminalWidget {
-        uuid: TerminalId;
-    }
+    export type TerminalKey = `terminal-${string}::${string}`;
+    export const generateTerminalKey = (widget: TerminalWidgetImpl): TerminalKey => {
+        const { created, title } = widget.options as TerminalWidgetFactoryOptions;
+        return `terminal-${created}::${title}`;
+    };
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    export const isTerminalWidgetWithUUI = (obj: any): obj is TerminalWidgetWithUUID => typeof obj === 'object' && !!obj && obj instanceof TerminalWidgetImpl && 'uuid' in obj;
-    export const isTerminalID = (obj: unknown): obj is TerminalId => typeof obj === 'string' && obj.startsWith('terminal-');
+    export const isTerminalKey = (obj: unknown): obj is TerminalKey => typeof obj === 'string' && obj.startsWith('terminal-');
     export interface TerminalNode extends SelectableTreeNode, CompositeTreeNode {
         terminal: true;
         isEditing: boolean;
         label: string;
-        id: TerminalId;
+        id: TerminalKey;
     };
 
     export type GroupId = `group-${string}`;
@@ -166,14 +166,14 @@ export namespace TerminalManagerTreeTypes {
     }
 
     export type TerminalManagerTreeNode = PageNode | TerminalNode | TerminalGroupNode;
-    export type TerminalManagerValidId = PageId | TerminalId | GroupId;
+    export type TerminalManagerValidId = PageId | TerminalKey | GroupId;
     export const isPageNode = (obj: unknown): obj is PageNode => !!obj && typeof obj === 'object' && 'page' in obj;
     export const isTerminalNode = (obj: any): obj is TerminalNode => !!obj && typeof obj === 'object' && 'terminal' in obj;
     export const isTerminalGroupNode = (obj: unknown): obj is TerminalGroupNode => !!obj && typeof obj === 'object' && 'terminalGroup' in obj;
     export const isTerminalManagerTreeNode = (obj: unknown): obj is (PageNode | TerminalNode) => isPageNode(obj) || isTerminalNode(obj) || isTerminalGroupNode(obj);
     export interface SelectionChangedEvent {
         activePageId: PageId | undefined;
-        activeTerminalId: TerminalId | undefined;
+        activeTerminalId: TerminalKey | undefined;
         activeGroupId: GroupId | undefined;
     }
 

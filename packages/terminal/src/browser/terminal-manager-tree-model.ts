@@ -44,12 +44,12 @@ export class TerminalManagerTreeModel extends TreeModelImpl {
     readonly onTerminalGroupDeleted = this.onTerminalGroupDeletedEmitter.event;
 
     protected onTerminalAddedToGroupEmitter = new Emitter<{
-        terminalId: TerminalManagerTreeTypes.TerminalId,
+        terminalId: TerminalManagerTreeTypes.TerminalKey,
         groupId: TerminalManagerTreeTypes.GroupId,
     }>();
     readonly onTerminalAddedToGroup = this.onTerminalAddedToGroupEmitter.event;
     protected onTerminalDeletedFromGroupEmitter = new Emitter<{
-        terminalId: TerminalManagerTreeTypes.TerminalId,
+        terminalId: TerminalManagerTreeTypes.TerminalKey,
         groupId: TerminalManagerTreeTypes.GroupId,
     }>();
     readonly onTerminalDeletedFromGroup = this.onTerminalDeletedFromGroupEmitter.event;
@@ -69,7 +69,7 @@ export class TerminalManagerTreeModel extends TreeModelImpl {
     protected getContext = () => this;
 
     addTerminalPage(
-        widgetId: TerminalManagerTreeTypes.TerminalId,
+        widgetId: TerminalManagerTreeTypes.TerminalKey,
         groupId: TerminalManagerTreeTypes.GroupId,
         pageId: TerminalManagerTreeTypes.PageId,
     ): void {
@@ -126,7 +126,7 @@ export class TerminalManagerTreeModel extends TreeModelImpl {
         this.refresh();
     }
 
-    addTerminalGroup(widgetId: TerminalManagerTreeTypes.TerminalId, groupId: TerminalManagerTreeTypes.GroupId): void {
+    addTerminalGroup(widgetId: TerminalManagerTreeTypes.TerminalKey, groupId: TerminalManagerTreeTypes.GroupId): void {
         const groupNode = this.createGroupNode(groupId);
         const terminalNode = this.createTerminalNode(widgetId);
         if (this.root && this.activePageNode && CompositeTreeNode.is(this.root)) {
@@ -159,8 +159,8 @@ export class TerminalManagerTreeModel extends TreeModelImpl {
         }
         while (groupNode.children.length > 0) {
             const terminalNode = groupNode.children[0];
-            const terminalId = terminalNode.id;
-            if (TerminalManagerTreeTypes.isTerminalNode(terminalNode) && TerminalManagerTreeTypes.isTerminalID(terminalId)) {
+            if (TerminalManagerTreeTypes.isTerminalNode(terminalNode)) {
+                const terminalId = terminalNode.id;
                 this.deleteTerminalNode(terminalId);
             }
         }
@@ -173,7 +173,7 @@ export class TerminalManagerTreeModel extends TreeModelImpl {
         this.refresh();
     }
 
-    addTerminal(newTerminalId: TerminalManagerTreeTypes.TerminalId, siblingTerminalId: TerminalManagerTreeTypes.TerminalId): void {
+    addTerminal(newTerminalId: TerminalManagerTreeTypes.TerminalKey, siblingTerminalId: TerminalManagerTreeTypes.TerminalKey): void {
         const siblingTerminalNode = this.getNode(siblingTerminalId);
         const parentGroup = siblingTerminalNode?.parent;
         if (parentGroup && TerminalManagerTreeTypes.isTerminalGroupNode(parentGroup)) {
@@ -189,7 +189,7 @@ export class TerminalManagerTreeModel extends TreeModelImpl {
         }
     }
 
-    createTerminalNode(terminalId: TerminalManagerTreeTypes.TerminalId): TerminalManagerTreeTypes.TerminalNode {
+    createTerminalNode(terminalId: TerminalManagerTreeTypes.TerminalKey): TerminalManagerTreeTypes.TerminalNode {
         return {
             id: terminalId,
             label: terminalId,
@@ -201,7 +201,7 @@ export class TerminalManagerTreeModel extends TreeModelImpl {
         };
     }
 
-    deleteTerminalNode(terminalId: TerminalManagerTreeTypes.TerminalId): void {
+    deleteTerminalNode(terminalId: TerminalManagerTreeTypes.TerminalKey): void {
         const terminalNode = this.getNode(terminalId);
         if (!TerminalManagerTreeTypes.isTerminalNode(terminalNode)) {
             return;

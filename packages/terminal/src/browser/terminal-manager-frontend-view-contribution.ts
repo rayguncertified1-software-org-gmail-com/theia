@@ -71,7 +71,7 @@ export class TerminalManagerFrontendViewContribution extends AbstractViewContrib
             isVisible: widget => widget instanceof TerminalManagerWidget,
         });
         commands.registerCommand(TerminalManagerCommands.MANAGER_DELETE_TERMINAL, {
-            execute: (...args: TerminalManagerTreeTypes.ContextMenuArgs) => TerminalManagerTreeTypes.isTerminalID(args[1]) && this.deleteTerminalFromManager(args[1]),
+            execute: (...args: TerminalManagerTreeTypes.ContextMenuArgs) => TerminalManagerTreeTypes.isTerminalKey(args[1]) && this.deleteTerminalFromManager(args[1]),
             isVisible: (...args: TerminalManagerTreeTypes.ContextMenuArgs) => args[0] === 'terminal-manager-tree' && TerminalManagerTreeTypes.isTerminalNode(args[1]),
         });
         commands.registerCommand(TerminalManagerCommands.MANAGER_DELETE_PAGE, {
@@ -85,7 +85,7 @@ export class TerminalManagerFrontendViewContribution extends AbstractViewContrib
         commands.registerCommand(TerminalManagerCommands.MANAGER_SPLIT_TERMINAL_HORIZONTAL, {
             execute: (...args: TerminalManagerTreeTypes.ContextMenuArgs) => {
                 const id = args[1];
-                if (TerminalManagerTreeTypes.isTerminalID(id)) {
+                if (TerminalManagerTreeTypes.isTerminalKey(id)) {
                     this.openInManager(id);
                 }
             },
@@ -108,7 +108,7 @@ export class TerminalManagerFrontendViewContribution extends AbstractViewContrib
                 terminalManagerWidget.addTerminalGroupToPage(terminalWidget);
             } else if (area === 'terminal-manager-new-page') {
                 terminalManagerWidget.addTerminalPage(terminalWidget);
-            } else if (TerminalManagerTreeTypes.isTerminalID(area)) {
+            } else if (TerminalManagerTreeTypes.isTerminalKey(area)) {
                 terminalManagerWidget.addWidgetToTerminalGroup(terminalWidget, area);
             }
         }
@@ -120,7 +120,7 @@ export class TerminalManagerFrontendViewContribution extends AbstractViewContrib
 
     }
 
-    protected deleteTerminalFromManager(terminalId: TerminalManagerTreeTypes.TerminalId): void {
+    protected deleteTerminalFromManager(terminalId: TerminalManagerTreeTypes.TerminalKey): void {
         const terminalManagerWidget = this.tryGetWidget();
         terminalManagerWidget?.deleteTerminal(terminalId);
     }
