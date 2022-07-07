@@ -56,6 +56,7 @@ import { createTerminalLabelWidgetFactory, TerminalLabelWidgetFactory } from './
 import { TerminalManagerFrontendViewContribution } from './terminal-manager-frontend-view-contribution';
 import { TerminalManagerPreferenceContribution, TerminalManagerPreferences, TerminalManagerPreferenceSchema } from './terminal-manager-preferences';
 import { PreferenceProxyFactory } from '@theia/core/lib/browser/preferences/injectable-preference-proxy';
+import { TerminalManagerTreeWidget } from './terminal-manager-tree-widget';
 
 export default new ContainerModule((
     bind: interfaces.Bind,
@@ -108,6 +109,11 @@ export default new ContainerModule((
         id: TerminalManagerWidget.ID,
         createWidget: () => TerminalManagerWidget.createWidget(context.container),
     }));
+
+    bind(WidgetFactory).toDynamicValue(({ container }) => ({
+        id: TerminalManagerTreeWidget.ID,
+        createWidget: () => TerminalManagerTreeWidget.createWidget(container),
+    })).inSingletonScope();
 
     bind(TerminalManagerPreferences).toDynamicValue(ctx => {
         const factory = ctx.container.get<PreferenceProxyFactory>(PreferenceProxyFactory);

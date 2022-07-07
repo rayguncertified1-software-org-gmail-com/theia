@@ -174,7 +174,6 @@ export class ShellLayoutRestorer implements CommandContribution {
             return false;
         }
         const layoutData = await this.inflate(serializedLayoutData);
-        console.log('SENTINEL RESTORED LAYOUT DATA', layoutData);
         await app.shell.setLayoutData(layoutData);
         this.logger.info('<<< The layout has been successfully restored.');
         return true;
@@ -192,7 +191,6 @@ export class ShellLayoutRestorer implements CommandContribution {
      * Turns the layout data to a string representation.
      */
     protected deflate(data: object): string {
-        console.log('SENTINEL DEFLATE DATA OBJECT', data);
         try {
             return JSON.stringify(data, (property: string, value) => {
                 if (this.isWidgetProperty(property)) {
@@ -211,7 +209,6 @@ export class ShellLayoutRestorer implements CommandContribution {
                 return value;
             });
         } catch (e) {
-            console.log('SENTINEL THIS IS THE DATA THAT CAUSES THE ERROR', e, data);
             throw e;
         }
     }

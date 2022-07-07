@@ -100,7 +100,6 @@ export class TerminalManagerFrontendViewContribution extends AbstractViewContrib
         const terminalManagerWidget = await this.widget;
         this.openView({ activate: true }).then(widget => widget.setPanelSizes());
         const terminalWidget = await this.terminalFrontendContribution.newTerminal({});
-        console.log('SENTINEL AFTER PROMISES');
         terminalWidget.start();
         if (area && terminalManagerWidget) {
             if (area === 'terminal-manager-current') {

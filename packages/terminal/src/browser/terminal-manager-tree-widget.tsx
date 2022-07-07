@@ -94,6 +94,16 @@ export class TerminalManagerTreeWidget extends TreeWidget {
         }
     }
 
+    override storeState(): object {
+        console.log('SENTINEL STORING TREE WIDGET STATE');
+        return super.storeState();
+    }
+
+    override restoreState(oldState: object): void {
+        super.restoreState(oldState);
+        console.log('SENTINEL OLD STATE', oldState);
+    }
+
     protected handleRenameOnKeyDown = (e: React.KeyboardEvent<HTMLInputElement>): void => this.doHandleRenameOnKeyDown(e);
     protected doHandleRenameOnKeyDown(e: React.KeyboardEvent<HTMLInputElement>): void {
         // TODO escape and enter might not be handled well

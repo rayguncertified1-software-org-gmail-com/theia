@@ -22,12 +22,15 @@ import {
     CompositeTreeNode,
     DockPanelRenderer,
     DockPanelRendererFactory,
+    FrontendApplicationContribution,
     Panel,
     PanelLayout,
     SplitPanel,
     SplitPositionHandler,
+    StatefulWidget,
     ViewContainerLayout,
     Widget,
+    WidgetManager,
 } from '@theia/core/lib/browser';
 import { TerminalManagerTreeWidget } from './terminal-manager-tree-widget';
 import { TerminalWidgetImpl } from './terminal-widget-impl';
@@ -38,13 +41,13 @@ import { TerminalWidget } from './base/terminal-widget';
 import { TerminalManagerPreferences } from './terminal-manager-preferences';
 
 @injectable()
-export class TerminalManagerWidget extends BaseWidget implements ApplicationShell.TrackableWidgetProvider {
+export class TerminalManagerWidget extends BaseWidget implements ApplicationShell.TrackableWidgetProvider, StatefulWidget, FrontendApplicationContribution {
+
     static ID = 'terminal-manager-widget';
     static LABEL = 'Terminal';
 
     static createContainer(parent: interfaces.Container): interfaces.Container {
         const child = parent.createChild();
-        child.bind(TerminalManagerTreeWidget).toDynamicValue(context => TerminalManagerTreeWidget.createWidget(child));
         child.bind(TerminalManagerWidget).toSelf().inSingletonScope();
         return child;
     }
@@ -56,16 +59,18 @@ export class TerminalManagerWidget extends BaseWidget implements ApplicationShel
     @inject(SplitPositionHandler)
     protected readonly splitPositionHandler: SplitPositionHandler;
 
-    @inject(TerminalManagerTreeWidget) protected readonly treeWidget: TerminalManagerTreeWidget;
+    protected treeWidget: TerminalManagerTreeWidget;
     @inject(DockPanelRendererFactory) protected dockPanelRendererFactory: () => DockPanelRenderer;
     @inject(ApplicationShell) protected readonly shell: ApplicationShell;
     @inject(CommandService) protected readonly commandService: CommandService;
     @inject(TerminalManagerPreferences) protected readonly terminalManagerPreferences: TerminalManagerPreferences;
+    @inject(WidgetManager) protected readonly widgetManager: WidgetManager;
 
     protected activePageId: TerminalManagerTreeTypes.PageId | undefined;
     protected activeTerminalId: TerminalManagerTreeTypes.TerminalId | undefined;
     override layout: PanelLayout;
     protected panel: SplitPanel;
+    protected stateWasRestored = false;
 
     protected pageAndTreeLayout: ViewContainerLayout | undefined;
     protected layoutWasRestored = false;
@@ -84,6 +89,31 @@ export class TerminalManagerWidget extends BaseWidget implements ApplicationShel
 
     @postConstruct()
     protected async init(): Promise<void> {
+
+        this.title.iconClass = codicon('terminal-tmux');
+        this.id = TerminalManagerWidget.ID;
+        this.title.closable = true;
+        this.title.label = TerminalManagerWidget.LABEL;
+        await this.terminalManagerPreferences.ready;
+        return this.initializeLayout();
+    }
+
+    async initializeLayout(): Promise<void> {
+        this.treeWidget = await this.widgetManager.getOrCreateWidget<TerminalManagerTreeWidget>(TerminalManagerTreeWidget.ID);
+        this.registerListeners();
+        this.createPageAndTreeLayout();
+        if (this.stateWasRestored && this.treeWidget) {
+            console.log('SENTINEL STATE WAS RESTORED SO WE DONT INITIALIZE');
+        } else {
+            console.log('SENTINEL CREATING A NEW LAYOUT BECAUSE WE DONT HAVE OLD STATE');
+            await this.commandService.executeCommand(TerminalManagerCommands.MANAGER_NEW_PAGE_TOOLBAR.id);
+            this.setPanelSizes();
+        }
+        this.onDidChangeTrackableWidgetsEmitter.fire(this.getTrackableWidgets());
+    }
+
+    protected registerListeners(): void {
+        this.toDispose.push(this.treeWidget);
         this.toDispose.push(this.treeWidget.model.onTreeSelectionChanged(changeEvent => this.handleSelectionChange(changeEvent)));
 
         this.toDispose.push(this.treeWidget.model.onPageAdded(pageId => this.handlePageAdded(pageId)));
@@ -98,18 +128,6 @@ export class TerminalManagerWidget extends BaseWidget implements ApplicationShel
         this.toDispose.push(this.shell.onDidChangeActiveWidget(({ newValue }) => this.handleOnDidChangeActiveWidget(newValue)));
 
         this.toDispose.push(this.terminalManagerPreferences.onPreferenceChanged(() => this.resolveMainLayout()));
-        this.title.iconClass = codicon('terminal-tmux');
-        this.id = TerminalManagerWidget.ID;
-        this.title.closable = true;
-        this.title.label = TerminalManagerWidget.LABEL;
-        await this.terminalManagerPreferences.ready;
-        return this.initializeLayout();
-    }
-
-    async initializeLayout(): Promise<void> {
-        this.createPageAndTreeLayout();
-        await this.commandService.executeCommand(TerminalManagerCommands.MANAGER_NEW_PAGE_TOOLBAR.id);
-        this.setPanelSizes();
     }
 
     setPanelSizes(): void {
@@ -119,7 +137,7 @@ export class TerminalManagerWidget extends BaseWidget implements ApplicationShel
     }
 
     getTrackableWidgets(): Widget[] {
-        return Array.from(this.terminalWidgets.values());
+        return [this.treeWidget, ...Array.from(this.terminalWidgets.values())];
     }
 
     toggleTreeVisibility(): void {
@@ -298,8 +316,7 @@ export class TerminalManagerWidget extends BaseWidget implements ApplicationShel
 
     protected handleSelectionChange(changeEvent: TerminalManagerTreeTypes.SelectionChangedEvent): void {
         const { activePageId, activeTerminalId } = changeEvent;
-        const layout = (this.panel.layout as ViewContainerLayout);
-        console.log('SENTINEL PART SIZES', layout.widgets.map(widget => layout.getPartSize(widget)));
+        // const layout = (this.panel.layout as ViewContainerLayout);
         if (activePageId && activePageId !== this.activePageId) {
             this.activePageId = activePageId;
             const pageNode = this.treeWidget.model.getNode(activePageId);
@@ -346,12 +363,21 @@ export class TerminalManagerWidget extends BaseWidget implements ApplicationShel
         this.treeWidget.model.toggleRenameTerminal(entityId);
     }
 
+    storeState(): TerminalManager.LayoutData {
+        return this.getLayoutData();
+    }
+    restoreState(oldState: TerminalManager.LayoutData): void {
+        console.log('SENTINEL RESTORE STATE BEING CALLED ON TERMINAL MANAGER WIDGET');
+        this.stateWasRestored = true;
+        this.treeWidget = oldState.widget;
+        // console.log('SENTINEL OLD STATE', oldState);
+    }
+
     getLayoutData(): TerminalManager.LayoutData {
         const pageItems: TerminalManager.TerminalManagerLayoutData = { pageLayouts: [] };
         const fullLayoutData: TerminalManager.LayoutData = {
-            type: 'terminal-manager',
-            items: pageItems,
             widget: this.treeWidget,
+            items: pageItems,
             terminalAndTreeRelativeSizes: this.pageAndTreeLayout?.relativeSizes(),
         };
         const treeRoot = this.treeWidget.model.root;
@@ -393,7 +419,6 @@ export class TerminalManagerWidget extends BaseWidget implements ApplicationShel
                 }
             }
         }
-        console.log('SENTINEL LAYOUT', fullLayoutData);
         return fullLayoutData;
 
         // return this.treeWidget.model.getLayoutData();
