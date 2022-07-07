@@ -115,7 +115,7 @@ export namespace TerminalManager {
     }
     export interface LayoutData {
         items?: TerminalManagerLayoutData;
-        widget: TerminalManagerTreeWidget;
+        widget: TerminalManagerTreeWidget | undefined;
         terminalAndTreeRelativeSizes: number[] | undefined;
     }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
