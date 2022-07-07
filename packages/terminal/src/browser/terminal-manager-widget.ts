@@ -166,7 +166,7 @@ export class TerminalManagerWidget extends BaseWidget implements ApplicationShel
             headerSize: 0,
             animationDuration: 200
         }, this.splitPositionHandler);
-        this.panel = new SplitPanel({
+        this.panel = this.panel ?? new SplitPanel({
             layout: this.pageAndTreeLayout,
         });
 
@@ -395,8 +395,12 @@ export class TerminalManagerWidget extends BaseWidget implements ApplicationShel
         return this.getLayoutData();
     }
     restoreState(oldState: TerminalManager.LayoutData): void {
+        const treeWidget = oldState.widget;
+        if (treeWidget) {
+            this.treeWidget = treeWidget;
+            this.stateWasRestored = true;
+        }
         // console.log('SENTINEL RESTORE STATE BEING CALLED ON TERMINAL MANAGER WIDGET');
-        // this.stateWasRestored = true;
         // this.treeWidget = oldState.widget;
         // // console.log('SENTINEL OLD STATE', oldState);
     }
