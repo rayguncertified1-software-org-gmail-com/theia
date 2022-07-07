@@ -432,6 +432,7 @@ export class TerminalManagerWidget extends BaseWidget implements ApplicationShel
             this.pagePanels.set(pageId, pagePanel);
             this.terminalPanelWrapper.addWidget(pagePanel);
             const { groupLayouts } = pageLayout;
+            const groupPanels: SplitPanel[] = [];
             for (const groupLayout of groupLayouts) {
                 const { widgetLayouts } = groupLayout;
                 const groupId = groupLayout.id;
@@ -441,7 +442,8 @@ export class TerminalManagerWidget extends BaseWidget implements ApplicationShel
                     throw createError(groupId);
                 }
                 this.groupPanels.set(groupId, groupPanel);
-                pagePanel.addWidget(groupPanel);
+                groupPanels.unshift(groupPanel);
+                // pagePanel.addWidget(groupPanel);
                 const terminalWidgets: TerminalWidget[] = [];
                 for (const widgetLayout of widgetLayouts) {
                     const { widget } = widgetLayout;
@@ -461,6 +463,7 @@ export class TerminalManagerWidget extends BaseWidget implements ApplicationShel
                     setTimeout(() => groupPanel.setRelativeSizes(widgetRelativeHeights));
                 }
             }
+            groupPanels.forEach(panel => pagePanel.addWidget(panel));
             const { groupRelativeWidths } = pageLayout;
             if (groupRelativeWidths) {
                 setTimeout(() => pagePanel.setRelativeSizes(groupRelativeWidths));
