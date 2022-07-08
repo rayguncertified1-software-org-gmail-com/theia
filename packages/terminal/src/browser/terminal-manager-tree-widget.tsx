@@ -71,6 +71,7 @@ export class TerminalManagerTreeWidget extends TreeWidget {
         if (TerminalManagerTreeTypes.isTerminalManagerTreeNode(node) && !!node.isEditing) {
             return (
                 <input
+                    spellCheck={false}
                     type='text'
                     className='theia-input rename-node-input'
                     placeholder={this.toNodeName(node)}
@@ -102,12 +103,27 @@ export class TerminalManagerTreeWidget extends TreeWidget {
             e.stopPropagation();
             return;
         }
-        if (e.key === 'Enter' || e.key === 'Tab') {
+        // enter is handled in the handleEnter method
+        if (e.key === 'Tab') {
             const { value } = e.currentTarget;
             const id = e.currentTarget.getAttribute('data-id');
             if (value && id) {
                 this.model.acceptRename(id, value);
             }
+        }
+    }
+
+    protected override handleEnter(event: KeyboardEvent): void {
+        const node = this.model.selectedNodes[0];
+        if (TerminalManagerTreeTypes.isTerminalManagerTreeNode(node) && event.target) {
+            const input = event.target as HTMLInputElement;
+            const { value } = input;
+            const id = input.getAttribute('data-id');
+            if (value && id) {
+                this.model.acceptRename(id, value);
+            }
+        } else {
+            this.model.openNode();
         }
     }
 
@@ -235,6 +251,5 @@ export class TerminalManagerTreeWidget extends TreeWidget {
         }
         return super.getDepthForNode(node, depths);
     }
-
 }
 

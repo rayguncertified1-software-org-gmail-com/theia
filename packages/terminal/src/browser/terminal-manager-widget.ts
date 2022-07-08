@@ -221,9 +221,10 @@ export class TerminalManagerWidget extends BaseWidget implements ApplicationShel
         const pagePanel = new SplitPanel({
             layout: newPageLayout,
         }) as TerminalManagerTreeTypes.PageSplitPanel;
-        const uuid = UUID.uuid4();
+        const idPrefix = 'page-';
+        const uuid = this.generateUUIDAvoidDuplicatesFromStorage(idPrefix);
         pagePanel.node.tabIndex = -1;
-        pagePanel.id = pageId ?? `page-${uuid}`;
+        pagePanel.id = pageId ?? `${idPrefix}-${uuid}`;
         this.pagePanels.set(pagePanel.id, pagePanel);
 
         return pagePanel;
@@ -232,7 +233,7 @@ export class TerminalManagerWidget extends BaseWidget implements ApplicationShel
     protected generateUUIDAvoidDuplicatesFromStorage(idPrefix: 'group-' | 'page-'): string {
         // highly unlikely there would ever be a duplicate, but just to be safe :)
         let didNotGenerateValidId = true;
-        let uuid: string;
+        let uuid: string = '';
         while (didNotGenerateValidId) {
             uuid = UUID.uuid4();
             if (idPrefix === 'group-') {
@@ -284,9 +285,10 @@ export class TerminalManagerWidget extends BaseWidget implements ApplicationShel
         const groupPanel = new SplitPanel({
             layout: terminalColumnLayout,
         }) as TerminalManagerTreeTypes.GroupSplitPanel;
-        const uuid = UUID.uuid4();
+        const idPrefix = 'group-';
+        const uuid = this.generateUUIDAvoidDuplicatesFromStorage(idPrefix);
         groupPanel.node.tabIndex = -1;
-        groupPanel.id = groupId ?? `group-${uuid}`;
+        groupPanel.id = groupId ?? `${idPrefix}-${uuid}`;
         this.groupPanels.set(groupPanel.id, groupPanel);
         return groupPanel;
     }

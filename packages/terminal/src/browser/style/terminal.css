@@ -75,4 +75,5 @@
 .terminal-manager-inline-actions {
   display: flex;
   align-items: center;
+  cursor: pointer
 }

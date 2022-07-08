@@ -26,8 +26,8 @@ export class TerminalManagerTreeModel extends TreeModelImpl {
     activeGroupNode: TerminalManagerTreeTypes.TerminalGroupNode | undefined;
     activeTerminalNode: TerminalManagerTreeTypes.TerminalNode | undefined;
 
-    protected pageNum = 0;
-    protected groupNum = 0;
+    protected pageNum = 1;
+    protected groupNum = 1;
     pages = new Set<TerminalManagerTreeTypes.PageNode>();
 
     protected onTreeSelectionChangedEmitter = new Emitter<TerminalManagerTreeTypes.SelectionChangedEvent>();
@@ -92,7 +92,7 @@ export class TerminalManagerTreeModel extends TreeModelImpl {
     protected createPageNode(pageId: TerminalManagerTreeTypes.PageId): TerminalManagerTreeTypes.PageNode {
         return {
             id: pageId,
-            label: pageId,
+            label: `Page (${this.pageNum++})`,
             parent: undefined,
             selected: false,
             children: [],
@@ -143,7 +143,7 @@ export class TerminalManagerTreeModel extends TreeModelImpl {
     protected createGroupNode(groupId: TerminalManagerTreeTypes.GroupId, pageId: TerminalManagerTreeTypes.PageId): TerminalManagerTreeTypes.TerminalGroupNode {
         return {
             id: groupId,
-            label: groupId,
+            label: `Group (${this.groupNum++})`,
             parent: undefined,
             selected: false,
             children: [],
@@ -191,7 +191,7 @@ export class TerminalManagerTreeModel extends TreeModelImpl {
     createTerminalNode(terminalId: TerminalManagerTreeTypes.TerminalKey, groupId: TerminalManagerTreeTypes.GroupId): TerminalManagerTreeTypes.TerminalNode {
         return {
             id: terminalId,
-            label: terminalId,
+            label: 'Terminal',
             parent: undefined,
             children: [],
             selected: false,

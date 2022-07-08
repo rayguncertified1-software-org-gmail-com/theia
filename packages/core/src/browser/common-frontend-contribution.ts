@@ -1034,6 +1034,10 @@ export class CommonFrontendContribution implements FrontendApplicationContributi
             });
         }
         registry.registerKeybinding({
+            command: CommonCommands.MAXIMIZE_BOTTOM_PANEL.id,
+            keybinding: 'alt+q'
+        });
+        registry.registerKeybinding({
             command: CommonCommands.COPY_PATH.id,
             keybinding: isWindows ? 'shift+alt+c' : 'ctrlcmd+alt+c',
             when: '!editorFocus'
