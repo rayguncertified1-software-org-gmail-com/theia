@@ -229,6 +229,21 @@ export class TerminalManagerWidget extends BaseWidget implements ApplicationShel
         return pagePanel;
     }
 
+    protected generateUUIDAvoidDuplicatesFromStorage(idPrefix: 'group-' | 'page-'): string {
+        // highly unlikely there would ever be a duplicate, but just to be safe :)
+        let didNotGenerateValidId = true;
+        let uuid: string;
+        while (didNotGenerateValidId) {
+            uuid = UUID.uuid4();
+            if (idPrefix === 'group-') {
+                didNotGenerateValidId = this.groupPanels.has(`group-${uuid}`);
+            } else if (idPrefix === 'page-') {
+                didNotGenerateValidId = this.pagePanels.has(`page-${uuid}`);
+            }
+        }
+        return uuid;
+    }
+
     protected handlePageAdded(pageId: TerminalManagerTreeTypes.PageId): void {
         const pagePanel = this.pagePanels.get(pageId);
         if (pagePanel) {
