@@ -616,7 +616,7 @@ export class TerminalFrontendContribution implements FrontendApplicationContribu
         });
     }
 
-    async newTerminal(options: TerminalWidgetOptions): Promise<TerminalWidget> {
+    async newTerminal(options: TerminalWidgetFactoryOptions | TerminalWidgetOptions): Promise<TerminalWidget> {
         const widget = <TerminalWidget>await this.widgetManager.getOrCreateWidget(TERMINAL_WIDGET_FACTORY_ID, <TerminalWidgetFactoryOptions>{
             created: new Date().toString(),
             ...options
