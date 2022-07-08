@@ -31,7 +31,7 @@ import { TerminalWidgetFactoryOptions, TerminalWidgetImpl } from './terminal-wid
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export namespace TerminalManagerCommands {
-    export const MANAGER_NEW_TERMINAL_TOOLBAR = Command.toDefaultLocalizedCommand({
+    export const MANAGER_NEW_TERMINAL_GROUP = Command.toDefaultLocalizedCommand({
         id: 'terminal:new-in-manager-toolbar',
         category: 'Terminal Manager',
         label: 'Create New Terminal Group',
@@ -49,7 +49,7 @@ export namespace TerminalManagerCommands {
         label: 'Rename...',
         iconClass: codicon('edit'),
     });
-    export const MANAGER_NEW_PAGE_TOOLBAR = Command.toDefaultLocalizedCommand({
+    export const MANAGER_NEW_PAGE_BOTTOM_TOOLBAR = Command.toDefaultLocalizedCommand({
         id: 'terminal:new-manager-page',
         category: 'Terminal Manager',
         label: 'Create New Terminal Page',
@@ -61,11 +61,11 @@ export namespace TerminalManagerCommands {
         label: 'Delete Page',
         iconClass: codicon('trash'),
     });
-    export const MANAGER_SPLIT_TERMINAL_HORIZONTAL = Command.toDefaultLocalizedCommand({
+    export const MANAGER_ADD_TERMINAL_TO_GROUP = Command.toDefaultLocalizedCommand({
         id: 'terminal:manager-split-horizontal',
         category: 'Terminal Manager',
-        label: 'Split Active Terminal Vertically',
-        iconClass: codicon('split-vertical'),
+        label: 'Add terminal to group',
+        iconClass: codicon('terminal'),
     });
     export const MANAGER_DELETE_GROUP = Command.toDefaultLocalizedCommand({
         id: 'terminal:manager-delete-group',
@@ -85,7 +85,7 @@ export namespace TerminalManagerCommands {
 export namespace TerminalManager {
     export const TERMINAL_MANAGER_TREE_CONTEXT_MENU = ['terminal-manager-tree-context-menu'];
 
-    export type Area = 'terminal-manager-current' | 'terminal-manager-new-page' | TerminalManagerTreeTypes.TerminalKey;
+    export type Area = 'terminal-manager-current' | TerminalManagerTreeTypes.TerminalKey;
     export const isTerminalManagerArea = (obj: unknown): obj is Area => typeof obj === 'string' && obj.startsWith('terminal');
 
     export interface ApplicationShellLayoutData extends ApplicationShell.LayoutData {
@@ -138,6 +138,7 @@ export namespace TerminalManagerTreeTypes {
         isEditing: boolean;
         label: string;
         id: TerminalKey;
+        parentGroupId: GroupId;
     };
 
     export type GroupId = `group-${string}`;
@@ -150,6 +151,7 @@ export namespace TerminalManagerTreeTypes {
         isEditing: boolean;
         label: string;
         id: GroupId;
+        parentPageId: PageId;
     };
 
     export type PageId = `page-${string}`;

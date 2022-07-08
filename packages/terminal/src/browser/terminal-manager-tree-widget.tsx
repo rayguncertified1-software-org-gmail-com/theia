@@ -161,10 +161,15 @@ export class TerminalManagerTreeWidget extends TreeWidget {
         const menuItems = menuNode.children;
         menuItems.forEach(item => {
             const commandId = item.id;
-            const command = this.commandRegistry.getCommand(commandId);
-            const iconClass = command?.iconClass ? command.iconClass : '';
-            const tooltip = command?.label ? command.label : '';
-            inlineActionProps.push({ iconClass, tooltip, commandId });
+            const args = TerminalManagerTreeTypes.toContextMenuArgs(node);
+            const isVisible = this.commandRegistry.isVisible(commandId, ...args);
+            console.log('SENTINEL THIS COMMAND', commandId, isVisible);
+            if (isVisible) {
+                const command = this.commandRegistry.getCommand(commandId);
+                const iconClass = command?.iconClass ? command.iconClass : '';
+                const tooltip = command?.label ? command.label : '';
+                inlineActionProps.push({ iconClass, tooltip, commandId });
+            }
         });
         return inlineActionProps;
     }
@@ -175,7 +180,7 @@ export class TerminalManagerTreeWidget extends TreeWidget {
         } else if (TerminalManagerTreeTypes.isPageNode(node)) {
             return <span className={`${codicon('terminal-tmux')}`} />;
         } else if (TerminalManagerTreeTypes.isTerminalGroupNode(node)) {
-            return <span className={`${codicon('split-vertical')}`} />;
+            return <span className={`${codicon('split-horizontal')}`} />;
         }
     }
 
