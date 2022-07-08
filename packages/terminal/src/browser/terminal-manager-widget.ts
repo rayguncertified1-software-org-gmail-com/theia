@@ -38,6 +38,7 @@ import { TerminalManager, TerminalManagerCommands, TerminalManagerTreeTypes } fr
 import { TerminalWidget } from './base/terminal-widget';
 import { TerminalManagerPreferences } from './terminal-manager-preferences';
 import { TerminalWidgetImpl } from './terminal-widget-impl';
+import { FrontendApplicationStateService } from '@theia/core/lib/browser/frontend-application-state';
 
 @injectable()
 export class TerminalManagerWidget extends BaseWidget implements ApplicationShell.TrackableWidgetProvider, StatefulWidget {
@@ -63,6 +64,7 @@ export class TerminalManagerWidget extends BaseWidget implements ApplicationShel
     @inject(ApplicationShell) protected readonly shell: ApplicationShell;
     @inject(CommandService) protected readonly commandService: CommandService;
     @inject(TerminalManagerPreferences) protected readonly terminalManagerPreferences: TerminalManagerPreferences;
+    @inject(FrontendApplicationStateService) protected readonly applicationStateService: FrontendApplicationStateService;
     @inject(WidgetManager) protected readonly widgetManager: WidgetManager;
 
     protected activePageId: TerminalManagerTreeTypes.PageId | undefined;
@@ -342,6 +344,13 @@ export class TerminalManagerWidget extends BaseWidget implements ApplicationShel
             return;
         }
         const terminalKey = TerminalManagerTreeTypes.generateTerminalKey(widget);
+        this.selectTerminalNode(terminalKey);
+    }
+
+    protected selectTerminalNode(terminalKey: TerminalManagerTreeTypes.TerminalKey): void {
+        if (!this.treeWidget) {
+            return;
+        }
         const node = this.treeWidget.model.getNode(terminalKey);
         if (node && TerminalManagerTreeTypes.isTerminalNode(node)) {
             this.treeWidget.model.selectNode(node);
@@ -481,7 +490,14 @@ export class TerminalManagerWidget extends BaseWidget implements ApplicationShel
             }
         }
         // this.onDidChangeTrackableWidgetsEmitter.fire(this.getTrackableWidgets());
+
+        const { activeTerminalNode } = treeWidget.model;
         this.update();
+        if (activeTerminalNode?.id) {
+            this.applicationStateService.reachedState('ready').then(() => {
+                this.selectTerminalNode(activeTerminalNode.id);
+            });
+        }
     }
 
     getLayoutData(): TerminalManager.LayoutData {
@@ -523,7 +539,7 @@ export class TerminalManagerWidget extends BaseWidget implements ApplicationShel
                                     groupLayoutData.widgetLayouts.push(terminalLayoutData);
                                 }
                             }
-                            pageLayoutData.groupLayouts.push(groupLayoutData);
+                            pageLayoutData.groupLayouts.unshift(groupLayoutData);
                         }
                     }
                     pageItems.pageLayouts.push(pageLayoutData);
