@@ -445,8 +445,9 @@ export class TerminalManagerWidget extends BaseWidget implements StatefulWidget,
         // const activePanel = panel ?? this.pageNodeToPanelMap.get(activePage);
         const activePagePanel = this.pagePanels.get(activePageId);
         if (activePagePanel) {
-            (this.terminalPanelWrapper.layout as PanelLayout).widgets.forEach(widget => this.terminalPanelWrapper.layout?.removeWidget(widget));
-            (this.terminalPanelWrapper.layout as PanelLayout).addWidget(activePagePanel);
+            (this.terminalPanelWrapper.layout as PanelLayout).widgets
+                .forEach(widget => widget !== activePagePanel && widget.hide());
+            activePagePanel.show();
             this.update();
         }
     }

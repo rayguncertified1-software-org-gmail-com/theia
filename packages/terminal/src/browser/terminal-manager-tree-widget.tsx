@@ -137,6 +137,7 @@ export class TerminalManagerTreeWidget extends TreeWidget {
                     <div className='terminal-manager-inline-actions'>
                         {inlineActionsForNode.map(({ iconClass, commandId, tooltip }) => (
                             <span
+                                key={commandId}
                                 data-command-id={commandId}
                                 data-node-id={node.id}
                                 className={iconClass}
