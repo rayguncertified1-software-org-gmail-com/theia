@@ -33,12 +33,16 @@ export class TerminalManagerTreeModel extends TreeModelImpl {
     protected onTreeSelectionChangedEmitter = new Emitter<TerminalManagerTreeTypes.SelectionChangedEvent>();
     readonly onTreeSelectionChanged = this.onTreeSelectionChangedEmitter.event;
 
-    protected onPageAddedEmitter = new Emitter<TerminalManagerTreeTypes.PageId>();
+    protected onPageAddedEmitter = new Emitter<{ pageId: TerminalManagerTreeTypes.PageId, terminalKey: TerminalManagerTreeTypes.TerminalKey }>();
     readonly onPageAdded = this.onPageAddedEmitter.event;
     protected onPageDeletedEmitter = new Emitter<TerminalManagerTreeTypes.PageId>();
     readonly onPageDeleted = this.onPageDeletedEmitter.event;
 
-    protected onTerminalGroupAddedEmitter = new Emitter<{ groupId: TerminalManagerTreeTypes.GroupId, pageId: TerminalManagerTreeTypes.PageId }>();
+    protected onTerminalGroupAddedEmitter = new Emitter<{
+        groupId: TerminalManagerTreeTypes.GroupId,
+        pageId: TerminalManagerTreeTypes.PageId,
+        terminalKey: TerminalManagerTreeTypes.TerminalKey,
+    }>();
     readonly onTerminalGroupAdded = this.onTerminalGroupAddedEmitter.event;
     protected onTerminalGroupDeletedEmitter = new Emitter<TerminalManagerTreeTypes.GroupId>();
     readonly onTerminalGroupDeleted = this.onTerminalGroupDeletedEmitter.event;
@@ -69,20 +73,20 @@ export class TerminalManagerTreeModel extends TreeModelImpl {
     protected getContext = () => this;
 
     addTerminalPage(
-        widgetId: TerminalManagerTreeTypes.TerminalKey,
+        terminalKey: TerminalManagerTreeTypes.TerminalKey,
         groupId: TerminalManagerTreeTypes.GroupId,
         pageId: TerminalManagerTreeTypes.PageId,
     ): void {
         const pageNode = this.createPageNode(pageId);
         const groupNode = this.createGroupNode(groupId, pageId);
-        const terminalNode = this.createTerminalNode(widgetId, groupId);
+        const terminalNode = this.createTerminalNode(terminalKey, groupId);
         if (this.root && CompositeTreeNode.is(this.root)) {
             this.activePageNode = pageNode;
             CompositeTreeNode.addChild(groupNode, terminalNode);
             CompositeTreeNode.addChild(pageNode, groupNode);
             this.root = CompositeTreeNode.addChild(this.root, pageNode);
             this.pages.add(pageNode);
-            this.onPageAddedEmitter.fire(pageNode.id);
+            this.onPageAddedEmitter.fire({ pageId: pageNode.id, terminalKey });
             setTimeout(() => {
                 this.selectionService.addSelection(terminalNode);
             });
@@ -126,11 +130,11 @@ export class TerminalManagerTreeModel extends TreeModelImpl {
         this.refresh();
     }
 
-    addTerminalGroup(widgetId: TerminalManagerTreeTypes.TerminalKey, groupId: TerminalManagerTreeTypes.GroupId, pageId: TerminalManagerTreeTypes.PageId): void {
+    addTerminalGroup(terminalKey: TerminalManagerTreeTypes.TerminalKey, groupId: TerminalManagerTreeTypes.GroupId, pageId: TerminalManagerTreeTypes.PageId): void {
         const groupNode = this.createGroupNode(groupId, pageId);
-        const terminalNode = this.createTerminalNode(widgetId, groupId);
+        const terminalNode = this.createTerminalNode(terminalKey, groupId);
         if (this.root && this.activePageNode && CompositeTreeNode.is(this.root)) {
-            this.onTerminalGroupAddedEmitter.fire({ groupId: groupNode.id, pageId });
+            this.onTerminalGroupAddedEmitter.fire({ groupId: groupNode.id, pageId, terminalKey });
             CompositeTreeNode.addChild(groupNode, terminalNode);
             CompositeTreeNode.addChild(this.activePageNode, groupNode);
             this.refresh();

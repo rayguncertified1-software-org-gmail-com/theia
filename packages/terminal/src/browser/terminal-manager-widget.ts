@@ -112,10 +112,10 @@ export class TerminalManagerWidget extends BaseWidget implements ApplicationShel
             this.toDispose.push(this.treeWidget);
             this.toDispose.push(this.treeWidget.model.onTreeSelectionChanged(changeEvent => this.handleSelectionChange(changeEvent)));
 
-            this.toDispose.push(this.treeWidget.model.onPageAdded(pageId => this.handlePageAdded(pageId)));
+            this.toDispose.push(this.treeWidget.model.onPageAdded(({ pageId, terminalKey }) => this.handlePageAdded(pageId, terminalKey)));
             this.toDispose.push(this.treeWidget.model.onPageDeleted(pageId => this.handlePageDeleted(pageId)));
 
-            this.toDispose.push(this.treeWidget.model.onTerminalGroupAdded(({ groupId, pageId }) => this.handleTerminalGroupAdded(groupId, pageId)));
+            this.toDispose.push(this.treeWidget.model.onTerminalGroupAdded(({ groupId, pageId, terminalKey }) => this.handleTerminalGroupAdded(groupId, pageId, terminalKey)));
             this.toDispose.push(this.treeWidget.model.onTerminalGroupDeleted(groupId => this.handleTerminalGroupDeleted(groupId)));
 
             this.toDispose.push(this.treeWidget.model.onTerminalAddedToGroup(({ terminalId, groupId }) => this.handleWidgetAddedToTerminalGroup(terminalId, groupId)));
@@ -245,11 +245,12 @@ export class TerminalManagerWidget extends BaseWidget implements ApplicationShel
         return uuid;
     }
 
-    protected handlePageAdded(pageId: TerminalManagerTreeTypes.PageId): void {
+    protected handlePageAdded(pageId: TerminalManagerTreeTypes.PageId, terminalKey: TerminalManagerTreeTypes.TerminalKey): void {
         const pagePanel = this.pagePanels.get(pageId);
         if (pagePanel) {
             (this.terminalPanelWrapper.layout as PanelLayout).addWidget(pagePanel);
             this.update();
+            this.activateTerminalWidget(terminalKey);
         }
     }
 
@@ -293,7 +294,11 @@ export class TerminalManagerWidget extends BaseWidget implements ApplicationShel
         return groupPanel;
     }
 
-    protected handleTerminalGroupAdded(groupId: TerminalManagerTreeTypes.GroupId, pageId: TerminalManagerTreeTypes.PageId): void {
+    protected handleTerminalGroupAdded(
+        groupId: TerminalManagerTreeTypes.GroupId,
+        pageId: TerminalManagerTreeTypes.PageId,
+        terminalKey: TerminalManagerTreeTypes.TerminalKey,
+    ): void {
         if (!this.treeWidget) {
             return;
         }
@@ -305,7 +310,25 @@ export class TerminalManagerWidget extends BaseWidget implements ApplicationShel
         if (activePage) {
             activePage.addWidget(groupPanel);
             this.update();
+            this.activateTerminalWidget(terminalKey);
         }
+    }
+
+    protected async activateTerminalWidget(terminalKey: TerminalManagerTreeTypes.TerminalKey): Promise<Widget | undefined> {
+        const terminalWidgetToActivate = this.terminalWidgets.get(terminalKey)?.id;
+        if (terminalWidgetToActivate) {
+            const activeWidgetFound = await this.shell.activateWidget(terminalWidgetToActivate);
+            return activeWidgetFound;
+        }
+    }
+
+    activateWidget(id: string): Widget | undefined {
+        console.log('SENTINEL WIDGET ID', id);
+        return undefined;
+    }
+
+    revealWidget(id: string): Widget | undefined {
+        return undefined;
     }
 
     protected handleTerminalGroupDeleted(groupPanelId: TerminalManagerTreeTypes.GroupId): void {
@@ -325,13 +348,14 @@ export class TerminalManagerWidget extends BaseWidget implements ApplicationShel
         }
     }
 
-    protected handleWidgetAddedToTerminalGroup(terminalId: TerminalManagerTreeTypes.TerminalKey, groupId: TerminalManagerTreeTypes.GroupId): void {
-        const terminalWidget = this.terminalWidgets.get(terminalId);
+    protected handleWidgetAddedToTerminalGroup(terminalKey: TerminalManagerTreeTypes.TerminalKey, groupId: TerminalManagerTreeTypes.GroupId): void {
+        const terminalWidget = this.terminalWidgets.get(terminalKey);
         const group = this.groupPanels.get(groupId);
         if (terminalWidget && group) {
             const groupPanel = this.groupPanels.get(groupId);
             groupPanel?.addWidget(terminalWidget);
             this.update();
+            this.activateTerminalWidget(terminalKey);
         }
     }
 
