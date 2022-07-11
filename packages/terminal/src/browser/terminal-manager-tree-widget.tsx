@@ -31,6 +31,7 @@ import {
 import { TerminalManagerTreeModel } from './terminal-manager-tree-model';
 import { CommandRegistry, CompositeMenuNode, Emitter, MenuModelRegistry } from '@theia/core';
 import { TerminalManager, TerminalManagerTreeTypes } from './terminal-manager-types';
+import { TerminalManagerWidget } from './terminal-manager-widget';
 
 @injectable()
 export class TerminalManagerTreeWidget extends TreeWidget {
@@ -57,6 +58,7 @@ export class TerminalManagerTreeWidget extends TreeWidget {
     @postConstruct()
     protected override init(): void {
         super.init();
+        this.id = TerminalManagerWidget.ID;
         this.addClass(TerminalManagerTreeWidget.ID);
         this.toDispose.push(this.onDidChangeEmitter);
     }
@@ -179,7 +181,6 @@ export class TerminalManagerTreeWidget extends TreeWidget {
             const commandId = item.id;
             const args = TerminalManagerTreeTypes.toContextMenuArgs(node);
             const isVisible = this.commandRegistry.isVisible(commandId, ...args);
-            console.log('SENTINEL THIS COMMAND', commandId, isVisible);
             if (isVisible) {
                 const command = this.commandRegistry.getCommand(commandId);
                 const iconClass = command?.iconClass ? command.iconClass : '';

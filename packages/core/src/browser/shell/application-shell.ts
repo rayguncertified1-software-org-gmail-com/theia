@@ -1143,6 +1143,7 @@ export class ApplicationShell extends Widget {
         if (!current) {
             return undefined;
         }
+        this.waitForActivation(current.id).then(() => console.log('SENTINEL TERMINAL ACTIVATED', current?.id));
         return Promise.all([
             this.waitForActivation(current.id),
             waitForRevealed(current),

@@ -287,4 +287,17 @@ export class TerminalManagerTreeModel extends TreeModelImpl {
         }
         this.pages = pages;
     }
+
+    getPageIdForTerminal(terminalKey: TerminalManagerTreeTypes.TerminalKey): TerminalManagerTreeTypes.PageId | undefined {
+        const terminalNode = this.getNode(terminalKey);
+        if (!TerminalManagerTreeTypes.isTerminalNode(terminalNode)) {
+            return undefined;
+        }
+        const { parentGroupId } = terminalNode;
+        const groupNode = this.getNode(parentGroupId);
+        if (!TerminalManagerTreeTypes.isTerminalGroupNode(groupNode)) {
+            return undefined;
+        }
+        return groupNode.parentPageId;
+    }
 }
