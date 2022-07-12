@@ -46,7 +46,7 @@ import { GenericAlertDialogFactory } from './generic-alert-dialog';
 export class TerminalManagerWidget extends BaseWidget implements StatefulWidget, ApplicationShell.TrackableWidgetProvider {
 
     static ID = 'terminal-manager-widget';
-    static LABEL = 'Terminal';
+    static LABEL = 'Terminal Manager';
 
     static createContainer(parent: interfaces.Container): interfaces.Container {
         const child = parent.createChild();
@@ -437,7 +437,7 @@ export class TerminalManagerWidget extends BaseWidget implements StatefulWidget,
             if (!TerminalManagerTreeTypes.isPageNode(pageNode)) {
                 return;
             }
-            this.title.label = `EMux: ${pageNode.label}`;
+            this.title.label = pageNode.label;
             this.updateViewPage(activePageId);
         }
         if (activeTerminalId && activeTerminalId) {
