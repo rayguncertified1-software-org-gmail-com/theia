@@ -254,7 +254,7 @@ export class TerminalManagerWidget extends BaseWidget implements StatefulWidget,
         if (pagePanel) {
             (this.terminalPanelWrapper.layout as PanelLayout).addWidget(pagePanel);
             this.update();
-            this.activateTerminalWidget(terminalKey);
+            // this.activateTerminalWidget(terminalKey);
         }
     }
 
@@ -314,7 +314,7 @@ export class TerminalManagerWidget extends BaseWidget implements StatefulWidget,
         if (activePage) {
             activePage.addWidget(groupPanel);
             this.update();
-            this.activateTerminalWidget(terminalKey);
+            // this.activateTerminalWidget(terminalKey);
         }
     }
 
@@ -329,25 +329,10 @@ export class TerminalManagerWidget extends BaseWidget implements StatefulWidget,
 
     activateWidget(id: string): Widget | undefined {
         const widget = Array.from(this.terminalWidgets.values()).find(terminalWidget => terminalWidget.id === id);
-        console.log('SENTINEL FOUND WIDGET', widget);
-
         if (widget instanceof TerminalWidgetImpl) {
             widget.activate();
         }
         return widget;
-        // const terminalWidget = this.revealWidget(id);
-        // return this.revealWidget(id);
-    }
-
-    revealWidget(id: string): Widget | undefined {
-        const activeTerminalKey = Array.from(this.terminalWidgets.keys()).find(terminalKey => this.terminalWidgets.get(terminalKey)?.id === id);
-        if (activeTerminalKey) {
-            const activePageId = this.treeWidget?.model.getPageIdForTerminal(activeTerminalKey);
-            if (activePageId) {
-                this.updateViewPage(activePageId);
-            }
-            return this.terminalWidgets.get(activeTerminalKey);
-        }
     }
 
     protected handleTerminalGroupDeleted(groupPanelId: TerminalManagerTreeTypes.GroupId): void {
@@ -379,8 +364,7 @@ export class TerminalManagerWidget extends BaseWidget implements StatefulWidget,
             const groupPanel = this.groupPanels.get(groupId);
             groupPanel?.addWidget(terminalWidget);
             this.update();
-            this.activateTerminalWidget(terminalKey);
-            setTimeout(() => console.log('SENTINEL WIDGET IS ATTACHED AFTER SOME TIME', terminalWidget.isAttached), 1000);
+            // this.activateTerminalWidget(terminalKey);
         }
     }
 
@@ -437,7 +421,12 @@ export class TerminalManagerWidget extends BaseWidget implements StatefulWidget,
 
     protected flashActiveTerminal(terminalId: TerminalManagerTreeTypes.TerminalKey): void {
         const terminal = this.terminalWidgets.get(terminalId);
-        terminal?.addClass('attention');
+        if (terminal) {
+            terminal.addClass('attention');
+            if (this.shell.activeWidget !== terminal) {
+                terminal.activate();
+            }
+        }
         setTimeout(() => terminal?.removeClass('attention'), 250);
     }
 
@@ -506,7 +495,7 @@ export class TerminalManagerWidget extends BaseWidget implements StatefulWidget,
                 throw createError(pageId);
             }
             this.pagePanels.set(pageId, pagePanel);
-            this.terminalPanelWrapper.addWidget(pagePanel);
+            (this.terminalPanelWrapper.layout as PanelLayout).addWidget(pagePanel);
             const { groupLayouts } = pageLayout;
             const groupPanels: SplitPanel[] = [];
             for (const groupLayout of groupLayouts) {
@@ -532,7 +521,7 @@ export class TerminalManagerWidget extends BaseWidget implements StatefulWidget,
                         this.onDidChangeTrackableWidgetsEmitter.fire(this.getTrackableWidgets());
                         groupPanel.addWidget(widget);
                         setTimeout(() => console.log('SENTINEL WIDGET IS ATTACHED DURING RESTORE', widget.isAttached), 1000);
-                        requestAnimationFrame(() => this.shell.activateWidget(widget.id));
+                        // requestAnimationFrame(() => this.shell.activateWidget(widget.id));
                     }
                 }
                 const { widgetRelativeHeights } = groupLayout;
