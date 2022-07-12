@@ -40,6 +40,7 @@ import { TerminalWidget } from './base/terminal-widget';
 import { TerminalManagerPreferences } from './terminal-manager-preferences';
 import { TerminalWidgetImpl } from './terminal-widget-impl';
 import { FrontendApplicationStateService } from '@theia/core/lib/browser/frontend-application-state';
+import { GenericAlertDialogFactory } from './generic-alert-dialog';
 
 @injectable()
 export class TerminalManagerWidget extends BaseWidget implements StatefulWidget, ApplicationShell.TrackableWidgetProvider {
@@ -67,6 +68,7 @@ export class TerminalManagerWidget extends BaseWidget implements StatefulWidget,
     @inject(TerminalManagerPreferences) protected readonly terminalManagerPreferences: TerminalManagerPreferences;
     @inject(FrontendApplicationStateService) protected readonly applicationStateService: FrontendApplicationStateService;
     @inject(WidgetManager) protected readonly widgetManager: WidgetManager;
+    @inject(GenericAlertDialogFactory) protected readonly alertDialogFactory: GenericAlertDialogFactory;
 
     protected activePageId: TerminalManagerTreeTypes.PageId | undefined;
     override layout: PanelLayout;
@@ -97,7 +99,32 @@ export class TerminalManagerWidget extends BaseWidget implements StatefulWidget,
         this.node.tabIndex = 0;
         Object.assign(this.terminalPanelWrapper, { id: 'terminal-panel-wrapper' });
         await this.terminalManagerPreferences.ready;
+        //         const oldClose = widget.close.bind(widget);
+        // const newClose = () => {
+        //     // clean up debug first...
+        //     oldClose();
+        // }
+        // widget.close = newClose; this.title;
         return this.initializeLayout();
+    }
+
+    override close(): void {
+        const CLOSE_TEXT = 'Close Terminal Manager';
+        const dialog = this.alertDialogFactory({
+            title: 'Do you want to close the terminal manager?',
+            message: 'Closing the terminal manager will reset your current terminal layout. You can keep this widget open and it will be '
+                + 'automatically restored during restart',
+            type: 'info',
+            className: 'terminal-manager-close-alert',
+            primaryButtons: new Set(['Keep Open']),
+            exitButton: CLOSE_TEXT,
+        });
+        dialog.open().then(dialogResponse => {
+            if (dialogResponse === 'close') {
+                super.close();
+            }
+            dialog.dispose();
+        });
     }
 
     async initializeLayout(): Promise<void> {
